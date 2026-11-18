@@ -79,6 +79,43 @@
   #exitTv { display:none; position:fixed; top:16px; right:16px; z-index:95; }
   body.takeover #exitTv { display:block; }
   #confetti { position:fixed; inset:0; pointer-events:none; z-index:90; }
+  /* 🔴 点名名单球（3D 名字云，2026-11-19）：名字均匀铺在球面，JS 20fps 投影（不跟音频抢主线程） */
+  .ngwrap { display:flex; flex-direction:column; align-items:center; gap:6px; width:100%; }
+  #nglobe { position:relative; width:min(88vw,640px); height:min(48vh,400px); margin:0 auto; cursor:default; }
+  #nglobe .ng, #nglobe .ngd { position:absolute; left:50%; top:50%; will-change:transform,opacity; white-space:nowrap; pointer-events:none; }
+  #nglobe .ng { font-size:clamp(13px,1.5vw,18px); color:#ffe2b8; text-shadow:0 0 12px rgba(255,180,90,.35); letter-spacing:1px; transition:color .18s ease, text-shadow .18s ease; }
+  #nglobe .ng.hot { color:#fff; text-shadow:0 0 18px rgba(255,225,150,.95),0 0 36px rgba(255,140,60,.65); }
+  #nglobe .ngd { width:5px; height:5px; border-radius:50%; background:rgba(255,210,160,.5); box-shadow:0 0 8px rgba(255,180,110,.55); }
+  .ngbar { display:flex; align-items:center; gap:12px; }
+  .taplist { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:min(90vw,760px); max-height:130px; overflow:auto; margin:12px auto 0; }
+  .taplist .bt { font-size:14px; padding:7px 14px; }
+  /* 快问快答：题目/结果要大字上屏，坐后排也看得清（老大 2026-11-19） */
+  .qbig { font-size:clamp(30px,5.2vw,64px); font-weight:700; line-height:1.28; text-align:center; color:#ffe2b8; text-shadow:0 0 30px #ff8a4a55; padding:0 4vw; }
+  /* 大屏上的提示语/线索也放大，别用聊天小字（坐后排根本看不见） */
+  .bighint { font-size:clamp(20px,2.8vw,32px); line-height:1.35; text-align:center; color:#ffd7a8; padding:0 4vw; margin-top:10px; }
+  .bighint.line { color:#ffe2b8; text-shadow:0 0 22px #ff8a4a44; }
+  /* 选项直接排在题目下方（不再吊到按钮行下面），字号也放大 */
+  .qopts { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin:22px auto 0; max-width:min(92vw,900px); }
+  .qopts .bt { font-size:clamp(17px,2.2vw,24px); padding:13px 26px; }
+  /* 自绘数字弹窗（原生 prompt 被环境禁用）：藏字，只露一个 * */
+  .nbox { position:fixed; inset:0; z-index:9999; background:rgba(10,4,8,.72); display:flex; align-items:center; justify-content:center; }
+  /* 弹窗本体必须有实底，否则透出底下大屏的字，看着像浮在字上面 */
+  .nbox .panel { width:min(92vw,420px); background:#1b120e; border:1px solid rgba(255,190,120,.3); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:12px; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+  .nbox h4 { margin:0; font-size:17px; color:#ffe2b8; font-weight:600; }
+  .nbox .row { display:flex; gap:10px; justify-content:flex-end; }
+  .numwrap { position:relative; margin:14px 0 6px; }
+  .numwrap input { width:100%; box-sizing:border-box; padding:14px 16px; border-radius:14px; background:rgba(255,255,255,.06); border:1px solid #5a3a30; color:#ffe2b8; font-size:22px; letter-spacing:2px; outline:none; }
+  .numwrap input.hide { color:transparent; caret-color:transparent; }
+  .nummask { position:absolute; left:20px; top:50%; transform:translateY(-50%); font-size:26px; color:#ffe2b8; pointer-events:none; display:none; }
+  .taplist .bt.qopt { font-size:clamp(16px,2vw,22px); padding:12px 22px; }
+  .ngbar .bt { font-size:14px; padding:6px 14px; }
+  #ngCount, .ngtip { color:#a98a76; font-size:12px; letter-spacing:1px; }
+  #ngImportBox { position:fixed; inset:0; z-index:130; background:rgba(10,6,4,.88); display:flex; align-items:center; justify-content:center; padding:16px; }
+  #ngImportBox .panel { width:min(92vw,560px); background:#1b120e; border:1px solid rgba(255,190,120,.28); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  #ngImportBox h4 { margin:0; color:#ffd479; font-size:15px; font-weight:500; }
+  #ngImportBox textarea { width:100%; height:150px; background:#120c09; color:#ffe2b8; border:1px solid rgba(255,190,120,.22); border-radius:10px; padding:10px; font-size:13px; line-height:1.6; resize:vertical; }
+  #ngImportBox .row { display:flex; gap:8px; justify-content:flex-end; }
+  #ngImportBox .hint { color:#8f7466; font-size:12px; line-height:1.5; }
   #cfCv { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:91; }
   #cfFlash { position:fixed; inset:0; pointer-events:none; z-index:89; background:radial-gradient(circle at 50% 42%, rgba(255,240,200,.85), rgba(255,170,90,.3) 40%, transparent 70%); opacity:0; }
   #bombFlash { position:fixed; inset:0; pointer-events:none; z-index:88; background:radial-gradient(circle at 50% 45%, rgba(255,150,60,.95), rgba(255,40,20,.55) 45%, transparent 75%); opacity:0; }
@@ -116,7 +153,7 @@
 <div id="confetti"></div>
 <canvas id="cfCv"></canvas>
 <header>
-  <h1><span class="lantern">🏮</span> AI 语音互动 · 年会现场 <span class="lantern">🏮</span></h1>
+  <h1 id="homeLink" title="点击返回游戏列表首页" style="cursor:pointer" onclick="backToCards()"><span class="lantern">🏮</span> AI 语音互动 · 年会现场 <span class="lantern">🏮</span></h1>
   <p>真语音 AI 主持人（MOSS 实时全双工 · 能说会做能操作大屏）· 点游戏开玩 · 右下角唤出 AI</p>
 </header>
 <main>
@@ -129,6 +166,10 @@
     <div class="card" data-g="hot"><span class="tag">年度记忆</span><div class="ico">📈</div><h3>年度热词竞猜</h3><p>AI 描述公司项目名/年度大事/热梗，大家抢猜，绝不说出答案。</p></div>
     <div class="card adv" data-g="talk"><span class="tag">进阶</span><div class="ico">🎤</div><h3>AI 主持脱口秀</h3><p>直接对 AI 说“给张三来段脱口秀”，即兴串词把同事请上台。</p></div>
     <div class="card adv" data-g="song"><span class="tag">进阶</span><div class="ico">🎵</div><h3>AI 猜歌 / 猜影</h3><p>对 AI 说“来一题猜歌”，它描述意境你抢答。</p></div>
+    <div class="card" data-g="sync"><span class="tag">两人对决</span><div class="ico">🤝</div><h3>默契大考验</h3><p>同一道题两个人各选一次答案，选到同一个才算默契，全场围观谁最懂谁。</p></div>
+    <div class="card" data-g="dare"><span class="tag">暖场必备</span><div class="ico">🎲</div><h3>真心话大冒险</h3><p>抽一张卡：真心话就老实答，大冒险就当场做，主持人盯着不放水。</p></div>
+    <div class="card" data-g="tongue"><span class="tag">全场爆笑</span><div class="ico">👅</div><h3>绕口令挑战</h3><p>抽一条绕口令，请人一口气念完，卡住就换人，念对撒花。</p></div>
+    <div class="card" data-g="emoji"><span class="tag">看图猜词</span><div class="ico">🔤</div><h3>看图猜词</h3><p>大屏出一个图标，猜它代表什么词，打字进去自动判。</p></div>
   </div>
   <div id="stage">
     <h2><span id="gName">游戏</span><span class="back" onclick="backToCards()">← 返回游戏列表</span></h2>
@@ -210,15 +251,73 @@ async function startMic(){
         const ch = inp[0][0];
         if (ch){
           for (let i=0;i<ch.length;i++){
-            this.acc += ch[i]; this.cnt++; this.pos += this.ratio;
-            if (this.pos >= 1){ this.pos -= 1; this.b.push(this.acc/this.cnt); this.acc=0; this.cnt=0;
-              if (this.b.length >= 1600){ const o = Int16Array.from(this.b.splice(0,1600).map(v=>v<0?v*0x8000:v*0x7fff)); this.port.postMessage(o.buffer,[o.buffer]); } }
+            // 🔴 降采样必须 ratio 个输入采 1 个输出（48k→16k）。旧写法 pos += ratio / pos -= 1 等于每个采样都输出
+            // = 把 48k 数据贴上 16k 标签推给 MOSS（实测 3.5 秒发 106 帧，正确应为 35 帧），MOSS 听到的是慢 3 倍、低 3 倍的声音，
+            // 一个字都转写不出来（2026-11-18 23:23 实锤：前端 rms=0.38 有真声音、帧全上行、服务端零 input.transcript）
+            this.acc += ch[i]; this.cnt++; this.pos++;
+            if (this.pos >= this.ratio){
+              this.pos = 0;
+              let v = this.acc/this.cnt; this.acc=0; this.cnt=0;
+              if (v > 1) v = 1; else if (v < -1) v = -1;
+              this.b.push(v);
+              if (this.b.length >= 1600){ const o = Int16Array.from(this.b.splice(0,1600).map(x=>x<0?x*0x8000:x*0x7fff)); this.port.postMessage(o.buffer,[o.buffer]); }
+            }
           }
         }
         return true;
       }
     }
+    // 🔴 播放 worklet：常驻环形缓冲。旧方案每 100ms 新建一个 AudioBufferSourceNode + 4800 样本的 AudioBuffer，
+    // 聊几分钟就是几千个节点反复创建/销毁/接 analyser，音频线程和 GC 被拖死 = "越聊越卡、声音断续"。
+    class P extends AudioWorkletProcessor{
+      constructor(){
+        super();
+        this.cap = 48000 * 4; // 4 秒环形缓冲
+        this.q = new Float32Array(this.cap);
+        this.w = 0; this.p = 0; this.tick = 0; this.playing = false; this.step = 1; this.frames = 0; this.idleAt = 0;
+        this.port.onmessage = e => {
+          const d = e.data;
+          if (d && d.cmd === 'flush'){ this.p = this.w; this.playing = false; return; } // 打断/挂断：立刻清空
+          const a = new Int16Array(d);
+          for (let i=0;i<a.length;i++){ this.q[this.w % this.cap] = a[i]/32768; this.w++; }
+          // 延迟限幅：积压超 1.2 秒丢最老的立即追上实时（宁可丢一小段，绝不让延迟一直涨）
+          const maxBack = 48000 * 1.2;
+          if (this.w - this.p > maxBack) this.p = this.w - maxBack;
+        };
+      }
+      process(_, outputs){
+        const o = outputs[0][0];
+        this.frames += o.length; // 🔴 自己数帧，不用 currentFrame（AudioWorkletGlobalScope 有它，但不赌浏览器实现）
+        const back = this.w - this.p;
+        // 🔴 抖动缓冲（"磕磕绊绊"真根因）：旧逻辑有多少播多少=缓冲永远贴 0，
+        // 公网 burst 到达间隔不匀（实测 back 在 0.00↔0.70 反复跳），一空就断音。
+        // 现在同 WebRTC jitter buffer：先攒够 350ms 才开播，播干就回到"攒"状态。
+        // 🔴 分两档水位（2026-11-19 老大"还是有点卡"）：同一轮 AI 的话中间有 gap，若每次 gap 都重新攒 350ms，
+        // 句间就会一顿一顿。所以：gap <0.5 秒当"同一轮续播"，攒 100ms 就接上；间隔久了才是新一轮，攒 250ms 抗抖动。
+        if (!this.playing){
+          const sameTurn = this.idleAt && (this.frames - this.idleAt) < 48000 * 0.5;
+          const need = sameTurn ? 4800 : 12000;
+          if (back >= need) this.playing = true;
+          else { o.fill(0); if (++this.tick % 200 === 0) this.port.postMessage({ back: 0 }); return true; }
+        }
+        if (back <= 2){ this.playing = false; this.idleAt = this.frames; o.fill(0); if (++this.tick % 200 === 0) this.port.postMessage({ back: 0 }); return true; }
+        // 🔴 供流速率补偿：上游每秒下发约 0.98~1.0 秒音频（91ms/帧 × 10.8 帧），长聊不补就会慢慢见底。
+        // 水位 <200ms 放慢 4%、<500ms 放慢 1.5%（听感差不到半个半音，人耳基本无感），过高则略快追回。
+        this.step = back < 14400 ? 0.975 : (back < 24000 ? 0.99 : (back > 43200 ? 1.02 : 1));
+        for (let i=0;i<o.length;i++){
+          if (this.w <= this.p){ o[i] = 0; continue; }
+          const i0 = this.p | 0, fr = this.p - i0;
+          const a0 = this.q[i0 % this.cap], a1 = this.q[(i0 + 1) % this.cap];
+          o[i] = a0 + (a1 - a0) * fr;
+          this.p += this.step;
+          if (this.p > this.w) this.p = this.w;
+        }
+        if (++this.tick % 200 === 0) this.port.postMessage({ back: this.w - this.p }); // 约每 0.5 秒回传积压量
+        return true;
+      }
+    }
     registerProcessor('r',R);
+    registerProcessor('p',P);
   `], { type:'text/javascript' }));
   await actx.audioWorklet.addModule(workletURL);
   const src = actx.createMediaStreamSource(micStream);
@@ -235,6 +334,7 @@ async function startMic(){
     let sum = 0; for (let i=0;i<i16.length;i+=4) sum += i16[i]*i16[i];
     const rms = Math.sqrt(sum/(i16.length/4))/32768;
     vol = rms;
+    if (rms > 0.05) actTouch(); // 有人说话 = 有互动，重置空闲计时
     // 🔴 本地打断阈值 0.12→0.30：手机外放的 AI 自己声音就能过 0.12，本地一刀切掉播放=“声音很小/听着听着没了”。
     // 真人大声插话（对着喊）仍能秒断；轻声插话交给服务端回声门判 240ms 后放行
     if (rms > 0.30 && aiSpeaking) cancelPlayback();
@@ -242,51 +342,20 @@ async function startMic(){
   src.connect(node);
 }
 
-// ---------- 播放 48k 下行（自适应缓冲 + 时钟归零防漂移）----------
-let playQ = [], nextStart = 0, liveSrc = [], LEAD = 0.35, lastArrival = 0, mutedUntil = 0, lastUnder = 0;
+// ---------- 播放 48k 下行（常驻 worklet 环形缓冲：零节点创建，越聊也不涨）----------
+let mutedUntil = 0, dropped = 0, pnode = null, backSec = 0, recvRaw = 0;
 function onAudioFrame(ab){
-  if (!pctx) return;
+  recvRaw++;
+  if (!pctx || !pnode) { dropped++; return; }
   if (Date.now() < mutedUntil) return; // 🔴 用户点「打 断」后丢弃下行残留，别边听用户边播 AI
   framesRx++;
   if (pctx.state === 'suspended') pctx.resume().catch(() => {});
-  const wall = performance.now();
-  if (lastArrival && wall - lastArrival > 450 && !liveSrc.length && !playQ.length) nextStart = 0;
-  lastArrival = wall;
-  playQ.push(ab);
-  schedulePlayback();
+  try { pnode.port.postMessage(ab, [ab]); } catch { try { pnode.port.postMessage(ab); } catch {} }
 }
-function schedulePlayback(){
-  if (!pctx || pctx.state !== 'running' || !analyser) return;
-  const now = pctx.currentTime;
-  // 🔴 欠载自适应 0.35~0.9s（固定 0.35 聊久必卡）
-  if (playQ.length === 0 && nextStart < now + 0.05) { LEAD = Math.min(0.9, LEAD + 0.12); lastUnder = performance.now(); }
-  else if (playQ.length > 6 && performance.now() - lastUnder > 2500) LEAD = Math.max(0.35, LEAD - 0.02);
-  if (nextStart < now + LEAD) nextStart = now + LEAD;
-  while (playQ.length){
-    const ab = playQ.shift();
-    const view = new DataView(ab);
-    const n = Math.floor(view.byteLength/2);
-    if (n <= 0) continue;
-    const buf = pctx.createBuffer(1, n, 48000);
-    const d = buf.getChannelData(0);
-    for (let i=0;i<n;i++) d[i] = view.getInt16(i*2, true)/32768;
-    const srcN = pctx.createBufferSource();
-    srcN.buffer = buf; srcN.connect(analyser);
-    const st = nextStart;
-    srcN.start(st);
-    nextStart += buf.duration;
-    const rec = { src: srcN, start: st };
-    liveSrc.push(rec);
-    // 🔴 播完摘掉并 disconnect（不 disconnect 会堆积节点拖死音频线程=越聊越卡）
-    srcN.onended = () => { srcN.disconnect(); const i = liveSrc.indexOf(rec); if (i >= 0) liveSrc.splice(i, 1); };
-  }
-  if (liveSrc.length > 24) { liveSrc = liveSrc.filter(r => { if (r.start < now - 2) { try { r.src.disconnect(); } catch {} return false; } return true; }); }
-}
+function schedulePlayback(){ /* 已由 worklet 环形缓冲接管，保留空函数避免旧调用报错 */ }
 function cancelPlayback(){
-  playQ = [];
-  const now = pctx ? pctx.currentTime : 0;
-  for (const r of liveSrc){ if (r.start > now){ try { r.src.onended = null; r.src.stop(); } catch {} } }
-  liveSrc = []; nextStart = 0;
+  if (pnode) { try { pnode.port.postMessage({ cmd: 'flush' }); } catch {} }
+  backSec = 0;
 }
 
 // ---------- WS ----------
@@ -295,7 +364,7 @@ function connect(){
     const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
     ws = new WebSocket(proto + location.host + '/ws?convo=' + CONVO + '&tok=' + TOK);
     ws.binaryType = 'arraybuffer';
-    ws.onopen = () => { ws.send(JSON.stringify({ action:'client.page.hello', page:'party' })); res(); };
+    ws.onopen = () => { ws.send(JSON.stringify({ action:'client.page.hello', page:'party' })); try { ws.send(JSON.stringify({ action:'client.log', msg:'BUILD ' + BUILD + ' 页面版本' })); } catch(e){} res(); };
     ws.onerror = () => rej(new Error('连接失败'));
     ws.onclose = () => {
       if (replacedByOther) { // 🔴 被另一个窗口接管（官方并发数=1）：安静让位，绝不重连，否则两页互抢=秒断风暴
@@ -334,10 +403,15 @@ function connect(){
         else if (a === 'input.speech.started'){ wst('🎤 听到你在说话…', 'on'); }
         else if (a === 'input.speech.stopped'){ wst('通话中 · 你说它听着', 'on'); }
         else if (a === 'output.transcript.done'){ onAiSay(d.text || ''); }
-        else if (a === 'response.ended'){ if (!liveSrc.length){ nextStart = 0; } }
+        else if (a === 'response.ended'){ /* worklet 环形缓冲自带积压限幅，无需重置时钟 */ }
         else if (a === 'server.upstream.fatal'){ upFatal = d.http || -1; }
         else if (a === 'server.replaced'){ replacedByOther = true; tipW('检测到另一个窗口接管了 AI，本页自动让位'); }
-        else if (a === 'server.upstream.closed'){ wst('服务断开 · 点「挂断」再「开始」重连', 'on'); tipW('语音服务断开' + (d.code ? '（'+d.code+(d.reason?' '+d.reason:'')+'）' : '') + '：402=账号余额不足，401=key无效，点「开 始」重试'); }
+        else if (a === 'server.upstream.closed'){
+          // 🔴 1000/connection_duration_limit = 单次通话到时长上限（官方自动断），跟余额无关，别乱吓人
+          const dur = String(d.code || '') === '1000' || /duration[_ ]?limit/i.test(d.reason || '');
+          if (dur){ wst('到单次通话时长上限 · 自动重连…', 'on'); tipW('这轮通话到官方单次时长上限了，正在自动重连（不是余额问题，不用管）'); }
+          else { wst('服务断开 · 点「挂断」再「开始」重连', 'on'); tipW('语音服务断开' + (d.code ? '（'+d.code+(d.reason?' '+d.reason:'')+'）' : '') + '：402=账号余额不足，401=key无效，点「开 始」重试'); }
+        }
         else if (a === 'server.typed.error'){ tipW('语音合成失败：' + (d.msg || '') + '（' + (d.text || '') + '）——再点一次发送试试'); }
         else if (a === 'server.page.cmd'){
           let out = '', ok = true;
@@ -356,20 +430,70 @@ function say(who, t, cls){
   const line = document.createElement('div');
   line.className = cls || (who === 'u' ? 'u' : 'a');
   line.textContent = (who === 'u' ? '🎤 ' : '🤖 ') + t;
-  const box = $('lines'); box.appendChild(line); box.scrollTop = box.scrollHeight;
+  const box = $('lines'); box.appendChild(line);
+  // 🔴 挂件只留最近 200 条：DOM 无限增长=聊久了排版/滚动越来越卡（2026-11-18 "越来越卡"）
+  while (box.childElementCount > 200) box.removeChild(box.firstElementChild);
+  box.scrollTop = box.scrollHeight;
   if (who === 'a') stageAi(t);
+}
+// 数字炸弹区间推进（纯函数，方便离线自测）：报数 n → 命中/收窄区间
+function bombStep(n){
+  if (!game) return null;
+  if (game.lo == null) game.lo = 1;
+  if (game.hi == null) game.hi = 100;
+  if (n === game.bomb) return { hit: true, lo: game.lo, hi: game.hi };
+  if (n < game.bomb) game.lo = Math.max(game.lo, n + 1); else game.hi = Math.min(game.hi, n - 1);
+  if (game.lo > game.hi){ game.lo = 1; game.hi = 100; }
+  return { hit: false, lo: game.lo, hi: game.hi };
+}
+// 中文数字转阿拉伯（MOSS 转写常给「五十三」而不是「53」，只认 \d+ 的旧代码 → 区间不动、炸弹永不爆）
+function cn2num(s){
+  const M = { '零':0, '〇':0, '一':1, '二':2, '两':2, '三':3, '四':4, '五':5, '六':6, '七':7, '八':8, '九':9 };
+  let num = 0, cur = 0, seen = false;
+  for (const ch of String(s)){
+    if (M[ch] != null){ cur = M[ch]; seen = true; }
+    else if (ch === '十'){ cur = (cur || 1) * 10; num += cur; cur = 0; seen = true; }
+    else if (ch === '百'){ num += (cur || 1) * 100; cur = 0; seen = true; }
+    else if (seen) break;
+  }
+  return seen ? num + cur : NaN;
+}
+function pickBombNumber(t){
+  const s = String(t || '');
+  const ar = (s.match(/\d+/g) || []).map(Number).filter(v => v >= 1 && v <= 100);
+  if (ar.length) return ar[0];
+  const cn = s.match(/[零〇一二两三四五六七八九十百]{1,5}/g) || [];
+  for (const w of cn){ const v = cn2num(w); if (!isNaN(v) && v >= 1 && v <= 100) return v; }
+  return null;
 }
 function onHeard(t){
   if (!t) return;
-  const secret = game && (game.type === 'guess' || game.type === 'bomb') && game.playing;
-  if (secret){ say('u', '（玩家发言中…）'); return; } // 防大屏泄露词语/炸弹
+  // 🔴 丢掉非中英文的 ASR 噪声：MOSS 把杂音转成印地语/阿拉伯语（实测冒出「बस ज़िन्दगी」这种乱码气泡）
+  if (!/[\u4e00-\u9fa5A-Za-z0-9]/.test(String(t))) {
+    try { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action:'client.log', msg:'DROP 非中文转写「' + String(t).slice(0,30) + '」' })); } catch (e) {}
+    return;
+  }
+  // 🔴 数字炸弹：区间和爆炸由前端按玩家报的数直接算，不等 AI 文本
+  if (game && game.type === 'bomb' && game.playing){
+    say('u', '（玩家发言中…）');
+    const n = pickBombNumber(t);
+    try { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action:'client.log', msg:'BOMB 听到「' + String(t).slice(0,40) + '」→ 报数 ' + n })); } catch (e) {}
+    if (n == null) return;
+    const r = bombStep(n);
+    if (r.hit){ game.playing = false; bombBoom('砰！爆炸了'); return; }
+    bombShow(r.lo, r.hi);
+    sendPageState();
+    return;
+  }
+  const secret = game && game.type === 'guess' && game.playing;
+  if (secret){ say('u', '（玩家发言中…）'); return; } // 防大屏泄露词语
   say('u', t);
 }
 function onAiSay(t){
   say('a', t);
   PARTY.say(t); // 大屏只经这一个口显示最新一句（原地替换，不堆叠、不重复）
 }
-function type(t){ if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action:'client.say', text:t })); else tipW('先点「开 始」接通 AI'); }
+function type(t){ actTouch(); if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action:'client.say', text:t })); else tipW('先点「开 始」接通 AI'); }
 
 // ---------- 防锁屏：Wake Lock + 静音循环音频兜底 ----------
 let wakeLock = null, silentAudio = null;
@@ -392,10 +516,17 @@ function keepAwakeOff(){ try { wakeLock && wakeLock.release(); } catch {} wakeLo
 document.addEventListener('visibilitychange', () => { if (!document.hidden && running) keepAwakeOn(); });
 
 // ---------- 挂件控制 ----------
-function tipW(t){ const d = document.createElement('div'); d.className='e'; d.textContent='· ' + t; $('lines').appendChild(d); $('lines').scrollTop = 1e9; $('widget').classList.add('open'); }
-let startTries = 0, starting = false;
+let tipLast = '', tipAt = 0;
+function tipW(t){
+  const now = Date.now();
+  if (t === tipLast && now - tipAt < 3000) return; // 同一条 3 秒内不重复刷屏（点几下刷一屏太烦）
+  tipLast = t; tipAt = now;
+  const d = document.createElement('div'); d.className='e'; d.textContent='· ' + t; $('lines').appendChild(d); $('lines').scrollTop = 1e9; }
+  // 🔴 提示只写进面板，绝不再自动把面板弹出来（旧版每次 tipW 都 add('open') → 点一下游戏按钮就弹聊天窗，老大嫌烦）
+let startTries = 0, starting = false, perfTimer = null;
 async function startAll(){
   if (starting || running) return; // 防重入：游戏按钮自动接通时避免重复建连
+  actTouch(); // 新连接从这一刻重新计空闲
   clearTimeout(rcTimer); rcTimer = null;
   if (startTries >= 2) { startTries = 0; wst('未连接'); tipW('连接多次失败，已停止重试。点「开 始」手动重试'); return; } // 🔴 失败重试也限次数，别无限打服务器
   starting = true;
@@ -413,11 +544,22 @@ async function startAll(){
     const comp = pctx.createDynamicsCompressor();
     comp.threshold.value = -10; comp.knee.value = 6; comp.ratio.value = 12; comp.attack.value = 0.003; comp.release.value = 0.1;
     analyser.connect(comp); comp.connect(outGain); outGain.connect(pctx.destination);
+    // 🔴 常驻播放节点：一个 AudioWorkletNode 吃完全部下行（4096 节点→1 个），再连 analyser 让光球跟声音动
+    await pctx.audioWorklet.addModule(workletURL);
+    pnode = new AudioWorkletNode(pctx, 'p');
+    pnode.connect(analyser);
+    pnode.port.onmessage = e => { if (e.data && typeof e.data.back === 'number') backSec = e.data.back / 48000; };
     await connect();
     running = true; startTries = 0; reconnects = 0;
     try { localStorage.setItem('moss_live_party', '1'); } catch {}
     keepAwakeOn();
-    $('wBtn').textContent = '挂 断'; wst('通话中 · 你说它听着', 'on'); tipW('语音已接通，直接说话吧'); try { ws.send(JSON.stringify({ action:'client.log', msg:'MICPROBE ' + (window.__micProbe||'?') + ' track=' + ((micStream.getAudioTracks()[0]||{}).label||'?') })); } catch {}
+    $('wBtn').textContent = '挂 断'; wst('通话中 · 你说它听着', 'on'); tipW('语音已接通，直接说话吧'); try { ws.send(JSON.stringify({ action:'client.log', msg:'MICPROBE ' + (window.__micProbe||'?') + ' track=' + ((micStream.getAudioTracks()[0]||{}).label||'?') })); setTimeout(() => { try { ws && ws.readyState === 1 && ws.send(JSON.stringify({ action:'client.log', msg:'VOLSTATS rms=' + (typeof vol==='number'?vol.toFixed(5):'?') + ' sent=' + micSent })); } catch {} }, 3500); } catch {}
+    // 🔴 运行指标 5 秒一次（治"越聊越卡"必须看趋势）：back=播放缓冲积压秒数（应稳定 0.1~0.5，一路涨=卡）、lines=挂件 DOM 条数、parts=烟花粒子、heap=JS 堆
+    clearInterval(perfTimer);
+    perfTimer = setInterval(() => {
+      if (!running || !ws || ws.readyState !== 1) return;
+      try { ws.send(JSON.stringify({ action:'client.log', msg:'PERF back=' + backSec.toFixed(2) + 's raw=' + recvRaw + ' lines=' + ($('lines') ? $('lines').childElementCount : 0) + ' parts=' + cfParts.length + ' heap=' + (performance.memory ? Math.round(performance.memory.usedJSHeapSize/1048576) : '-') + 'MB sent=' + micSent + ' rx=' + framesRx + ' drop=' + dropped })); } catch {}
+    }, 5000);
   } catch (err){
     lastErr = err.message;
     if (startTries < 1){ startTries++; wst('连接失败，自动重试…'); tipW('连接失败，1.5 秒后自动重试…'); starting = false; clearTimeout(rcTimer); rcTimer = setTimeout(startAll, 1500); return; }
@@ -428,6 +570,7 @@ async function startAll(){
 }
 function stopAll(){
   running = false;
+  clearInterval(perfTimer); perfTimer = null;
   clearTimeout(rcTimer); rcTimer = null; // 🔴 挂断必须清掉待触发的自动重连（之前挂断后 2 秒定时器照跑=自己又连回去，老大骂的"点挂断也自动重试"）
   try { localStorage.removeItem('moss_live_party'); } catch {}
   try { ws && ws.close(); } catch {}
@@ -440,6 +583,19 @@ function stopAll(){
   $('wBtn').textContent = '开 始'; tipW('已挂断');
 }
 $('wBtn').onclick = () => running ? stopAll() : startAll();
+// ===== 空闲自动挂断（省钱）：1 分钟没人说话也没人操作 → 自动断开，不再空烧 3 积分/分钟 =====
+const IDLE_MS = 60000;
+let lastAct = Date.now();
+function actTouch(){ lastAct = Date.now(); }
+document.addEventListener('click', actTouch, true);
+document.addEventListener('keydown', actTouch, true);
+setInterval(() => {
+  if (!running) return;
+  if (Date.now() - lastAct < IDLE_MS) return;
+  try { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action:'client.log', msg:'IDLE 60s 无互动 → 自动挂断' })); } catch (e) {}
+  try { stopAll(); } catch (e) {}
+  tipW('1 分钟没人互动，已自动挂断（省积分）· 点「开 始」随时重连');
+}, 5000);
 // 🔴 打断按钮：AI 说话期间服务端不收麦（防手机外放回声自断），要插话点这个 → 开 4 秒收麦窗
 $('bargeBtn').onclick = () => {
   if (!ws || ws.readyState !== 1) return;
@@ -453,6 +609,22 @@ if (localStorage.getItem('moss_live_party') === '1') {
   setTimeout(() => { startAll(); }, 800);
 }
 $('orbWrap').onclick = () => $('widget').classList.toggle('open');
+// 🔴 点页面别处自动收起聊天面板（只有面板本身和右下角光球不触发）
+document.addEventListener('click', e => {
+  const w = $('widget');
+  if (!w || !w.classList.contains('open')) return;
+  if (w.contains(e.target)) return;
+  const o = $('orbWrap');
+  if (o && o.contains(e.target)) return;
+  w.classList.remove('open');
+}, true);
+// 🔴 对答案输入框：回车就提交（全局挂一次，不依赖每次重建按钮；中文输入法选字那一下不算回车）
+document.addEventListener('keydown', e => {
+  const el = $('gin');
+  if (!el || e.target !== el) return;
+  if (e.isComposing || e.keyCode === 229) return;
+  if (e.key === 'Enter'){ e.preventDefault(); guessCheck(); }
+}, true);
 $('tvBtn').onclick = () => {
   document.body.classList.add('takeover'); // 全屏接管：游戏大屏铺满，AI 缩右下角，跟是否连语音无关
   $('widget').classList.remove('open');
@@ -461,7 +633,7 @@ $('tvBtn').onclick = () => {
 };
 function sendTyped(){ const t = $('txt').value.trim(); if (!t) return; say('u', t + '（打字）'); type(t); $('txt').value = ''; }
 $('txt').addEventListener('keydown', e => { if (e.key === 'Enter') sendTyped(); });
-setInterval(() => { if (running) $('wdiag').textContent = '帧发:' + micSent + ' 帧收:' + framesRx + ' 待播:' + liveSrc.length + ' ctx:' + (pctx ? pctx.state : '-') + ' 采样:' + (pctx ? pctx.sampleRate : '-') + (lastErr ? ' err:' + lastErr : ''); }, 2000);
+setInterval(() => { if (running) $('wdiag').textContent = '帧发:' + micSent + ' 帧收:' + framesRx + ' 缓冲:' + backSec.toFixed(2) + 's ctx:' + (pctx ? pctx.state : '-') + ' 采样:' + (pctx ? pctx.sampleRate : '-') + (lastErr ? ' err:' + lastErr : ''); }, 2000);
 
 // ---------- 光球动画（主页同款：频谱节拍扩散环，无电弧）----------
 const cv = $('orbCv'), cx = cv.getContext('2d');
@@ -537,7 +709,7 @@ function openStage(type){
   game = { type, playing:false, score:0, wrong:0, clues:0 };
   $('cards').style.display = 'none';
   $('stage').classList.add('on');
-  $('gName').textContent = { guess:'🗣️ AI 你描述我猜', bomb:'💣 数字炸弹', roll:'🎯 AI 幸运点名', quiz:'⚡ AI 快问快答', idiom:'🔗 成语接龙', hot:'📈 年度热词竞猜', talk:'🎤 AI 主持脱口秀', song:'🎵 AI 猜歌 / 猜影' }[type];
+  $('gName').textContent = { guess:'🗣️ AI 你描述我猜', bomb:'💣 数字炸弹', roll:'🎯 AI 幸运点名', quiz:'⚡ AI 快问快答', idiom:'🔗 成语接龙', hot:'📈 年度热词竞猜', talk:'🎤 AI 主持脱口秀', song:'🎵 AI 猜歌 / 猜影', sync:'🤝 默契大考验', dare:'🎲 真心话大冒险', tongue:'👅 绕口令挑战', emoji:'🔤 看图猜词' }[type];
   $('big').innerHTML = '<div class="sub">点下面按钮开始</div>';
   $('stat').innerHTML = ''; $('extra').innerHTML = ''; $('ctl').innerHTML = '';
   if (type === 'guess') ctlGuess();
@@ -548,7 +720,11 @@ function openStage(type){
   if (type === 'hot') ctlHot();
   if (type === 'talk') ctlTalk();
   if (type === 'song') ctlSong();
-  if (!running) tipW('提示：先点右下角挂件「开 始」，AI 才能语音主持');
+  if (type === 'sync') ctlSync();
+  if (type === 'dare') ctlDare();
+  if (type === 'tongue') ctlTongue();
+  if (type === 'emoji') ctlEmoji();
+  if (!running) wst('未连接 · 点「开 始」接通语音'); // 只更新顶部状态行，不往聊天面板里刷提示（点几下就刷一屏太烦）
   saveState(); // 进度落盘：刷新/重开回来还是这个游戏、这个分
   sendPageState(); // 切游戏立刻上报，AI 下一句就在新游戏上下文里
 }
@@ -565,15 +741,17 @@ function restoreState(){
   stat();
   if (s.type === 'guess' || s.type === 'hot') big('<div class="sub">大屏词语（默认隐藏，点「显示词语」再给玩家看）</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div>');
   else if (s.type === 'bomb') big('<div class="ai">炸弹已埋好（1~100），继续轮流报数</div>');
-  else if (s.type === 'roll') big('<div class="word" id="rollname" style="font-size:clamp(40px,10vw,120px)">?</div>');
+  else if (s.type === 'roll') ctlRoll(); // 🔴 点名恢复要重建名字球（旧版只 big 一个 ? 把球冲掉了）
   else big('<div class="ai">上次的进度已恢复，点按钮继续</div>');
   tipW('已恢复上次游戏进度：' + (s.type === 'guess' ? '你描述我猜' : s.type === 'bomb' ? '数字炸弹' : s.type === 'roll' ? '幸运点名' : s.type === 'quiz' ? '快问快答' : s.type === 'idiom' ? '成语接龙' : s.type === 'hot' ? '年度热词' : s.type === 'talk' ? '脱口秀' : '猜歌猜影') + ' · 得分 ' + (s.score || 0));
 }
-restoreState();
+// 🔴 必须延后到下一拍：脚本后面才声明 ngNames/NG_DEMO，同步调用点名的 restore 分支会撞 TDZ
+// （实测报 Uncaught ReferenceError: Cannot access 'ngNames' before initialization @party:949）
+setTimeout(restoreState, 0);
 // 🔴 清空本页聊天记录：DELETE /convos/party（服务端会连语音会话一起终止=真·新对话），进度不受影响（进度在 moss_party_state）
 const clrBtn = $('clrHist');
 if (clrBtn) clrBtn.onclick = async () => {
-  if (!confirm('清空本页聊天记录？（游戏进度和比分不会丢）')) return;
+  if (!await askOk('清空本页聊天记录？（游戏进度和比分不会丢）')) return;
   try {
     await fetch('/convos/party', { method: 'DELETE' });
     $('lines').innerHTML = '<div class="a">聊天记录已清空 · 点「开 始」重新接通语音，就是全新对话</div>';
@@ -593,7 +771,9 @@ if (clrBtn) clrBtn.onclick = async () => {
   } catch {}
 })();
 document.querySelectorAll('.card[data-g]').forEach(c => c.onclick = () => openStage(c.dataset.g));
-function stat(){ if (game){ $('stat').innerHTML = '线索 <b>' + game.clues + '</b> ｜ 猜错 <b>' + game.wrong + '</b> ｜ 得分 <b>' + game.score + '</b>'; saveState(); sendPageState(); } }
+// 只有计分类游戏才显示「线索/猜错/得分」；点名、脱口秀挂这行纯属噪音（老大 2026-11-19 点名要去掉）
+const STAT_TYPES = { guess:1, bomb:1, quiz:1, idiom:1, hot:1, song:1 };
+function stat(){ if (game){ $('stat').innerHTML = STAT_TYPES[game.type] ? ('线索 <b>' + game.clues + '</b> ｜ 猜错 <b>' + game.wrong + '</b> ｜ 得分 <b>' + game.score + '</b>') : ''; saveState(); sendPageState(); } }
 function big(html){ $('big').innerHTML = html; }
 function ctlBtn(txt, fn, ghost){ const b = document.createElement('button'); b.className = 'bt' + (ghost ? ' ghost' : ''); b.textContent = txt; b.onclick = fn; $('ctl').appendChild(b); return b; }
 // 🔴 烟花秀（canvas 粒子引擎）：弹升空→顶点炸开→火花带重力+拖尾+余烬闪烁，多波连放，发光叠加
@@ -601,6 +781,8 @@ let cfRaf = null, cfParts = [], cfRockets = [], cfCv = null, cfCx = null, cfEndA
 const CF_COLORS = [[255,212,121],[255,138,92],[255,107,157],[201,166,255],[127,216,255],[255,94,94],[255,242,184],[140,255,190]];
 function cfSize(){ if (!cfCv) return; const d = Math.min(2, window.devicePixelRatio||1); cfCv.width = innerWidth*d; cfCv.height = innerHeight*d; cfCx.setTransform(d,0,0,d,0,0); }
 function cfBurst(x, y, base){
+  // 🔴 粒子封顶：一波约 140 个，每颗都带 radialGradient，连放多轮烟花 1500+ 粒子会直接把帧率打死（越玩越卡）
+  if (cfParts.length > 1400) return;
   const n = 90 + (Math.random()*50|0);
   for (let i=0;i<n;i++){
     const a = (i/n)*Math.PI*2 + Math.random()*0.2;
@@ -660,6 +842,7 @@ function cfTick(){
 function confetti(){ fireworks(); } // 兼容旧调用名，默认烟花
 // 🎊 彩带雨：普通得分/欢迎，从天而降的彩带+纸屑（不做爆闪，轻快不抢戏）
 function ribbons(){
+  sfx('cannon');
   const c = $('confetti'); if (!c) return;
   c.innerHTML = '';
   const colors = ['#ffd479','#ff8a5c','#ff6b9d','#ffe2b8','#c9a6ff','#7fd8ff','#fff3c4'];
@@ -685,7 +868,98 @@ function ribbons(){
   }
   setTimeout(() => { c.innerHTML = ''; }, 5200);
 }
+// ===== 特效音效（纯 WebAudio 合成，不下载音频文件、不花钱、可离线）=====
+const BUILD = '20261119a';
+let sfxCtx = null;
+function sfxInit(){
+  try {
+    if (!sfxCtx) sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (sfxCtx.state === 'suspended') sfxCtx.resume();
+    return sfxCtx;
+  } catch (e) { return null; }
+}
+function sfxNoise(c, dur){
+  const n = Math.max(1, Math.floor(c.sampleRate * dur));
+  const buf = c.createBuffer(1, n, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  const s = c.createBufferSource(); s.buffer = buf; return s;
+}
+function sfxBoom(){                       // 💥 炸弹：低频冲击 + 爆裂噪声
+  const c = sfxInit(); if (!c) return;
+  const t = c.currentTime + 0.01;
+  const o = c.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(95, t); o.frequency.exponentialRampToValueAtTime(30, t + 0.5);
+  const og = c.createGain(); og.gain.setValueAtTime(0.95, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.95);
+  o.connect(og).connect(c.destination); o.start(t); o.stop(t + 1.0);
+  const n = sfxNoise(c, 1.0);
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(200, t + 0.8);
+  const ng = c.createGain(); ng.gain.setValueAtTime(0.9, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+  n.connect(lp); lp.connect(ng); ng.connect(c.destination); n.start(t); n.stop(t + 1.0);
+}
+function sfxFw(){                         // 🎆 一发烟花：升空哨 + 噼啪炸开
+  const c = sfxInit(); if (!c) return;
+  const t = c.currentTime + 0.01;
+  const n = sfxNoise(c, 0.8);
+  const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.6;
+  bp.frequency.setValueAtTime(500, t); bp.frequency.exponentialRampToValueAtTime(3200, t + 0.5);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.38, t + 0.22);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.65);
+  n.connect(bp); bp.connect(g); g.connect(c.destination); n.start(t); n.stop(t + 0.7);
+  for (let i = 0; i < 6; i++) {           // 噼里啪啦
+    const tt = t + 0.42 + Math.random() * 0.4;
+    const m = sfxNoise(c, 0.06);
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1600 + Math.random() * 1800;
+    const mg = c.createGain(); mg.gain.setValueAtTime(0.3, tt); mg.gain.exponentialRampToValueAtTime(0.001, tt + 0.07);
+    m.connect(hp); hp.connect(mg); mg.connect(c.destination); m.start(tt); m.stop(tt + 0.08);
+  }
+}
+function sfxCannon(){                     // 🎉 礼炮：闷响 + 上行哨音
+  const c = sfxInit(); if (!c) return;
+  const t = c.currentTime + 0.01;
+  const n = sfxNoise(c, 0.55);
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(2000, t); lp.frequency.exponentialRampToValueAtTime(320, t + 0.35);
+  const g = c.createGain(); g.gain.setValueAtTime(0.8, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+  n.connect(lp); lp.connect(g); g.connect(c.destination); n.start(t); n.stop(t + 0.55);
+  const o = c.createOscillator(); o.type = 'triangle';
+  o.frequency.setValueAtTime(420, t); o.frequency.exponentialRampToValueAtTime(1500, t + 0.3);
+  const og = c.createGain();
+  og.gain.setValueAtTime(0.0001, t);
+  og.gain.exponentialRampToValueAtTime(0.22, t + 0.12);
+  og.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+  o.connect(og).connect(c.destination); o.start(t); o.stop(t + 0.45);
+}
+function sfxDing(){                       // 🔔 抽中提示音
+  const c = sfxInit(); if (!c) return;
+  for (let i = 0; i < 2; i++){
+    const t = c.currentTime + i * 0.16 + 0.01;
+    const o = c.createOscillator(); o.type = 'sine';
+    o.frequency.value = i ? 1318.5 : 987.8;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.5, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.55);
+  }
+}
+function sfx(kind){
+  try { if (kind === 'boom') sfxBoom(); else if (kind === 'fw') sfxFw(); else if (kind === 'cannon') sfxCannon(); else if (kind === 'ding') sfxDing(); } catch (e) {}
+}
+// 🔴 随机庆祝：每回中奖/猜对随机来烟花或礼炮彩带，strong=true 两个一起上（老大嫌单一种太素）
+function celebrate(strong){
+  const r = Math.random();
+  if (strong || r < 0.5) fireworks();
+  else ribbons();
+  if (strong) setTimeout(() => ribbons(), 420);
+}
 function fireworks(){
+  sfx('fw');
+  setTimeout(() => sfx('fw'), 520);
+  setTimeout(() => sfx('fw'), 1160);
   if (!cfCv){ cfCv = $('cfCv'); if (!cfCv) return; cfCx = cfCv.getContext('2d'); addEventListener('resize', cfSize); }
   cfSize();
   const fl = $('cfFlash'); if (fl){ fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on'); }
@@ -697,188 +971,892 @@ function fireworks(){
   cfEndAt = performance.now() + 3600;
   if (!cfRaf) cfRaf = requestAnimationFrame(cfTick);
 }
+let lastAiSayText = '';
 function stageAi(t){
   if (!game) return;
-  if ((game.type === 'guess' || game.type === 'hot') && game.playing){
-    if (/对了|答对|正确|恭喜|厉害|算你赢|你赢了/.test(t)){ game.playing = false; game.score++; big('<div class="word">🎉 猜对了！</div><div class="sub">答案：' + game.word + '</div>'); ribbons(); } // 普通得分=彩带雨
-    else { if (/不对|错了|再猜|不是/.test(t)) game.wrong++; game.clues++; } // AI 每次回复=一条新线索；只有明确说“不对”才算猜错（“第N条线索”不再误记猜错）
-    stat();
-  }
-  if (game.type === 'bomb' && game.playing){
-    if (/砰|爆炸/.test(t)){ game.playing = false; bombBoom(t); }
-    else { const m = t.match(/(\d+)\s*[~～到至-]+\s*(\d+)/); if (m) bombShow(+m[1], +m[2]); else big('<div class="ai">' + t + '</div>'); }
-  }
-  if (game.type === 'quiz' && game.playing){
-    if (/答对|正确|加一分|恭喜/.test(t)){ game.score++; }
-    else if (/答错|不对|遗憾/.test(t)){ game.wrong++; }
-    stat();
-  }
-  if ((game.type === 'song') && game.playing){ // 猜歌猜影：线索累计，猜对加分撒花
-    if (/对了|答对|就是《|正确|猜中/.test(t)){ game.playing = false; game.score++; ribbons(); } // 猜对=彩带雨
-    else { if (/不对|错了|再猜|不是/.test(t)) game.wrong++; game.clues++; }
-    stat();
-  }
+  // 🔴 只记下 AI 说了什么，不再按文字加分/判对错（2026-11-19：AI 一句"对了"会让分数二次跳，且不公布答案）。
+  // 分数与大屏只认真按钮 / PARTY.hit / PARTY.bombGuess / quizPick 这一条路。
+  lastAiSayText = String(t || '').slice(0, 200);
 }
 function ctlGuess(){
   $('ctl').innerHTML = ''; // 🔴 "换一个词"会重入本函数，不清空按钮会翻倍
   game.word = pickWord();
-  big('<div class="sub">大屏词语（默认隐藏，点「显示词语」再给玩家看）</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div>');
+  game.done = false; game.clues = 0; // 换词=新一局：线索数归零，可以重新判
+  big('<div class="bighint">' + wordLenTitle(game.word) + ' · 默认隐藏，点「显示词语」再给玩家看</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div><div class="bighint line" id="clueline"></div>');
   const b1 = ctlBtn('显示词语', () => { const w = $('wshow'); if (!w) return; if (w.textContent === '•••••'){ w.textContent = w.dataset.r; b1.textContent = '隐藏词语'; } else { w.dataset.r = w.textContent; w.textContent = '•••••'; b1.textContent = '显示词语'; } }, true);
-  ctlBtn('开始（AI 给线索）', async () => {
-    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-    game.playing = true; game.clues = 0; game.wrong = 0; stat();
-    type('【游戏】现在玩"AI描述我猜"。词是「' + game.word + '」。请你用语音给线索，一次只给一条，绝对不能说出这个词本身或包含它的字。玩家会语音猜，猜错你就说"不对"并给下一条更明显的线索，猜对就热烈庆祝并说"对了"。');
-    tipW('AI 正在出第一条线索…'); // 不再整屏替换——保留 #wshow，避免“显示词语”按钮空指针
-  });
+  // 🔴 「线索」：人手动点 → 屏幕出一条线索、线索数 +1（不连 AI、不花钱）；AI 主持时由 AI 调 PARTY.clue() 点它
+  const clueBtn = ctlBtn('线索', () => showClue(), true);
+  clueBtn.id = 'clueBtn';
+  // 🔴 不再有「猜中了 +1」按钮：输入框命中就自动加分公布（老大 2026-11-19）；AI 仍可调 PARTY.hit()
   ctlBtn('换一个词', () => ctlGuess(), true);
+  // 🔴 人类主持看不见答案就没法判断：给一个输入框，把大家喊的答案打进去自动对（老大 2026-11-19）
+  mountGuessInput();
 }
-function bombShow(lo, hi){
-  const span = hi - lo; // 区间越小，引信烧得越急
-  const cls = span <= 8 ? 'fast' : span >= 60 ? 'calm' : '';
-  const dots = span <= 8 ? '🔥🔥🔥' : span <= 25 ? '🔥🔥' : '🔥';
-  big('<div class="bombwrap"><div class="bombico ' + cls + '" id="bombIco">💣</div><div class="bombfuse">' + dots + ' 引信 ' + span + ' 格</div><div class="bomblohi">' + lo + ' ～ ' + hi + '</div></div>');
+// 描述我猜 / 年度热词共用：输入框 + 对答案按钮
+function mountGuessInput(){
+  const ex = $('extra');
+  if (!ex) return;
+  ex.innerHTML = '<div class="taplist" style="margin-top:10px;align-items:center">'
+    + '<input id="gin" placeholder="大家喊的答案，打进来回车对一下" style="width:min(52vw,320px);padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid #5a3a30;color:#ffe2b8;font-size:15px;outline:none">'
+    + '<button class="bt" id="gok">对答案</button></div>';
+  const gok = $('gok');
+  if (gok) gok.onclick = () => guessCheck();
+}
+// 去掉空格/标点/书名号再比，答得跟屏幕上的词一致或包含就算中
+function normAns(s){ return String(s || '').replace(/[\s《》〈〉「」『』“”"'’，,。.！!？?、·\-—_]/g, '').toLowerCase(); }
+function guessCheck(){
+  if (!game || (game.type !== 'guess' && game.type !== 'hot' && game.type !== 'song' && game.type !== 'emoji')) return false;
+  const el = $('gin');
+  const raw = el ? el.value : '';
+  const v = normAns(raw);
+  if (!v) { tipW('先把答案打进输入框'); return false; }
+  if (game.done) { tipW('这题已经猜完了，点「换一题 / 换一个」'); return false; }
+  const ans = normAns(game.word);
+  if (v === ans || (v.length >= 2 && (ans.indexOf(v) >= 0 || v.indexOf(ans) >= 0))){ guessHit(); return true; }
+  game.wrong++; stat();
+  // 🔴 答错必须在屏幕上看得见（面板默认关着，只写面板等于「点了没反应」）
+  let bx = $('clueline');
+  if (!bx){
+    const b = $('big');
+    if (b){ bx = document.createElement('div'); bx.className = 'ai'; bx.id = 'clueline'; b.appendChild(bx); }
+  }
+  if (bx) bx.textContent = '「' + raw + '」不对 · 再点一次「线索」给新的';
+  tipW('「' + raw + '」不对，接着给线索');
+  if (el) el.value = '';
+  return false;
+}
+// 猜中点分：就地公布答案（大屏亮出词语）+ 撒花；AI 也调这一个（PARTY.hit）
+function guessHit(){
+  if (!game || (game.type !== 'guess' && game.type !== 'hot' && game.type !== 'song' && game.type !== 'emoji')) return false;
+  game.playing = false; game.done = true; game.score++; stat();
+  const cb = $('clueBtn'); if (cb) cb.disabled = true; // 猜完了线索按钮直接灰掉，点了也不给
+  big('<div class="qbig">🎉 猜对了！</div><div class="qbig" style="font-size:clamp(38px,7.5vw,90px);letter-spacing:6px">' + game.word + '</div>');
+  celebrate();
+  return true;
+}
+// 🔴 本地线索阶梯（2026-11-19 重做）：先给画面/心情/同类/谜面，最后才报字数拆字。
+// 以前一上来就报字数、拆首尾字，等于把猜谜做成填字游戏，没味。
+const CLUE_META = {
+  '年终奖': { scene:'每年一月，工资条上会悄悄多出一行，那天全公司都在心里算数', mood:'一年里最理直气壮的期待，也是最容易破防的那一下', kin:'跟红包、调薪、双薪是亲戚，但它一年只来一次，还得看脸色', riddle:'打一笔钱：来晚了你想辞职，来早了你想加班' },
+  '团建': { scene:'周五下班前发通知，周六一早集合，大巴上还得挨个自我介绍', mood:'去之前谁都不想去，回来能聊半年', kin:'跟聚餐、拓展、烧烤是一伙的，但它多一句必须参加', riddle:'打一件事：明明是休息日，却要跟同事一起做游戏还得笑' },
+  '红包': { scene:'过年、婚礼、开工第一天，还有群里手气最佳那一刻', mood:'抢到八毛也开心，抢到八十八还想再来一个', kin:'跟奖金、压岁钱、利是沾亲，但它讲究一个颜色', riddle:'打一样纸做的东西：它能让人低头，也能让人盯手机' },
+  '加班': { scene:'灯只剩你这一排亮着，外卖盒在桌角，窗外已经黑透', mood:'嘴上说不困，手上在数还有几版', kin:'跟值班、赶工、通宵是一路的，但它通常不给钱', riddle:'打两个字：白天盼它别来，晚上它偏要来' },
+  'KPI': { scene:'年初定得漂亮，年底总要解释一次为什么没达到', mood:'数字不大，压力不小', kin:'跟 OKR、绩效、考核是表亲，但它更爱被挂在嘴上', riddle:'三个字母：它一出来，所有人都说自己尽力了' },
+  '年会': { scene:'一年一次，灯光、红毯、抽奖箱，还有必须上台的节目单', mood:'嘴上嫌麻烦，散场时又有点舍不得', kin:'跟聚餐、团建、庆功宴同一天出场，但它有主持人', riddle:'打一场活动：全公司坐一起，谁都想中奖' },
+  '老板': { scene:'开会最后一个发言，散会第一个走，微信消息常带问号', mood:'怕他不来，又怕他乱来', kin:'跟领导、上级、创始人沾边，但这个词最口语', riddle:'两个字：他一句话能改你一周的排期' },
+  '摸鱼': { scene:'屏幕切到表格，手机在抽屉里亮着，耳朵在听脚步声', mood:'心跳有点快，但很快乐', kin:'跟划水、躺平、带薪发呆是一家人', riddle:'打两个字：手里有活，心里没活' },
+  '画饼': { scene:'会上说得天花乱坠，会后群里没有任何文件', mood:'当时很燃，第二天就凉', kin:'跟吹牛、许诺、PPT 是一伙的，但它要动手画', riddle:'打两个字：越听越饱，其实没饭吃' },
+  '内卷': { scene:'没人要求加班，但最后一个走的人赢了', mood:'又累又不敢停', kin:'跟竞争、攀比、加班是近亲，但它更累心', riddle:'打两个字：大家一起努力，结果谁都没变好' },
+  '周报': { scene:'周五傍晚准时出现在群里，写的人犯愁，看的人不点开', mood:'一周的话，都想塞进三行', kin:'跟日报、月报、复盘是兄弟，但它最讨人嫌', riddle:'打两个字：写了没人看，不写有人问' },
+  '抽奖': { scene:'大屏滚起来，全场安静两秒，然后一半人叹气', mood:'期待值最高的一分钟', kin:'跟摇号、抽签、开奖是一路的，但它要你举手', riddle:'打两个字：不用努力，全靠运气' },
+  '食堂': { scene:'十一点五十就开始排的那条队，阿姨手一抖就是半勺', mood:'嫌弃归嫌弃，到点还是去', kin:'跟外卖、下午茶、夜宵是邻居，但它最便宜', riddle:'打两个字：全公司唯一不用抢会议室的地方' },
+  '面试': { scene:'一身正装，提前十分钟到，坐下先被问有什么缺点', mood:'假装镇定，心里在背稿', kin:'跟笔试、复试、offer 是一串的，但它是第一关', riddle:'打两个字：聊一小时，决定往后几年' },
+  '报销': { scene:'一堆发票摊在桌上，系统提示请上传行程单', mood:'钱是自己先垫的，耐心是最后没的', kin:'跟出差、发票、审批是一条线上的', riddle:'打两个字：花出去容易，要回来很难' },
+  '复盘': { scene:'事情都过去了，还要坐在一起说当时为什么那么干', mood:'嘴上说总结经验，心里在分锅', kin:'跟总结、回顾、review 是一家', riddle:'打两个字：事后诸葛亮专用会' },
+  '晋升': { scene:'名单公布那天，有人发朋友圈，有人默默改简历', mood:'期待很久，结果一句话', kin:'跟调薪、评级、答辩是一串的，但它最看重名额', riddle:'打两个字：向上走一格，可能要等一年' },
+  'PPT': { scene:'最后一页永远是谢谢聆听，改到凌晨三点还在调字号', mood:'做的时候恨它，讲的时候靠它', kin:'跟 Excel、文档、汇报是同事', riddle:'三个字母：越花时间，越显得内容少' }
+};
+function clueLineSafe(line, w){
+  const cs = [...String(w || '').replace(/[《》]/g, '')];
+  for (let i = 0; i < cs.length - 1; i++) if (String(line).includes(cs[i] + cs[i + 1])) return false;
+  return true;
+}
+function clueLadder(w){
+  const key = String(w || '').replace(/[《》]/g, ''), m = CLUE_META[key] || {}, cs = [...key], L = cs.length || 1, out = [];
+  const add = (k, t) => { if (t && clueLineSafe(t, key)) out.push({ k: k, t: t }); };
+  // 🔴 字数不算线索（老大 2026-11-19）：字数改成标题常驻在大屏上方
+  add('画面', m.scene); add('心情', m.mood); add('同类', m.kin); add('谜面', m.riddle);
+  out.push({ k: '首字', t: '第一个字是「' + cs[0] + '」' });
+  out.push({ k: '尾字', t: '最后一个字是「' + cs[L - 1] + '」' });
+  return out;
+}
+// 字数标题：三个字 / 两个字
+function wordLenTitle(w){
+  const L = [...String(w || '').replace(/[《》]/g, '')].length || 1;
+  const CN = ['零','一','二','三','四','五','六','七','八','九','十'];
+  return (L <= 10 ? CN[L] : String(L)) + ' 个字';
+}
+function clueFor(w, n){
+  const L = clueLadder(w), cs = [...String(w || '').replace(/[《》]/g, '')];
+  if (n <= L.length) return L[n - 1].t;
+  const mi = (n - L.length - 1) % (cs.length || 1); // 阶梯走完后只遮一个字，再点换遮另一个
+  return '只缺一个字：' + cs.map((c, i) => (i === mi ? '＿' : c)).join('');
+}
+function clueTagOf(w, n){ const L = clueLadder(w); return n <= L.length ? L[n - 1].k : '缺字'; }
+function showClue(){
+  if (!game || (game.type !== 'guess' && game.type !== 'hot' && game.type !== 'song' && game.type !== 'emoji')) return '';
+  if (game.done) return ''; // 🔴 已经猜出来了就别再给线索（老大 2026-11-19）
+  game.playing = true;
+  game.clues++;
+  stat();
+  const line = clueFor(game.word, game.clues);
+  let box = $('clueline');
+  if (!box){
+    const b = $('big');
+    if (b){ box = document.createElement('div'); box.className = 'bighint line'; box.id = 'clueline'; b.appendChild(box); }
+  }
+  if (box) box.textContent = '第 ' + game.clues + ' 条（' + clueTagOf(game.word, game.clues) + '）：' + line;
+  return line;
+}
+function bombShow(lo, hi, note){
+  const left = Math.max(0, hi - lo + 1); // 🔴 真实剩余格数（旧版 hi-lo 少算 1 格，剩 1 格会显示 0 格）
+  const total = (game && game.total) || 100;
+  const p = Math.max(0, Math.min(1, left / total));
+  const cls = left <= 4 ? 'fast' : left <= 20 ? 'fast' : left >= 60 ? 'calm' : '';
+  const hue = Math.round(120 * p); // 绿→黄→红连续过渡
+  const warn = left <= 10 ? '<div class="bighint line">⚠️ 只剩 ' + left + ' 格 · 下一报 ' + Math.round(100 / Math.max(1, left)) + '% 概率踩雷</div>' : '';
+  big((note ? '<div class="bighint">' + note + '</div>' : '')
+    + '<div class="bombwrap"><div class="bombico ' + cls + '" id="bombIco">💣</div>'
+    + '<div class="bombfuse">🔥 剩余 ' + left + ' 格 / ' + total + '</div>'
+    + '<div class="bomblohi">' + lo + ' ～ ' + hi + '</div>'
+    + '<div style="width:min(70vw,420px);height:10px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin:8px auto 0"><i style="display:block;height:100%;width:' + Math.round(p * 100) + '%;background:hsl(' + hue + ',90%,55%);transition:width .35s ease"></i></div>'
+    + '</div>' + warn);
 }
 function bombBoom(t){
   const fl = $('bombFlash');
   if (fl){ fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on'); }
   try { document.body.animate([{transform:'translate(0,0)'},{transform:'translate(-9px,6px)'},{transform:'translate(8px,-7px)'},{transform:'translate(-5px,4px)'},{transform:'translate(0,0)'}], {duration:420, easing:'ease-out'}); } catch {}
-  fireworks(); // 爆炸=最high时刻，放烟花
+  sfx('boom');
+  celebrate(true); // 爆炸=最high时刻：烟花+礼炮全上
   big('<div class="word" style="animation:bombpulse .3s ease-in-out 3">💥 砰！</div><div class="sub">' + (game.bomb != null ? '炸弹就是 ' + game.bomb : t.slice(0, 40)) + ' · 下一轮再埋</div>');
 }
 function ctlBomb(){
   $('ctl').innerHTML = ''; // 防重入按钮翻倍
   game.bomb = 1 + Math.floor(Math.random()*100);
-  big('<div class="sub">炸弹已埋好（1~100），主持界面知道，观众别喊</div><div class="ai">点「开始」让 AI 主持</div>');
-  ctlBtn('开始', async () => {
-    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-    game.playing = true;
-    type('【游戏】数字炸弹开始，炸弹是 ' + game.bomb + '（1到100，绝对保密，别说出来）。玩家轮流报数，你根据炸弹播报当前安全区间并营造紧张气氛，谁报中炸弹就大喊"砰！爆炸了"。');
-    big('<div class="ai">AI：都别眨眼，炸弹已经埋好…</div>');
+  game.lo = 1; game.hi = 100; game.armed = false; game.done = false;
+  bombShow(1, 100, '先点「自动埋雷」随机埋一颗，或点「埋指定数字」自己定（屏幕都不显示）');
+  // 🔴 自动埋雷：不用手输数字（一局要报十来个数，每次弹输入太累），主持人也能装作不知道
+  ctlBtn('自动埋雷', () => { bombAutoArm(); });
+  ctlBtn('埋指定数字', () => bombArm(), true);
+  ctlBtn('报数', () => bombGuess(), true);
+  stat();
+}
+// 🔴 输入行（不再弹窗覆盖大屏）：原生 prompt() 这环境被禁，直接在按钮下面出现一行输入，
+// masked=true 时不管输几位屏幕上只显示一个 *。
+function askNum(title, masked){
+  return new Promise(resolve => {
+    const ex = $('extra');
+    if (!ex){ resolve(null); return; }
+    ex.innerHTML = '<div class="taplist" style="margin-top:10px;align-items:center">'
+      + '<span style="font-size:15px;color:#ffd7a8">' + title + '</span>'
+      + '<span style="position:relative;display:inline-block">'
+      + '<input id="numIn" type="text" autocomplete="off" style="width:170px;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid #5a3a30;color:' + (masked ? 'transparent' : '#ffe2b8') + ';font-size:16px;text-align:center;outline:none">'
+      + (masked ? '<span id="numMask" style="position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:18px;color:#ffe2b8;pointer-events:none;display:none">*</span>' : '')
+      + '</span>'
+      + '<button class="bt" id="numOk">确定</button>'
+      + '<button class="bt ghost" id="numNo">取消</button></div>';
+    const inp = ex.querySelector('#numIn');
+    const mask = ex.querySelector('#numMask');
+    const sync = () => { if (mask) mask.style.display = inp.value ? 'block' : 'none'; };
+    sync();
+    inp.addEventListener('input', sync);
+    const done = v => { ex.innerHTML = ''; resolve(v); };
+    inp.addEventListener('keydown', e => {
+      if (e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Enter'){ e.preventDefault(); done(inp.value); }
+      if (e.key === 'Escape'){ done(null); }
+    });
+    ex.querySelector('#numOk').onclick = () => done(inp.value);
+    ex.querySelector('#numNo').onclick = () => done(null);
+    setTimeout(() => inp.focus(), 30);
   });
-  ctlBtn('再埋一颗', () => ctlBomb(), true);
+}
+// 🔴 自绘确认框：原生 confirm() 在部分环境同样被禁（跟 prompt 一个坑）
+function askOk(title){
+  return new Promise(resolve => {
+    const box = document.createElement('div');
+    box.className = 'nbox';
+    box.innerHTML = '<div class="panel"><h4>' + title + '</h4><div class="row"><button class="bt ghost" id="okNo">取消</button><button class="bt" id="okYes">确定</button></div></div>';
+    document.body.appendChild(box);
+    const done = v => { box.remove(); resolve(v); };
+    box.querySelector('#okYes').onclick = () => done(true);
+    box.querySelector('#okNo').onclick = () => done(false);
+    box.onclick = e => { if (e.target === box) done(false); };
+  });
+}
+// 🔴 埋雷：人手动点 → 出现一行输入（只显示一个 *）；AI 直接传数字（bombArmAt）不弹输入
+function bombAutoArm(){
+  if (!game || game.type !== 'bomb') return '';
+  return bombArmAt(1 + Math.floor(Math.random() * 100));
+}
+function bombArmAt(n){
+  if (!game || game.type !== 'bomb') return '';
+  const v = Math.round(Number(n));
+  if (!(v >= 1 && v <= 100)) return '';
+  game.bomb = v; game.lo = 1; game.hi = 100; game.total = 100;
+  game.armed = true; game.playing = true; game.done = false;
+  stat();
+  bombShow(1, 100, '💣 雷已埋好 · 数字保密（只有主持人知道）· 开始报数');
+  return '雷已埋好（1~100），大屏显示保密，可以开始报数';
+}
+async function bombArm(){
+  if (!game || game.type !== 'bomb') return false;
+  const v = await askNum('埋雷：输入炸弹数字（1~100，只有主持人知道）', true);
+  if (v === null || String(v).trim() === '') return false;
+  const ok = bombArmAt(v);
+  if (!ok){ tipW('要输 1~100 之间的整数'); return false; }
+  tipW('雷已埋好，从 1~100 开始报数');
+  return true;
+}
+// 🔴 报数：AI 直接用 bombGuessAt(数字)，人手动点则弹输入行
+function bombGuessAt(n){
+  if (!game || game.type !== 'bomb') return '';
+  if (!game.armed) return '还没埋雷，先调 PARTY.bombArm(数字)';
+  const v = Math.round(Number(n));
+  if (!(v >= 1 && v <= 100)) return '数字要在 1~100 之间';
+  if (v === game.bomb){
+    game.armed = false; game.playing = false; game.done = true;
+    bombBoom('');
+    stat();
+    return '💥 踩中炸弹！砰！炸了（雷就是 ' + game.bomb + '）';
+  }
+  if (v < game.bomb) game.lo = Math.max(game.lo, v + 1);
+  else game.hi = Math.min(game.hi, v - 1);
+  bombShow(game.lo, game.hi, '刚报 ' + v + ' · 安全，继续（' + game.lo + ' ~ ' + game.hi + '）');
+  return '报 ' + v + ' 安全 · 当前区间 ' + game.lo + ' ~ ' + game.hi;
+}
+async function bombGuess(){
+  if (!game || game.type !== 'bomb') return '';
+  if (!game.armed){ tipW('先点「埋雷」把炸弹数字定下来'); return ''; }
+  const v = await askNum('刚喊的数字是多少（1~100）');
+  if (v === null || String(v).trim() === '') return '';
+  const r = bombGuessAt(v);
+  tipW(r);
+  return r;
 }
 function ctlRoll(){
-  $('extra').innerHTML = '<div style="margin-top:10px"><div style="color:#c9a68f;font-size:12px;margin-bottom:4px">名单（每行一个，可改）</div><textarea class="ta" id="names">张伟&#10;李娜&#10;王强&#10;刘敏&#10;陈杰&#10;杨帆&#10;赵磊&#10;孙悦</textarea></div>';
-  big('<div class="sub">点「开始滚动」，再点「停！」抽取</div><div class="word" id="rollname">🏆</div>');
-  let timer = null, b2 = null;
-  ctlBtn('开始滚动', () => {
-    const names = $('names').value.split('\n').map(s => s.trim()).filter(Boolean);
-    if (!names.length) return tipW('名单是空的');
-    if (timer) return;
-    timer = setInterval(() => { $('rollname').textContent = names[Math.floor(Math.random()*names.length)]; }, 80);
+  $('ctl').innerHTML = ''; $('extra').innerHTML = '';
+  if (!ngNames.length) ngNames = ngLoad();
+  if (!ngNames.length) ngNames = NG_DEMO.slice();
+  big('<div class="ngwrap"><div class="word" id="rollname" style="font-size:clamp(34px,7vw,80px);min-height:1.05em">🏆</div><div class="ngtip" id="ngtipx">名字在球上转 · 鼠标停住会吸附看清 · 喊「停」抽人</div><div id="nglobe"></div><div id="ngCount" class="ngtip" style="font-size:13px;opacity:.6;margin-top:2px"></div></div>');
+  renderGlobe();
+  const globe = $('nglobe');
+  if (globe){
+    globe.onmousemove = e => {
+      const r = globe.getBoundingClientRect();
+      const nx = e.clientX - r.left - r.width/2, ny = e.clientY - r.top - r.height/2;
+      if (ngMouse && Math.hypot(nx - ngMouse.x, ny - ngMouse.y) < 4) return; // 4px 内不动 = 手抖过滤，防空闪
+      ngMouse = { x: nx, y: ny }; // 🔴 鼠标靠近只做吸附/高亮，绝不停止转动（老大：离得很远也会停，改成一直转）
+    };
+    globe.onmouseleave = () => { ngMouse = null; };
+  }
+  let b2 = null;
+  const bStart = ctlBtn('开始滚动', () => {
+    if (!ngNames.length) return tipW('先导入名单');
+    rollStart(ngNames);
     b2.disabled = false;
+    const t = $('ngtipx'); if (t) t.textContent = '滚动中…喊「停」抽人';
   }, true);
   b2 = ctlBtn('停！', () => {
-    if (!timer) return;
-    clearInterval(timer); timer = null; b2.disabled = true;
-    const winner = $('rollname').textContent;
+    const winner = rollStop();
+    if (!winner) return;
+    b2.disabled = true; bStart.disabled = false;
     game.score++; stat();
+    sfx('ding'); setTimeout(() => sfx('cannon'), 180);
+    // 🔴 停表不砸球：只改上面那行大字，球继续转（旧版 big() 整屏替换 → 用户以为"地球没了"）
+    const rn = $('rollname'); if (rn) rn.textContent = '🎉 ' + winner;
+    const t = $('ngtipx'); if (t) t.textContent = '抽中 ' + winner + ' · 再点「开始滚动」继续抽';
     type('【游戏】幸运点名结果：「' + winner + '」被抽中了！请热情宣布，让他上台领奖或互动，并说一句烘托气氛的话。');
-    big('<div class="word">🎉 ' + winner + '</div><div class="sub">AI 正在宣布…</div>');
-    fireworks(); // 抽中幸运观众=高光时刻，用烟花
+    celebrate(true); // 抽中=高潮：烟花+礼炮一起上
+    rollNgCount();  // 被抽中的人从池子里去掉，剩多少人实时更新
   });
   b2.disabled = true;
+  ctlBtn('＋ 导入名单', openImport, true); // 跟「开始滚动/停！」并排，不再单独吊在球下面
 }
+// ---------- 离线内容库：不接 AI 也能玩（零积分、断网也能开） ----------
+const offShuffle = a => { for (let i = a.length - 1; i > 0; i--){ const j = (Math.random()*(i+1))|0; const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+// 🔴 随机抽一条，但避免连着抽到同一条（看起来像写死顺序）
+const _lastPick = {};
+function pickFresh(list, pool){
+  if (!list || !list.length) return null;
+  if (list.length === 1) return list[0];
+  let v = list[Math.floor(Math.random()*list.length)];
+  for (let t = 0; t < 10 && pool && v === _lastPick[pool]; t++) v = list[Math.floor(Math.random()*list.length)];
+  if (pool) _lastPick[pool] = v;
+  return v;
+}
+const OFF_QUIZ = [
+  { q:'公司里说的「OKR」指的是？', o:['目标与关键结果','加班与调休','工资与奖金','考核与辞退'], a:'目标与关键结果' },
+  { q:'「KPI」指的是？', o:['关键绩效指标','客单价指数','开发排期表','员工打卡记录'], a:'关键绩效指标' },
+  { q:'「996」通常指？', o:['早 9 点到晚 9 点、一周 6 天','早 9 点到晚 6 点、一周 6 天','一天 9 小时、一周 6 天','9 点上班 6 点下班'], a:'早 9 点到晚 9 点、一周 6 天' },
+  { q:'一年里天数最少的月份是？', o:['2 月','4 月','6 月','9 月'], a:'2 月' },
+  { q:'中国过年最常贴的红色装饰是？', o:['春联和福字','白纸黑字','宣传海报','挂历'], a:'春联和福字' },
+  { q:'「复盘」这个词的意思是？', o:['事后回顾总结','重新排版','再拍一遍','打牌'], a:'事后回顾总结' },
+  { q:'一个季度是几个月？', o:['3 个月','2 个月','4 个月','6 个月'], a:'3 个月' },
+  { q:'员工手册里的「转正」通常指？', o:['试用期结束、成为正式员工','转岗到正职部门','调到总部','涨工资'], a:'试用期结束、成为正式员工' }
+];
+const OFF_IDIOMS = ['一帆风顺','万事如意','心想事成','步步高升','蒸蒸日上','马到成功','五福临门','喜气洋洋','团团圆圆','年年有余','红红火火','前程似锦','大展宏图','旗开得胜','欢声笑语','国泰民安'];
+const OFF_TOPICS = ['用一句话夸夸你们部门','说说今年最想吐槽的一件事（善意版）','模仿一下你们领导开会的样子','今年的一个高光时刻','说个只有同事才懂的梗','给明年立一个 flag','表演一个才艺（10 秒）','说一句最想对公司说的话'];
 function ctlQuiz(){
-  $('ctl').innerHTML = ''; // 防重入按钮翻倍
-  big('<div class="sub">AI 出题（公司/行业/年度热词），语音抢答</div><div class="ai">点「开始出题」</div>');
-  ctlBtn('开始出题', async () => {
-    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-    game.playing = true; stat();
-    type('【游戏】快问快答开始：请出一道关于公司文化、行业常识或年度热词的选择题（A/B/C/D），先念题目和四个选项，然后等玩家语音回答。玩家答对就庆祝并说"答对了"，答错就说"答错了"并公布正确答案，然后出下一题。');
-    big('<div class="ai">AI 正在出题…</div>');
-  });
+  $('ctl').innerHTML = ''; $('extra').innerHTML = ''; // 防重入按钮翻倍
+  big('<div class="qbig">点「开始出题」</div><div class="ai">出题直接上屏，不用连 AI</div>');
+  // 🔴 开始出题 = 只出本地题、绝不唤醒 AI（老大 2026-11-19）；AI 在线时由 AI 自己调 PARTY.nextQuestion()
+  quizMainBtn = ctlBtn('开始出题', () => quizNext());
+  ctlBtn('线索', () => quizHint(), true);
   ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
+}
+let quizMainBtn = null;
+function quizNext(){
+  if (!game || game.type !== 'quiz') return '';
+  const q = pickFresh(OFF_QUIZ, 'quiz');
+  game.q = q;
+  game.opts = offShuffle(q.o.slice());
+  game.dead = [];       // 已被线索排除的选项序号
+  game.done = false;
+  game.playing = true; game.clues = 0;
+  stat();
+  if (quizMainBtn) quizMainBtn.textContent = '开始出题'; // 题目在屏幕上还没答完，按钮就叫「开始出题」；答完才变「下一题」
+  big('<div class="qbig">' + q.q + '</div><div class="bighint" id="qline">全场抢答 · 点下面一个选项</div><div class="qopts" id="qopts"></div>');
+  quizRenderOpts();
+  tipW('出题：' + q.q);
+  return q.q;
+}
+function quizRenderOpts(){
+  const box = $('qopts');
+  if (!box || !game || !game.opts) return;
+  const dead = game.dead || [];
+  box.innerHTML = game.opts.map((o, i) => '<button class="bt ghost qopt" data-i="' + i + '"' + (dead.indexOf(i) >= 0 ? ' disabled style="opacity:.25;text-decoration:line-through"' : '') + '>' + o + '</button>').join('');
+  box.querySelectorAll('button[data-i]').forEach(b => { b.onclick = () => quizPick(+b.dataset.i); });
+}
+function quizPick(i){
+  if (!game || !game.q || !game.opts) return;
+  const q = game.q;
+  // 🔴 答错不公布答案、也不结束：只标记这个选项错了，继续选（老大 2026-11-19）
+  if (game.opts[i] !== q.a){
+    game.wrong++;
+    game.dead = (game.dead || []).concat([i]);
+    quizRenderOpts();
+    stat();
+    const ql = $('qline');
+    if (ql) ql.textContent = '❌ 「' + game.opts[i] + '」不对 · 再选一个';
+    tipW('答错了一个：' + game.opts[i]);
+    return;
+  }
+  game.score++; sfx('ding'); celebrate(); game.playing = false;
+  game.done = true;
+  if (quizMainBtn) quizMainBtn.textContent = '下一题'; // 答对了，主按钮才变成「下一题」
+  stat();
+  big('<div class="qbig" style="font-size:clamp(20px,2.8vw,30px);opacity:.7">' + q.q + '</div><div class="qbig" style="color:#ffd76e">✅ 答对了</div><div class="qbig" style="font-size:clamp(22px,3.2vw,38px)">正确答案：' + q.a + '</div>');
+  const ex = $('extra'); if (ex) ex.innerHTML = ''; // 「下一题」在主按钮上，不再往下面另起一行
+}
+function quizHint(){
+  if (!game || game.type !== 'quiz' || !game.q || !game.opts) return '';
+  if (game.done) return '本题已答完，点「下一题」';
+  game.playing = true; game.clues++;
+  // 🔴 线索 = 给提示，不是划掉选项（老大 2026-11-19：排除答案不算线索）
+  const a = [...game.q.a], L = a.length;
+  let line;
+  if (game.clues === 1) line = '答案一共 ' + L + ' 个字';
+  else if (game.clues === 2) line = '第一个字是「' + a[0] + '」';
+  else if (game.clues === 3) line = '最后一个字是「' + a[L - 1] + '」';
+  else line = '答案里含这个字：「' + a[game.clues % L] + '」';
+  stat();
+  const ql = $('qline'); if (ql) ql.textContent = '线索 ' + game.clues + '：' + line;
+  return line;
 }
 function ctlIdiom(){
-  $('ctl').innerHTML = ''; // 防重入按钮翻倍
-  big('<div class="sub">AI 出第一个成语，大家用尾巴字接（同音也算）</div><div class="ai">点「开始接龙」</div>');
-  ctlBtn('开始接龙', async () => {
-    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-    game.playing = true; stat();
-    type('【游戏】成语接龙开始：你先出一个常用成语，然后玩家用它的最后一个字接下一个成语（同音字也算）。玩家接对了你就夸一句并用玩家接的那个成语继续；接不上或接错就提醒并扣一分，几轮后宣布赢家。');
-    big('<div class="ai">AI 正在想第一个成语…</div>');
-  });
+  $('ctl').innerHTML = ''; $('extra').innerHTML = ''; // 防重入按钮翻倍
+  big('<div class="sub">出第一个成语，大家用尾巴字接（同音也算）</div><div class="ai">点「出词」就开始，不连 AI</div>');
+  // 🔴 出词=本地成语库直接开局，不再自动连 AI（零积分、断网也行）
+  ctlBtn('出词', () => { game.playing = true; game.clues = 0; stat(); offIdiomOne(); });
   ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
+}
+function offIdiomOne(){
+  const w = pickFresh(OFF_IDIOMS, 'idiom');
+  big('<div class="bighint">用最后一个字「' + w.slice(-1) + '」接成语（同音也算）</div><div class="word" style="font-size:clamp(30px,6vw,66px)">' + w + '</div><div class="bighint line">接对了点「接上了」，接不上点「接不上」</div>');
+  const ex = $('extra');
+  ex.innerHTML = '<div class="taplist"><button class="bt" id="idOk">接上了 +1</button><button class="bt ghost" id="idNo">接不上</button><button class="bt ghost" id="idNew">换一个</button></div>';
+  $('idOk').onclick = () => { game.score++; game.playing = true; stat(); sfx('ding'); tipW('接上了 +1 · 接着用刚接的那个词继续（下一个字往下接）'); };
+  $('idNo').onclick = () => { game.wrong++; stat(); tipW('接不上算输 · 点「换一个」重新起一头'); };
+  $('idNew').onclick = () => offIdiomOne();
 }
 function ctlHot(){
   $('ctl').innerHTML = ''; // 🔴 "换一个"会重入本函数，不清空按钮会翻倍
   const HOT = ['年终奖','团建','KPI','需求评审','上线冲刺','年会节目','优秀员工','跨年钟声','开门红'];
-  game.word = HOT[Math.floor(Math.random()*HOT.length)];
-  big('<div class="sub">热词已抽好（默认隐藏，点「显示词语」再给玩家看）</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div>');
+  game.word = pickFresh(HOT, 'hot');
+  game.done = false; game.clues = 0; // 换词=新一局
+  big('<div class="bighint">' + wordLenTitle(game.word) + ' · 默认隐藏，点「显示词语」再给玩家看</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div><div class="bighint line" id="clueline"></div>');
   const bh = ctlBtn('显示词语', () => { const w = $('wshow'); if (w.textContent === '•••••'){ w.textContent = w.dataset.r; bh.textContent = '隐藏词语'; } else { w.dataset.r = w.textContent; w.textContent = '•••••'; bh.textContent = '显示词语'; } }, true);
-  ctlBtn('开始竞猜', async () => {
-    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-    game.playing = true; game.clues = 0; game.wrong = 0; stat();
-    type('【游戏】年度热词竞猜：词是「' + game.word + '」。用语音给大家描述这个公司年度词/事件，一次一条线索，绝不说出词本身；猜错就换更明显的说法，猜对就庆祝并宣布，然后换下一个。');
-    big('<div class="ai">AI 正在编第一条线索…</div>');
-  });
+  // 🔴 不再有「开始竞猜」这种专门连 AI 的按钮：点「线索」就直接开局（零积分、断网也行）
+  const clueBtn = ctlBtn('线索', () => showClue(), true);
+  clueBtn.id = 'clueBtn';
   ctlBtn('换一个', () => ctlHot(), true);
+  mountGuessInput(); // 跟「描述我猜」一样：人主持可以打答案进来对
 }
 function ctlTalk(){
-  $('ctl').innerHTML = ''; // 防重入按钮翻倍
-  big('<div class="sub">AI 主持人现挂一段脱口秀，可点名同事串上台</div><div class="ai">点「开讲」，或直接对 AI 说「给某某来段脱口秀」</div>');
-  ctlBtn('开讲', async () => {
-    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-    game.playing = true; stat();
-    type('【游戏】脱口秀开始：你是年会 AI 主持人，现在直接开讲，一口气讲满 60~90 秒（讲完自然收尾"谢谢大家"再停，中途绝不反问、不等玩家接话——你是独角戏专场）。主题围绕公司这一年的趣事、善意玩梗（绝不揭短、不开人身玩笑），中途自然点名一位同事请 ta 上台互动一句。🔴 撒花只在整段讲完、说"谢谢大家"之后调用一次 PARTY.confetti()，开头和中途绝对不许撒花。');
-    big('<div class="ai">🎤 脱口秀开讲，都坐好了…</div>');
-  });
-  ctlBtn('点一个人', async () => {
-    // 🔴 手机浏览器不支持 prompt()（报 "prompt() is not supported"），改成大屏内嵌输入框
-    const ex = $('extra');
-    ex.innerHTML = '<div style="margin-top:10px"><input class="ta" id="talkname" placeholder="输入同事名字，再点「就TA」" style="width:min(320px,80vw);padding:10px;border-radius:10px;border:1px solid #ff8a5c66;background:#180d16;color:#ffe8d6;font-size:15px"><button class="bt" id="goName" style="margin-left:8px">就TA</button></div>';
-    $('goName').onclick = async () => {
-      const n = ($('talkname').value || '').trim();
-      if (!n) return tipW('先输入名字');
-      if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-      game.playing = true; stat();
-      type('【游戏】给「' + n + '」来段脱口秀：即兴串词，把这位同事夸出花又逗乐全场，热情请 ta 上台，30~60 秒，全程善意不揭短。讲完调用 PARTY.confetti() 撒花。');
-      big('<div class="ai">AI 正在为「' + n + '」串词…</div>');
-      ex.innerHTML = '';
-    };
-  }, true);
+  $('ctl').innerHTML = ''; $('extra').innerHTML = ''; // 防重入按钮翻倍
+  big('<div class="sub">抽一张话题卡，或直接点名请人上台</div><div class="ai">都不用连 AI；AI 在线时点名它会自己串词</div>');
+  ctlBtn('抽话题卡', () => { game.playing = true; stat(); offTalkOne(); });
+  // 🔴 点名：自己输入名字（不再是从名单里乱点，也不自动连 AI）
+  ctlBtn('点名上台', () => talkPick(), true);
+}
+async function talkPick(){
+  if (!game || game.type !== 'talk') return;
+  const v = await askNum('谁上台？输入同事名字', false);
+  const n = String(v == null ? '' : v).trim().replace(/[<>&]/g, '');
+  if (!n) return;
+  game.playing = true; game.score++; stat();
+  big('<div class="qbig">🎤</div><div class="qbig" style="font-size:clamp(34px,6.5vw,80px)">请 ' + n + ' 上台</div><div class="ai">鼓掌 · 讲完点「下一位」接着抽</div>');
+  celebrate(true);
+  if (running) type('【游戏】现场请「' + n + '」上台，你来即兴串一段热场词，30~45 秒，善意玩梗不揭短，讲完调用 PARTY.confetti() 撒花。名字只能是「' + n + '」。');
+  else tipW('已点名：' + n + '（AI 没接通，这段由你主持）');
+}
+function offTalkOne(){
+  const t = pickFresh(OFF_TOPICS, 'talk');
+  big('<div class="sub">话题卡 · 请上台的同事现场来 30 秒</div><div class="word" style="font-size:clamp(24px,4.2vw,46px);line-height:1.3">' + t + '</div><div class="ai">讲完点「下一位」，撒花</div>');
+  const ex = $('extra');
+  ex.innerHTML = '<div class="taplist"><button class="bt" id="tpNext">下一位</button></div>';
+  const nb = $('tpNext');
+  if (nb) nb.onclick = () => { game.score++; stat(); celebrate(true); offTalkOne(); };
 }
 function ctlSong(){
-  $('ctl').innerHTML = ''; // 防重入按钮翻倍
-  big('<div class="sub">AI 描述一首歌或一部电影的意境、名场面、经典台词，大家抢答</div><div class="ai">点「来一题」，或直接对 AI 说「来一题猜歌」</div>');
-  ctlBtn('来一题', async () => {
-    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
-    game.playing = true; game.clues = 0; game.wrong = 0; stat();
-    type('【游戏】猜歌猜影开始：你自己在心里选一首大家熟知的中文歌或一部热门电影，答案只记在你脑子里、绝对不许说出口，也不许说出歌名/片名里的任何字。然后用语音描述它的意境、名场面或经典台词，一次只给一条线索，由隐到显。玩家抢答：猜对你就说"对了！就是《答案》"并调用 PARTY.confetti() 撒花、PARTY.setScore 给答对者加一分，然后换下一题；猜错就说"不对"并给下一条更明显的线索。');
-    big('<div class="ai">AI 正在想题…</div>');
-  });
-  ctlBtn('给提示', async () => {
-    if (!running || !game.playing) return tipW('先点「来一题」');
-    type('【游戏】继续刚才的猜歌猜影，再给一条更明显的线索，还是绝对别说出答案。');
-  }, true);
+  $('ctl').innerHTML = ''; $('extra').innerHTML = ''; // 防重入按钮翻倍
+  game.done = false; game.clues = 0;
+  big('<div class="sub">出一首歌或一部电影，一个人偷看答案、哼两句或讲名场面，全场猜</div><div class="ai">点「来一题」就开始，不连 AI</div>');
+  // 🔴 来一题 = 本地题库直接出题，不再自动连 AI（零积分、断网也行）
+  ctlBtn('来一题', () => offSongOne());
+  const cb = ctlBtn('线索', () => showClue(), true);
+  cb.id = 'clueBtn';
+  ctlBtn('换一题', () => offSongOne(), true);
+}
+const OFF_SONGS = ['《孤勇者》','《成都》','《夜空中最亮的星》','《青花瓷》','《后来》','《海阔天空》','《平凡之路》','《恭喜发财》','《小苹果》','《我和我的祖国》'];
+const OFF_FILMS = ['《流浪地球》','《让子弹飞》','《夏洛特烦恼》','《你好，李焕英》','《人在囧途》','《功夫》','《唐人街探案》','《满江红》','《大话西游》','《哪吒之魔童降世》'];
+function offSongOne(){
+  if (!game || game.type !== 'song') return;
+  const pool = Math.random() < 0.5 ? OFF_SONGS : OFF_FILMS;
+  const ans = pickFresh(pool, pool === OFF_SONGS ? 'song' : 'film');
+  game.word = ans; game.done = false; game.clues = 0;
+  game.playing = true; stat();
+  big('<div class="bighint">' + wordLenTitle(ans) + ' · 一个人偷看答案，哼两句 / 讲名场面，别说出答案里的字</div><div class="word" id="wshow" data-r="' + ans + '" style="font-size:clamp(26px,5vw,56px)">•••••</div><div class="bighint line" id="clueline"></div>');
+  mountGuessInput(); // 谁猜就打字进去对（AI 不在也能玩）
 }
 
-// ---------- PARTY API：AI 通过 page_cmd 调它操作大屏 ----------
-let rollTimer = null;
+// ---------- 默契大考验 sync：同一题两人各选一次，选到同一个才算默契 ----------
+const OFF_SYNC = [
+  { q:'公司里最卷的部门是？', o:['技术','市场','运营','职能'] },
+  { q:'年会最可能被点上台的是？', o:['老板','销冠','新人','主持人'] },
+  { q:'团建最想去的地方是？', o:['山里','海边','KTV','就公司'] },
+  { q:'加班时最常点的外卖是？', o:['麻辣烫','汉堡','粥','泡面'] },
+  { q:'同事发「有空吗」一般是？', o:['要改需求','要请假','想聊天','想借钱'] },
+  { q:'最能代表今年心情的词是？', o:['稳','忙','卷','赢'] },
+  { q:'年会上最尴尬的环节是？', o:['领导讲话','抽奖落空','表演节目','合影'] },
+  { q:'放假最想干的事是？', o:['睡到自然醒','出去玩','陪家人','打游戏'] }
+];
+let syncStep = 0, syncA = null, syncQ = null;
+function ctlSync(){
+  $('ctl').innerHTML = ''; $('extra').innerHTML = '';
+  game.done = false; syncStep = 0; syncA = null; syncQ = null;
+  big('<div class="qbig">点「开始」出题</div><div class="bighint">两个人各选一次，选到同一个才算默契</div>');
+  ctlBtn('开始', () => syncNext());
+  ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
+}
+function syncNext(){
+  if (!game || game.type !== 'sync') return '';
+  syncStep = 0; syncA = null;
+  syncQ = pickFresh(OFF_SYNC, 'sync');
+  game.playing = true; game.done = false; stat();
+  syncRender('第 1 位选，选完保密');
+  return syncQ.q;
+}
+function syncRender(tip){
+  const who = syncStep === 0 ? '第 1 位' : '第 2 位';
+  big('<div class="bighint">' + who + ' 来选</div><div class="qbig" style="font-size:clamp(26px,4.4vw,52px)">' + syncQ.q + '</div><div class="bighint line">' + tip + '</div><div class="qopts" id="qopts"></div>');
+  const box = $('qopts');
+  if (!box) return;
+  box.innerHTML = syncQ.o.map((o, i) => '<button class="bt ghost qopt" data-i="' + i + '">' + o + '</button>').join('');
+  box.querySelectorAll('button[data-i]').forEach(b => { b.onclick = () => syncPick(+b.dataset.i); });
+}
+function syncPick(i){
+  if (!syncQ) return '';
+  if (syncStep === 0){ syncA = syncQ.o[i]; syncStep = 1; sfx('ding'); syncRender('第 1 位已选（保密）· 换第 2 位'); return '第 1 位已选'; }
+  const b = syncQ.o[i], same = b === syncA;
+  game.playing = false; game.done = true;
+  if (same){ game.score++; celebrate(true); } else { game.wrong++; }
+  stat();
+  big('<div class="qbig">' + (same ? '🤝 默契 +1' : '😅 没对上') + '</div><div class="bighint">第 1 位：' + syncA + '　｜　第 2 位：' + b + '</div><div class="bighint line">' + (same ? '这俩是真懂对方' : '换一题再来') + '</div>');
+  const ex = $('extra');
+  if (ex){
+    ex.innerHTML = '<div class="taplist"><button class="bt" id="syNext">下一题</button></div>';
+    const n = $('syNext'); if (n) n.onclick = () => syncNext();
+  }
+  return same ? '默契 +1' : '没对上';
+}
+// ---------- 真心话大冒险 dare ----------
+const OFF_TRUTH = ['今年最想撤回的一条工作群消息是什么？','开会时偷偷干过别的事吗？','上次说「马上好」其实是多久之后？','今年最想感谢的同事是谁，为什么？','手机里最不想被看到的分组名是什么？','最近一次因为工作想哭是因为什么？'];
+const OFF_DARE = ['用最夸张的语气夸一下你左边的人','模仿老板开会最常说的一句话','当场给通讯录第 3 个人发一条“谢谢”','用方言说一句“新年快乐”','做 10 秒才艺表演，不许说不','和随机一个人交换一件外套穿 30 秒'];
+function ctlDare(){
+  $('ctl').innerHTML = ''; $('extra').innerHTML = '';
+  big('<div class="qbig">🎲 真心话 还是 大冒险</div><div class="bighint">点一个，卡面直接上屏</div>');
+  ctlBtn('真心话', () => dareDraw('t'));
+  ctlBtn('大冒险', () => dareDraw('d'), true);
+}
+function dareDraw(kind){
+  const pool = kind === 'd' ? OFF_DARE : OFF_TRUTH;
+  const card = pickFresh(pool, 'dare');
+  game.playing = true; stat();
+  big('<div class="bighint">' + (kind === 'd' ? '🎯 大冒险' : '💬 真心话') + '</div><div class="qbig" style="font-size:clamp(28px,4.8vw,56px);line-height:1.32">' + card + '</div><div class="bighint line">做完/答完点另一个按钮换下一位</div>');
+  return card;
+}
+
+// ---------- 绕口令 tongue ----------
+const OFF_TONGUE = [
+  '四是四，十是十，十四是十四，四十是四十',
+  '黑化肥发灰会挥发，灰化肥挥发会发黑',
+  '红鲤鱼与绿鲤鱼与驴',
+  '牛郎恋刘娘，刘娘念牛郎',
+  '吃葡萄不吐葡萄皮，不吃葡萄倒吐葡萄皮',
+  '门口有五棵柳，柳下有一头牛'
+];
+function ctlTongue(){
+  $('ctl').innerHTML = ''; $('extra').innerHTML = '';
+  game.done = false;
+  big('<div class="qbig">绕口令挑战</div><div class="bighint">点「抽一条」，请人一口气念完</div>');
+  ctlBtn('抽一条', () => tongueNext());
+  ctlBtn('念对了 +1', () => { game.score++; stat(); sfx('ding'); celebrate(); }, true);
+  ctlBtn('卡住了', () => { game.wrong++; stat(); tipW('卡住一次，换个人再来'); }, true);
+}
+function tongueNext(){
+  const t = pickFresh(OFF_TONGUE, 'tongue');
+  game.playing = true; game.done = false; stat();
+  big('<div class="bighint">一口气念完，中间不许停</div><div class="qbig" style="font-size:clamp(26px,4.4vw,52px);line-height:1.4">' + t + '</div><div class="bighint line">念对了点「念对了 +1」</div>');
+  return t;
+}
+// ---------- 看图猜词 emoji ----------
+const OFF_EMOJI = [
+  { e:'🧧', a:'红包' }, { e:'🥟', a:'饺子' }, { e:'🧨', a:'鞭炮' }, { e:'🏮', a:'灯笼' },
+  { e:'💰', a:'压岁钱' }, { e:'🚄', a:'春运' }, { e:'📺', a:'春晚' }, { e:'🎆', a:'烟花' },
+  { e:'🍲', a:'团圆饭' }, { e:'🀄', a:'福字' }, { e:'🎤', a:'麦克风' }, { e:'☕', a:'下午茶' }
+];
+function ctlEmoji(){
+  $('ctl').innerHTML = ''; $('extra').innerHTML = '';
+  game.done = false; game.clues = 0;
+  big('<div class="qbig">看图猜词</div><div class="bighint">点「来一题」开始，猜出来打进下面输入框</div>');
+  ctlBtn('来一题', () => emojiNext());
+  const cb = ctlBtn('线索', () => showClue(), true); cb.id = 'clueBtn';
+  ctlBtn('换一题', () => emojiNext(), true);
+}
+let emojiSeq = 0;
+function emojiNext(){
+  if (!game || game.type !== 'emoji') return '';
+  const q = pickFresh(OFF_EMOJI, 'emoji');
+  emojiSeq++;
+  game.emoji = q.e; game.word = q.a; game.done = false; game.clues = 0; game.playing = true; stat();
+  big('<div class="bighint">第 ' + emojiSeq + ' 题 · ' + wordLenTitle(q.a) + '</div><div class="word" style="font-size:clamp(56px,13vw,150px);letter-spacing:10px">' + q.e + '</div><div class="bighint line" id="clueline">看图猜一个词，猜出来打进下面输入框</div>');
+  mountGuessInput();
+  return q.e;
+}
+
+// 大屏 #big 一旦被 AI 说话/切游戏覆盖，#rollname 就没了，每 80ms 抛一次 TypeError（后台刷几千行）。
+// 现在：① 只有一个定时器；② 元素丢了自动挂回大屏；③ 名字另存 rollLast，DOM 没了也能报出赢家。
+let rollTimer = null, rollLast = '', rollPool = [], rollDrawn = []; // rollDrawn=本场已抽中的人，不再重复抽
+function rollStart(ns){
+  const all = (ns || []).slice();
+  let pool = all.filter(n => rollDrawn.indexOf(n) < 0);
+  if (!pool.length && all.length){ rollDrawn = []; pool = all; tipW('名单里的人都抽过一遍了，从头再来'); }
+  rollPool = pool; rollLast = '';
+  if (!game || game.type !== 'roll') openStage('roll');
+  if (rollTimer) clearInterval(rollTimer);
+  rollTimer = setInterval(() => {
+    if (!rollPool.length){ clearInterval(rollTimer); rollTimer = null; return; }
+    rollLast = rollPool[Math.floor(Math.random() * rollPool.length)];
+    let el = $('rollname');
+    if (!el){
+      const box = $('big');
+      if (!box){ clearInterval(rollTimer); rollTimer = null; return; }
+      el = document.createElement('div'); el.className = 'word'; el.id = 'rollname'; box.appendChild(el);
+    }
+    el.textContent = rollLast;
+  }, 80);
+  rollNgCount();
+  return rollPool.length;
+}
+function rollStop(){
+  if (rollTimer) clearInterval(rollTimer);
+  rollTimer = null;
+  const w = rollLast; rollLast = '';
+  if (w && rollDrawn.indexOf(w) < 0) rollDrawn.push(w); // 抽中即排除，下次不会再抽到同一个人
+  return w;
+}
+// 底部那行「共 N 人 · 还剩 X 人没抽」
+function rollNgCount(){
+  const c = $('ngCount');
+  if (!c) return;
+  const left = ngNames.filter(n => rollDrawn.indexOf(n) < 0).length;
+  c.textContent = '共 ' + ngNames.length + ' 人 · 还剩 ' + left + ' 人没抽';
+}
+
+// ---------- 点名名单：导入（Excel/txt/md/csv）+ 3D 名字球 ----------
+let ngNames = [], ngEls = [], ngRaf = null, ngRot = 0, ngPaused = false, ngMouse = null, ngLast = 0;
+function ngSave(){ try { localStorage.setItem('moss_party_names', JSON.stringify(ngNames)); } catch {} }
+const NG_DEMO = ['张伟','李娜','王强','刘敏','陈杰','杨帆','赵磊','孙悦','周涛','吴静','郑凯','冯雪','陈曦','褚岩','卫东','蒋雯','沈鹏','韩雪','杨光','朱琳'];
+function ngLoad(){
+  try {
+    const a = JSON.parse(localStorage.getItem('moss_party_names') || '[]');
+    if (!Array.isArray(a) || !a.length) return [];
+    // 旧的 8 人内置演示名单自动升级成 20 人（老大的浏览器里存着旧值）
+    if (a.join(',') === '张伟,李娜,王强,刘敏,陈杰,杨帆,赵磊,孙悦') return [];
+    return a;
+  } catch { return []; }
+}
+
+// 任意分隔：换行 / 逗号 / 分号 / 顿号 / 空格 / tab / 竖线
+function parseNames(raw){
+  const arr = String(raw || '')
+    .replace(/\r/g, '')
+    .split(/[\n,，;；、\t|]+/)
+    .flatMap(x => x.split(/\s+/))
+    .map(x => x.replace(/^[·•\-–—*"'“”‘’\s]+|[·•\-–—*"'“”‘’\s]+$/g, ''))
+    .filter(x => x && x.length <= 24 && !/^(姓名|名字|名单|人员|name|no\.?|序号)$/i.test(x));
+  return arr.filter((v, k, a) => a.indexOf(v) === k);
+}
+
+// 最小 xlsx 读取器：走 ZIP 中央目录 + 浏览器原生 DecompressionStream，不引第三方库
+async function xlsxNames(file){
+  const buf = await file.arrayBuffer();
+  const dv = new DataView(buf);
+  let eo = -1;
+  for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 66000); i--){ if (dv.getUint32(i, true) === 0x06054b50){ eo = i; break; } }
+  if (eo < 0) throw new Error('不是有效的 xlsx 文件');
+  const cnt = dv.getUint16(eo + 10, true);
+  let off = dv.getUint32(eo + 16, true);
+  const ent = {};
+  for (let k = 0; k < cnt; k++){
+    if (dv.getUint32(off, true) !== 0x02014b50) break;
+    const method = dv.getUint16(off + 10, true);
+    const csize = dv.getUint32(off + 20, true);
+    const nlen = dv.getUint16(off + 28, true), elen = dv.getUint16(off + 30, true), clen = dv.getUint16(off + 32, true);
+    const lho = dv.getUint32(off + 42, true);
+    const name = new TextDecoder().decode(new Uint8Array(buf, off + 46, nlen));
+    const lnlen = dv.getUint16(lho + 26, true), lelen = dv.getUint16(lho + 28, true);
+    ent[name] = { method, data: new Uint8Array(buf, lho + 30 + lnlen + lelen, csize) };
+    off += 46 + nlen + elen + clen;
+  }
+  const read = async (n) => {
+    const e = ent[n]; if (!e) return '';
+    if (e.method === 0) return new TextDecoder().decode(e.data);
+    if (typeof DecompressionStream === 'undefined') throw new Error('这个浏览器不支持解析 xlsx，请另存为 csv');
+    const st = new Blob([e.data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return await new Response(st).text();
+  };
+  const ss = await read('xl/sharedStrings.xml');
+  const strs = [...ss.matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m => [...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x => x[1]).join(''));
+  const sk = Object.keys(ent).find(n => /^xl\/worksheets\/sheet1\.xml$/.test(n)) || Object.keys(ent).find(n => /^xl\/worksheets\/sheet\d+\.xml$/.test(n));
+  const sheet = sk ? await read(sk) : '';
+  const out = [];
+  for (const row of sheet.matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)){
+    for (const c of row[1].matchAll(/<c([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)){
+      const attr = c[1] || '', inner = c[2] || '';
+      const t = (inner.match(/<t[^>]*>([\s\S]*?)<\/t>/) || [])[1];
+      const v = (inner.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
+      if (t != null) out.push(t);
+      else if (v != null && /t="s"/.test(attr)) out.push(strs[+v] || '');
+      else if (v != null) out.push(v);
+    }
+  }
+  const esc = x => x.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&#(\d+);/g, (_, d) => String.fromCharCode(+d));
+  return out.map(esc);
+}
+
+function renderGlobe(){
+  const box = $('nglobe'); if (!box) return;
+  box.innerHTML = ''; ngEls = []; ngEls._hot = null;
+  const names = ngNames.slice(0, 110);
+  const dots = Math.max(0, Math.min(70, 150 - names.length));
+  const total = names.length + dots;
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+  // 🔴 名字必须随机散在整颗球上：旧写法让前 N 个点（恰好是名字）吃掉 Fibonacci 序列开头 = y 全在 0.57~1，
+  // 投影下来全挤下半球（老大实测"人名都在下面"）。改成先洗牌再指派谁是名字。
+  const ord = [];
+  for (let i = 0; i < total; i++) ord.push(i);
+  for (let i = total - 1; i > 0; i--){ const j = (Math.random() * (i + 1)) | 0; const t = ord[i]; ord[i] = ord[j]; ord[j] = t; }
+  const isName = new Array(total).fill(false);
+  for (let k = 0; k < names.length; k++) isName[ord[k]] = true;
+  let ni = 0;
+  for (let i = 0; i < total; i++){
+    const y = 1 - (i / Math.max(1, total - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const th = GOLDEN * i;
+    const named = isName[i];
+    const el = document.createElement(named ? 'span' : 'i');
+    el.className = named ? 'ng' : 'ngd';
+    if (named) el.textContent = names[ni++];
+    el._x = Math.cos(th) * r; el._y = y; el._z = Math.sin(th) * r;
+    box.appendChild(el); ngEls.push(el);
+  }
+  rollNgCount(); // 「共 N 人 · 还剩 X 人没抽」
+  // 🔴 强制重启：旧循环可能还挂着但 ngEls 已被换成新节点，不重启就不驱动（球看着"没出来"）
+  if (ngRaf){ cancelAnimationFrame(ngRaf); ngRaf = null; }
+  ngLast = 0; ngRaf = requestAnimationFrame(ngTick);
+}
+
+function ngTick(ts){
+  if (!ngEls.length){ ngRaf = null; return; }
+  ngRaf = requestAnimationFrame(ngTick);
+  if (ts - ngLast < 50) return; // 20fps 上限：球体动画绝不跟音频抢主线程
+  ngLast = ts;
+  const box = $('nglobe');
+  if (!box){ ngEls = []; ngRaf = null; return; }
+  ngRot += 0.012; // 🔴 永不暂停：鼠标只做吸附高亮，球一直转（老大 2026-11-19）
+  const R = Math.min(box.clientWidth || 320, box.clientHeight || 320) * 0.42;
+  const ct = Math.cos(ngRot), st = Math.sin(ngRot);
+  let best = null, bestD = 1e9;
+  for (const el of ngEls){
+    const x1 = el._x * ct - el._z * st;
+    const z1 = el._x * st + el._z * ct;
+    const pf = 2.6 / (2.6 + z1);
+    const sx = x1 * R * pf, sy = el._y * R * pf;
+    el._sx = sx; el._sy = sy;
+    el.style.transform = 'translate(-50%,-50%) translate(' + sx.toFixed(1) + 'px,' + sy.toFixed(1) + 'px) scale(' + pf.toFixed(3) + ')';
+    el.style.opacity = Math.max(0.18, Math.min(1, 0.25 + 0.75 * ((pf - 0.52) / 0.78))).toFixed(2);
+    el.style.zIndex = String(1000 - Math.round(z1 * 200));
+    if (ngMouse && el.className === 'ng'){
+      const d = Math.hypot(sx - ngMouse.x, sy - ngMouse.y);
+      if (d < bestD){ bestD = d; best = el; }
+    }
+  }
+  // 🔴 悬停吸附加滞回：不加的话相邻名字每 50ms 互相抢 .hot，看着就是乱闪。
+  // 只有新候选比当前高亮那个「明显更近 12px」才切换。
+  const cur = ngEls._hot;
+  const curD = (cur && ngMouse) ? Math.hypot((cur._sx || 0) - ngMouse.x, (cur._sy || 0) - ngMouse.y) : 1e9;
+  let hot = null;
+  if (ngMouse){
+    if (best && bestD < 62 && (!cur || best === cur || bestD < curD - 12)) hot = best;
+    else if (cur && curD < 62) hot = cur;
+  }
+  if (cur && cur !== hot) cur.classList.remove('hot');
+  if (hot) hot.classList.add('hot');
+  ngEls._hot = hot;
+}
+
+// mode: 'replace' 覆盖导入 / 'merge' 增量导入
+function ngApply(raw, mode){
+  const ns = parseNames(raw);
+  if (!ns.length) return { ok: false, msg: '没解析到名字' };
+  let added = 0;
+  if (mode === 'merge'){
+    for (const n of ns){ if (ngNames.indexOf(n) < 0){ ngNames.push(n); added++; } }
+  } else {
+    ngNames = ns; added = ns.length;
+  }
+  ngSave();
+  rollDrawn = []; // 名单变了，抽过的记录一起清掉
+  return { ok: true, msg: mode === 'merge' ? ('新增 ' + added + ' 个，共 ' + ngNames.length + ' 人') : ('已覆盖为 ' + ngNames.length + ' 人'), added };
+}
+
+function openImport(){
+  if ($('ngImportBox')) return;
+  const box = document.createElement('div');
+  box.id = 'ngImportBox';
+  box.innerHTML = '<div class="panel"><h4>导入名单</h4><div class="hint">支持 Excel(.xlsx) / txt / md / csv。名字可用换行、逗号、分号、顿号、空格分隔，也可以直接粘贴。<br>当前名单：<b id="ngNow">0</b> 人</div><textarea id="ngPaste" placeholder="张伟&#10;李娜&#10;王强"></textarea><div class="row"><button class="bt ghost" id="ngClear">清空名单</button><button class="bt ghost" id="ngFileBtn">选择文件</button><button class="bt ghost" id="ngCancel">取消</button><button class="bt ghost" id="ngMerge">增量导入</button><button class="bt" id="ngReplace">覆盖导入</button></div><input type="file" id="ngFile" accept=".xlsx,.txt,.md,.csv" style="display:none"></div>';
+  document.body.appendChild(box);
+  const nowEl = box.querySelector('#ngNow');
+  const refreshNow = () => { if (nowEl) nowEl.textContent = ngNames.length; };
+  refreshNow();
+  // 🔴 打开就把当前名单填进框里（旧版是空框+3 行灰占位，看着像"20 个人看不到"）
+  const ta = box.querySelector('#ngPaste');
+  if (ta && ngNames.length) ta.value = ngNames.join('\n');
+  const close = () => { box.remove(); if ($('nglobe')) renderGlobe(); };
+  const after = (mode) => {
+    const r = ngApply(box.querySelector('#ngPaste').value, mode);
+    if (!r.ok){ tipW(r.msg); return; }
+    close();
+    if (!game || game.type !== 'roll') openStage('roll');
+    tipW(r.msg);
+  };
+  box.querySelector('#ngCancel').onclick = close;
+  box.querySelector('#ngMerge').onclick = () => after('merge');
+  box.querySelector('#ngReplace').onclick = () => after('replace');
+  box.querySelector('#ngClear').onclick = async () => {
+    if (!ngNames.length){ tipW('名单已经是空的'); return; }
+    // 清空必须二次确认（老大定）；用自绘弹框，原生 confirm 在此环境被禁
+    if (!await askOk('确定清空全部 ' + ngNames.length + ' 个名字？清空后不可恢复。')) return;
+    if (!await askOk('再确认一次：清空名单？')) return;
+    ngNames = []; rollDrawn = []; ngSave(); refreshNow(); close();
+    if (!game || game.type !== 'roll') openStage('roll');
+    tipW('名单已清空');
+  };
+  box.querySelector('#ngFileBtn').onclick = () => box.querySelector('#ngFile').click();
+  box.querySelector('#ngFile').onchange = async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    try {
+      let raw;
+      if (/\.xlsx$/i.test(f.name)) raw = (await xlsxNames(f)).join('\n');
+      else if (/\.xls$/i.test(f.name)) { tipW('老版 .xls 不支持，请在 Excel 里另存为 .xlsx 或 CSV'); return; }
+      else raw = await f.text();
+      const ns = parseNames(raw);
+      if (!ns.length){ tipW('文件里没读到名字'); return; }
+      box.querySelector('#ngPaste').value = ns.join('\n');
+    } catch (err){ tipW('读取失败：' + err.message); }
+  };
+}
 window.PARTY = {
-  startGame(type){ if (['guess','bomb','roll','quiz','idiom','hot','talk','song'].includes(type)) { openStage(type); return '已切到游戏：' + type; } return '未知游戏：' + type + '（可选 guess/bomb/roll/quiz/idiom/hot/talk/song）'; },
+  startGame(type){ if (!['guess','bomb','roll','quiz','idiom','hot','talk','song','sync','dare','tongue','emoji'].includes(type)) return '未知游戏：' + type; if (game && game.type === type) return '已经在「' + type + '」了，不用重开（直接走流程）'; openStage(type); return '已切到游戏：' + type; },
+  // 绕口令 / 看图猜词
+  tongueNext(){ if (!game || game.type !== 'tongue') openStage('tongue'); const t = tongueNext(); sendPageState(); return t ? ('绕口令上屏：' + t + '（题库共 ' + OFF_TONGUE.length + ' 条、循环抽，永远有；请一位一口气念完，念对调 PARTY.addScore(1)，卡住就再调 PARTY.tongueNext() 换人换题）') : '当前不在绕口令'; },
+  emojiNext(){ if (!game || game.type !== 'emoji') openStage('emoji'); const e = emojiNext(); sendPageState(); return e ? ('已出第 ' + emojiSeq + ' 题，屏幕上的图标是 ' + e + '（答案 ' + String(game.word || '').replace(/./g, '?') + '，保密别念；题库共 ' + OFF_EMOJI.length + ' 条循环抽，永远有。你把图标念出来让大家猜，猜中调 PARTY.hit()）') : '当前不在看图猜词'; },
+  // 别名，防止 AI 记错名字
+  nextEmoji(){ return this.emojiNext(); },
+  nextTongue(){ return this.tongueNext(); },
+  // 🔴 挂断：主持人说「挂了吧/别聊了/省点积分」，就调这个，立刻断语音
+  hangup(){ try { stopAll(); } catch (e) {} return '已挂断语音（省积分），想再聊点右下角「开 始」'; },
+  // 默契大考验：AI 出题 → 提示两人各选一次 → 页面判是否一致
+  syncNext(){ const q = syncNext(); return q ? ('题目已上屏：' + q + '（请第 1 位先选，别人别看；选完让第 2 位选）') : '当前不在默契大考验'; },
+  syncPick(i){ const r = syncPick(Number(i)); return r ? ('第' + (syncStep === 0 ? '2' : '1') + '位已选：' + r) : '当前没有进行中的题'; },
+  // 真心话大冒险：'t'=真心话 'd'=大冒险
+  dare(kind){ if (!game || game.type !== 'dare') openStage('dare'); const c = dareDraw(kind === 'd' ? 'd' : 't'); return '卡面上屏：' + c + '（念完就等 ta 做/答，别催）'; },
   exitGame(){ if (!game) return '本来就在游戏列表首页'; backToCards(); return '已退出游戏，回到游戏列表首页'; },
-  games(){ return JSON.stringify(['guess:你描述我猜','bomb:数字炸弹','roll:幸运点名','quiz:快问快答','idiom:成语接龙','hot:年度热词','talk:脱口秀','song:猜歌猜影']); },
+  games(){ return JSON.stringify(['guess:你描述我猜','bomb:数字炸弹','roll:幸运点名','quiz:快问快答','idiom:成语接龙','hot:年度热词','talk:脱口秀','song:猜歌猜影','sync:默契大考验','dare:真心话大冒险','tongue:绕口令','emoji:看图猜词']); },
   showWord(w){ if (game && game.type === 'guess'){ game.word = String(w); big('<div class="sub">大屏词语</div><div class="word">' + w + '</div>'); return '词语已上屏'; } return '当前不在描述我猜'; },
   hideWord(){ const w = $('wshow'); if (w && w.textContent !== '•••••'){ w.dataset.r = w.textContent; w.textContent = '•••••'; return '已隐藏'; } return '没有可隐藏的词'; },
+  // 🔴 AI 主持时自己点「猜中了 +1」：加分 + 大屏公布答案 + 撒花（和人工点同一个入口）
+  hit(){ return guessHit() ? ('已加一分，大屏已公布答案：' + game.word) : '当前不在你描述我猜'; },
+  // 🔴 数字炸弹：AI 用代码埋雷/报数（page_cmd 调），页面才会真收窄、真爆炸。绝不靠嘴说数字。
+  bombArm(n){ if (!game || game.type !== 'bomb') return '当前不在数字炸弹'; n = Math.round(Number(n)); if (!(n>=1 && n<=100)) return '埋雷要 1~100 的整数'; game.bomb=n; game.lo=1; game.hi=100; game.armed=true; game.playing=true; game.done=false; try{ localStorage.setItem('moss_party_state', JSON.stringify(game)); }catch(e){} stat(); bombShow(1,100,'💣 雷已埋好 · 数字保密（只有 AI 和主持人知道）· 开始轮流报数'); sendPageState(); return '雷已埋好（数字保密，别念出来），范围 1~100，请玩家轮流报数'; },
+  bombGuess(n){ if (!game || game.type !== 'bomb') return '当前不在数字炸弹'; if (!game.armed) return '还没埋雷：先 page_cmd 执行 PARTY.bombArm(数字)'; n = Math.round(Number(n)); if (!(n>=1 && n<=100)) return '报数要 1~100 的整数'; const r = bombStep(n); if (r.hit){ game.armed=false; game.playing=false; game.done=true; try{ localStorage.setItem('moss_party_state', JSON.stringify(game)); }catch(e){} stat(); bombBoom(''); sendPageState(); return '砰！踩中炸弹 ' + game.bomb + '，爆炸了（现在可以公布答案）'; } bombShow(r.lo,r.hi,'刚报 '+n+' · 安全，继续（'+r.lo+' ~ '+r.hi+'）'); try{ localStorage.setItem('moss_party_state', JSON.stringify(game)); }catch(e){} sendPageState(); return '报 '+n+' 安全 · 区间收窄到 '+r.lo+' ~ '+r.hi+'，继续'; },
+  clue(){ const line = showClue(); return line ? ('第 ' + game.clues + ' 条线索已上屏：' + line) : '当前不在你描述我猜'; },
+  // 🔴 快问快答：AI 自己点「开始出题」出题上屏，再照着念（人不触发 AI 时也能手点）
+  nextQuestion(){ const q = quizNext(); if (!q) return '当前不在快问快答'; if (!game || !game.opts) return '题目已上屏：' + q; return '题目已上屏：' + q + '｜选项：' + game.opts.map((o, i) => (i + 1) + '. ' + o).join(' / ') + '（照念题目和这四个选项，等大家抢答；玩家喊完用 PARTY.quizAnswer 判）'; },
+  // 🔴 快问快答判分：AI 只说答案，判对错交给页面（绝不许 AI 自己宣布对错）
+  quizAnswer(a){
+    if (!game || game.type !== 'quiz' || !game.opts) return '当前不在快问快答';
+    if (game.done) return '本题已经答完了，调 PARTY.nextQuestion() 出下一题';
+    const s = String(a == null ? '' : a).trim();
+    let idx = game.opts.indexOf(s);
+    if (idx < 0){ const n = parseInt(s.replace(/[^\d]/g, ''), 10); if (n >= 1 && n <= game.opts.length) idx = n - 1; }
+    if (idx < 0) return '没对上选项：' + s + '（可以传 1~4 或选项原文）';
+    const before = game.score;
+    quizPick(idx);
+    if (game.score > before) return '✅ 答对了 +1，当前得分 ' + game.score + '，主按钮已变「下一题」，念完就调 PARTY.nextQuestion()';
+    const left = game.opts.filter((o, i) => o !== game.q.a && (game.dead || []).indexOf(i) < 0).length;
+    return '❌ 答错了，这个选项已划掉，还剩 ' + left + ' 个，让玩家接着抢；绝对不要自己公布答案';
+  },
+  hint(){ if (game && game.type === 'quiz'){ const l = quizHint(); return '线索已上屏：' + l; } const l = showClue(); return l ? ('第 ' + game.clues + ' 条线索已上屏：' + l) : '当前没有可给线索的游戏'; },
+  // 🔴 脱口秀：AI 先抽一张话题卡上屏，再就着话题即兴 60~90 秒，讲完调 confetti（不给卡就别硬讲）
+  talkCard(){ if (!game || game.type !== 'talk') openStage('talk'); const t = pickFresh(OFF_TOPICS, 'talk'); big('<div class="bighint">脱口秀 · 话题卡</div><div class="qbig" style="font-size:clamp(30px,5vw,60px);line-height:1.3">' + t + '</div><div class="bighint line">即兴讲 60~90 秒，讲完撒花</div>'); game.playing = true; stat(); return '话题已上屏：' + t + '（就这个话题即兴讲 60~90 秒，中途别反问，讲完调 PARTY.confetti()）'; },
+  // 🔴 成语接龙：AI 出一个成语上屏，玩家用尾字接，接上了 AI 调 addScore
+  idiomCard(){ if (!game || game.type !== 'idiom') openStage('idiom'); const w = OFF_IDIOMS[Math.floor(Math.random()*OFF_IDIOMS.length)]; big('<div class="bighint">用最后一个字「' + w.slice(-1) + '」接成语（同音也算）</div><div class="word" style="font-size:clamp(30px,6vw,66px)">' + w + '</div><div class="bighint line">接上了加分，接不上换一个</div>'); game.playing = true; game.clues = 0; stat(); return '成语已上屏：' + w + '（尾字「' + w.slice(-1) + '」；玩家接对了调 PARTY.addScore(1)，接不上再调一次换词）'; },
   setBig(title, sub){ big('<div class="word" style="font-size:clamp(24px,4.5vw,44px)">' + title + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '')); return '大屏已更新'; },
   setScore(n){ if (game){ game.score = Number(n)||0; stat(); return '得分已改为 ' + game.score; } return '没在游戏中'; },
   addScore(n){ if (game){ game.score = (Number(game.score)||0) + (Number(n)||1); stat(); return '得分已加到 ' + game.score; } return '没在游戏中'; },
   confetti(){ ribbons(); return '彩带已撒（普通庆祝用彩带雨，大结局/冠军请调 PARTY.finale() 烟花秀）'; },
   fireworks(){ fireworks(); return '烟花已放（高光时刻专用）'; },
   finale(){ fireworks(); ribbons(); return '大结局：烟花秀+彩带雨全上！'; },
-  rollNames(list){ const names = Array.isArray(list) ? list : String(list||'').split(/[,，\n]/); const ns = names.map(s=>String(s).trim()).filter(Boolean); if (!ns.length) return '名单为空'; if (!game || game.type !== 'roll') openStage('roll'); clearInterval(rollTimer); rollTimer = setInterval(() => { $('rollname').textContent = ns[Math.floor(Math.random()*ns.length)]; }, 80); return '滚动中，共 ' + ns.length + ' 人'; },
-  stopRoll(){ if (rollTimer){ clearInterval(rollTimer); rollTimer = null; const winner = $('rollname').textContent; fireworks(); return '抽中：' + winner; } return '没在滚动'; },
+  rollNames(list){ const arr = Array.isArray(list) ? list : String(list||'').split(/[,，\n]/); const ns = arr.map(s=>String(s).trim()).filter(Boolean); if (!ns.length) return '名单为空'; const n = rollStart(ns); return '滚动中，共 ' + n + ' 人'; },
+  stopRoll(){ const w = rollStop(); if (!w) return '没在滚动（先调 rollNames 起滚）'; fireworks(); return '抽中：' + w; },
   say(text){ const box = $('big'); box.querySelectorAll('.ai:not(.ai-live)').forEach(e => e.remove()); let d = box.querySelector('.ai-live'); if (!d){ d = document.createElement('div'); d.className = 'ai ai-live'; box.appendChild(d); } d.textContent = String(text).slice(0, 200); return '已上屏'; },
   // 🔴 实时状态：AI 问“页面有啥/现在玩到哪/几个游戏”必须现查这个，别凭记忆瞎说
   state(){
-    const GAMES = { guess:'AI你描述我猜', bomb:'数字炸弹', roll:'AI幸运点名', quiz:'AI快问快答', idiom:'成语接龙', hot:'年度热词竞猜', talk:'AI主持脱口秀', song:'AI猜歌猜影' };
+    const GAMES = { guess:'AI你描述我猜', bomb:'数字炸弹', roll:'AI幸运点名', quiz:'AI快问快答', idiom:'成语接龙', hot:'年度热词竞猜', talk:'AI主持脱口秀', song:'AI猜歌猜影', sync:'默契大考验', dare:'真心话大冒险', tongue:'绕口令挑战', emoji:'看图猜词' };
     return JSON.stringify({
       游戏总数: Object.keys(GAMES).length,
       游戏清单: Object.values(GAMES),
       进阶玩法: ['AI主持脱口秀','AI猜歌猜影（语音点播即可）'],
       当前界面: game ? GAMES[game.type] : '游戏列表首页',
+      // 🔴 本局答案（AI 专用）：之前词只塞进一次性 typedCtx，用完即清 → AI 第二轮就忘了，
+      // 反过来问玩家"你说个词"（2026-11-18 实锤）。词必须随 state 每次现查都在。
+      当前答案: game ? (game.type === 'bomb' ? (game.armed && game.bomb != null ? String(game.bomb) : null) : ((game.type === 'guess' || game.type === 'hot' || game.type === 'song' || game.type === 'emoji') ? String(game.word || '') : null)) : null,
+      当前图标: game && game.type === 'emoji' ? String(game.emoji || '') : null,
+      当前答案用法: '这就是本局玩家要猜的词/炸弹数字：只准用它给线索，绝对不能念出来或说出包含的字。',
       正在玩: !!(game && game.playing),
       比分: game ? { 线索: game.clues, 猜错: game.wrong, 得分: game.score } : null,
       大屏文字: (($('big') && $('big').innerText) || '').replace(/\s+/g,' ').slice(0,120),

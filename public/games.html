@@ -224,9 +224,16 @@ async function startMic(){
         const ch = inp[0][0];
         if (ch){
           for (let i=0;i<ch.length;i++){
-            this.acc += ch[i]; this.cnt++; this.pos += this.ratio;
-            if (this.pos >= 1){ this.pos -= 1; this.b.push(this.acc/this.cnt); this.acc=0; this.cnt=0;
-              if (this.b.length >= 1600){ const o = Int16Array.from(this.b.splice(0,1600).map(v=>v<0?v*0x8000:v*0x7fff)); this.port.postMessage(o.buffer,[o.buffer]); } }
+            // 🔴 降采样必须 ratio 个输入出 1 个（48k→16k）。旧写法 pos += ratio / pos -= 1 = 每个采样都输出
+            // = 48k 数据贴 16k 标签上行，MOSS 听到慢 3 倍低 3 倍的声音，零转写（2026-11-18 23:23 实锤）
+            this.acc += ch[i]; this.cnt++; this.pos++;
+            if (this.pos >= this.ratio){
+              this.pos = 0;
+              let v = this.acc/this.cnt; this.acc=0; this.cnt=0;
+              if (v > 1) v = 1; else if (v < -1) v = -1;
+              this.b.push(v);
+              if (this.b.length >= 1600){ const o = Int16Array.from(this.b.splice(0,1600).map(x=>x<0?x*0x8000:x*0x7fff)); this.port.postMessage(o.buffer,[o.buffer]); }
+            }
           }
         }
         return true;
@@ -431,7 +438,7 @@ async function startAll(){
     running = true; startTries = 0; reconnects = 0;
     try { localStorage.setItem('moss_live_games', '1'); } catch {}
     keepAwakeOn();
-    $('wBtn').textContent = '挂 断'; wst('通话中 · 你说它听着', 'on'); tipW('语音已接通，直接说话吧'); try { ws.send(JSON.stringify({ action:'client.log', msg:'MICPROBE ' + (window.__micProbe||'?') + ' track=' + ((micStream.getAudioTracks()[0]||{}).label||'?') })); } catch {}
+    $('wBtn').textContent = '挂 断'; wst('通话中 · 你说它听着', 'on'); tipW('语音已接通，直接说话吧'); try { ws.send(JSON.stringify({ action:'client.log', msg:'MICPROBE ' + (window.__micProbe||'?') + ' track=' + ((micStream.getAudioTracks()[0]||{}).label||'?') })); setTimeout(() => { try { ws && ws.readyState === 1 && ws.send(JSON.stringify({ action:'client.log', msg:'VOLSTATS rms=' + (typeof vol==='number'?vol.toFixed(5):'?') + ' sent=' + micSent })); } catch {} }, 3500); } catch {}
   } catch (err){
     lastErr = err.message;
     if (startTries < 1){ startTries++; wst('连接失败，自动重试…'); tipW('连接失败，1.5 秒后自动重试…'); starting = false; clearTimeout(rcTimer); rcTimer = setTimeout(startAll, 1500); return; }

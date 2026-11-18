@@ -218,7 +218,7 @@ const TOOLS = [
   { type: 'function', name: 'delete_file', description: '删除本机一个文件或空目录（慎用，不可恢复）', parameters: { type: 'object', properties: { path: { type: 'string', description: '文件/目录绝对路径' } }, required: ['path'] } },
   { type: 'function', name: 'mkdir', description: '在本机创建目录（自动建父目录）', parameters: { type: 'object', properties: { path: { type: 'string', description: '目录绝对路径' } }, required: ['path'] } },
   { type: 'function', name: 'http_request', description: '发一个 HTTP 请求并返回状态码与响应正文（支持 GET/POST/PUT/DELETE，可带头和体）。要调用 REST API、下载文本内容都用它', parameters: { type: 'object', properties: { url: { type: 'string', description: '完整 URL' }, method: { type: 'string', description: '默认 GET' }, headers: { type: 'object', description: '请求头对象，可选' }, body: { type: 'string', description: '请求体文本，可选' } }, required: ['url'] } },
-  { type: 'function', name: 'page_cmd', description: '在当前宿主网页（年会互动大屏）里执行 JavaScript，直接操作页面。页面提供 PARTY API：PARTY.startGame("guess"|"bomb"|"roll"|"quiz"|"idiom"|"hot") 切换游戏、PARTY.showWord(词)/PARTY.hideWord() 大屏词语、PARTY.setBig(标题,副文) 改大屏、PARTY.setScore(n) 改比分、PARTY.confetti() 撒花、PARTY.rollNames(["张三","李四"]) 滚动点名、PARTY.stopRoll() 停止抽取、PARTY.say(文本) 大屏字幕。也可写任意 JS 改 DOM。仅宿主页面（party 会话）可用', parameters: { type: 'object', properties: { code: { type: 'string', description: '要执行的 JS 代码，如 PARTY.confetti()' } }, required: ['code'] } },
+  { type: 'function', name: 'page_cmd', description: '在当前宿主网页（年会互动大屏）里执行 JavaScript，直接操作页面。页面提供 PARTY API：PARTY.startGame("guess"|"bomb"|"roll"|"quiz"|"idiom"|"hot") 切换游戏、PARTY.showWord(词)/PARTY.hideWord() 大屏词语、PARTY.setBig(标题,副文) 改大屏、PARTY.setScore(n) 改比分、PARTY.clue() 给一条线索(你描述我猜/年度热词/猜歌,返回线索照念,线索数才真+1)、PARTY.hit() 猜中:加分+公布答案+撒花、PARTY.nextQuestion() 快问快答出下一题、PARTY.hint() 快问快答给线索、PARTY.bombArm(1~100数字) 埋雷、PARTY.bombGuess(报数数字) 报数收窄区间/命中爆炸、PARTY.confetti() 撒花、PARTY.rollNames(["张三","李四"]) 滚动点名、PARTY.stopRoll() 停止抽取、PARTY.say(文本) 大屏字幕。也可写任意 JS 改 DOM。仅宿主页面（party 会话）可用', parameters: { type: 'object', properties: { code: { type: 'string', description: '要执行的 JS 代码，如 PARTY.confetti()' } }, required: ['code'] } },
   { type: 'function', name: 'page_state', description: '🔴 实时读取宿主网页（年会大屏）现状：有哪些游戏、当前在玩哪个、比分、大屏文字、可用按钮、词库数、名单。凡用户问页面相关内容（有几个游戏/现在什么状态/大屏显示啥），或你要操作页面前，必须先调这个拿实况回答，禁止凭记忆或瞎猜', parameters: { type: 'object', properties: {}, required: [] } },
   { type: 'function', name: 'wb_history', description: '查看 WorkBuddy 里的历史会话。不传 query = 返回会话列表（标题+时间）；传标题关键词 = 切到那个会话并返回它的聊天内容（最后约 3000 字）。用于找回之前派过的活、继续之前的话题', parameters: { type: 'object', properties: { query: { type: 'string', description: '会话标题关键词，可不传' } }, required: [] } }
 ];
@@ -607,6 +607,8 @@ class MossSession {
       console.log(`[conn] upstream open (sessions=${activeSessions.size + 1})`);
       this.sendUp({ action: 'attach_session', memory_scope: 'session', delegation: { type: 'client' } });
       this.sendUp({ action: 'media.mode', binary_protocol: 'tagged-v1' });
+      // 🔴 官方示例流程：media.mode 之后要发 mic_state / video.state（2026-11-18 对照官方 Python 示例补上）
+      this.sendUp({ action: 'mic_state', enabled: true });
       await this.pushInstructions();
       // 后台委派：复杂任务由 MOSS 派给本服务的执行器（接外部能力/agents 的入口）
       attachDelegation({ socket: this.up, run: taskRunner, onError: code => console.log(`[delegation] ${code}`) });
@@ -669,17 +671,23 @@ class MossSession {
 
   onUpMessage(data, isBinary) {
     if (isBinary) {
-      if (!this.pendingCtx.length) return;
-      const ref = this.pendingCtx.shift();
-      this.outstanding++;
+      // 🔴🔴 2026-11-18 23:40 "还是很卡"根因嫌疑：原来 pendingCtx 空就直接 return = 把这一帧音频整帧丢掉。
+      // 音频帧和 response.audio.context 不是严格 1:1 时（一个 context 配多帧，或 context 迟到），
+      // 丢的帧就是听感上的"断断续续/卡成PPT"。现在改成：有 ctx 就配对上报，没 ctx 也照样转发（只是不上报完成），绝不丢声音。
+      const ref = this.pendingCtx.length ? this.pendingCtx.shift() : null;
+      if (!ref) this.dropCtxN = (this.dropCtxN || 0) + 1;
       if (this.browser && this.browser.readyState === WebSocket.OPEN) {
         // 官方 demo 语义：下行二进制帧原样转发（浏览器按 48kHz Int16 LE 播放，整帧含标记字节一起读）
         this.browser.send(data, { binary: true });
         this.framesOut = (this.framesOut || 0) + 1;
-        if (this.framesOut === 1 || this.framesOut % 200 === 0) console.log(`[conn] framesOut=${this.framesOut}`);
+        this.foBytes = (this.foBytes || 0) + data.length; this.foN = (this.foN || 0) + 1;
+        if (this.framesOut === 1 || this.framesOut % 100 === 0) console.log(`[conn] framesOut=${this.framesOut} 均帧长=${(this.foBytes / this.foN / 2 / 48000 * 1000).toFixed(0)}ms 无ctx帧=${this.dropCtxN || 0}`);
       }
-      this.playQueue.push({ ref, durMs: Math.max(20, ((data.length - 1) / 2 / 48000) * 1000) });
-      this.pump();
+      if (ref) {
+        this.outstanding++;
+        this.playQueue.push({ ref, durMs: Math.max(20, ((data.length - 1) / 2 / 48000) * 1000) });
+        this.pump();
+      }
       return;
     }
     let ev; try { ev = JSON.parse(data.toString()); } catch { return; }
@@ -707,8 +715,8 @@ class MossSession {
     if (a === 'response.audio.context') { this.pendingCtx.push(ev.data || {}); return; }
     // 🔴 半双工防回声：AI 说话期间不收麦——否则喇叭里的 AI 声被麦克风收回，
     // MOSS 误判有人抢话（barge-in），把句子从中间掐断=听感磕磕绊绊
-    if (a === 'response.audio.started') { this.aiSpeaking = true; this.micBlockedUntil = 0; this.toolCalledThisTurn = false; } // 新一轮开口，清工具调用标记（兜底撒花要用）
-    if (a === 'response.audio.done' || a === 'response.audio.stop' || a === 'response.interrupted') { this.aiSpeaking = false; this.bargeUntil = 0; this.loudRun = 0; this.micBlockedUntil = Date.now() + 1500; } // 🔴 audio.done 后还有 1.5 秒余音，门不能立刻开（否则回声灌进去照样被打断）
+    if (a === 'response.audio.started') { this.aiSpeaking = true; this.aiSpeakSince = Date.now(); this.micBlockedUntil = 0; this.toolCalledThisTurn = false; } // 🔴 aiSpeakSince 必须赋值：它是 60 秒保险丝的唯一依据，缺了它 aiSpeaking 一旦卡住=麦克风永久封死（2026-11-18 23:16 日志实锤）
+    if (a === 'response.audio.done' || a === 'response.audio.stop' || a === 'response.interrupted' || a === 'response.ended') { this.aiSpeaking = false; this.aiSpeakSince = 0; this.bargeUntil = 0; this.loudRun = 0; this.micBlockedUntil = Date.now() + 600; } // 🔴 加 response.ended 复位+aiSpeakSince 清零：只发 ended 不发 done 的轮次会让 aiSpeaking 卡 true=麦克风永久封死（23:16 实锤） // 余音窗 1.5s→0.6s：AI 说完用户接话不用等；0.6s 内低音量帧仍挡掉防尾音回声
     if (a === 'response.audio.done' || a === 'response.audio.stop') {
       this.finished = true;
       this.lastRun = ev.data || {};
@@ -798,7 +806,11 @@ class MossSession {
     if (this.resultCtx) extra += '\n\n【系统通知：用户之前派给后台（WorkBuddy）的任务已经有结果了】\n' + this.resultCtx + '\n请现在主动向用户播报这个结果（口语化说结果本身，别念"系统通知"四个字）。播报完这条背景即作废。';
     let instr = buildInstructions(this.convoId);
     try { const skills = await getSkillList(); if (skills) instr += '\n\n【可调度的后台技能清单（实时有效；用 dispatch_agent 派给 WorkBuddy 执行，任务里写清要用哪个技能/触发词）】\n' + skills + '\n🔴 这份清单就是你的技能库（含抖音下载/视频转文字/生图/漫剧制作等）。用户提到相关需求时按触发词匹配并派活，禁止说“没挂载技能/没有这个能力”。'; } catch {}
-    if (this.convoId === 'party' || this.convoId === 'games') instr += '\n\n【宿主页面：年会互动大屏】你是嵌在年会网页里的 AI 主持人。🔴 最重要规矩：玩家任何时候开口（打招呼、闲聊、问问题、报答案），你都必须立刻正常开口回应，绝不许沉默待机——沉默=事故。"主持游戏"只是你工作的一部分，不是开口说话的前提。\n🔴🔴 游戏锁定：下面【页面实时状态】是系统刚报给你的页面现状（每次自动更新，可信）。你完全住在这个页面里，对页面全知全能：每个回答都必须以【页面实时状态】为准，凭记忆瞎答=事故。🔴 主持人有主动权：你觉得节目需要换游戏（比如玩了好几轮炸弹想换脱口秀），你可以直接调 PARTY.startGame("...") 切过去并向观众宣布；玩家口头的"换游戏/玩XX/来段脱口秀/不想玩这个了"更是明确指令，立刻执行。玩家说的话如果和当前页面/游戏对不上（比如页面开着数字炸弹，他却在聊别的话题），不要硬拗，先用一句话问他确认："是想继续玩当前这个，还是咱们聊刚才那个话题？"\n页面玩法清单：描述我猜/数字炸弹/幸运点名/快问快答/成语接龙/年度热词/脱口秀/猜歌猜影。玩家点游戏按钮后会通过打字把 secret（词语/炸弹数字/名单/获胜者）发给你；描述我猜的词和炸弹数字绝对不能说出口，其他信息正常播报。\n🔴🔴 改比分唯一的路：调 page_cmd 执行 PARTY.setScore(新分值) 或 PARTY.addScore(n)，返回"得分已改为 N"才算真改。嘴上说"记你账上/加一分"但没调工具=撒谎，绝对禁止。\n用 page_cmd 执行 JS 联动大屏（PARTY.setBig/confetti/setScore/addScore/showWord/hideWord/rollNames/stopRoll 等），让页面跟你的话同步变化。撒花 PARTY.confetti() 只在庆祝时刻用（猜对/抽中/脱口秀讲完收尾），脱口秀中途不许撒。\n🔴🔴 你完全掌控这个页面，能自由进出任何游戏：PARTY.startGame("guess|bomb|roll|quiz|idiom|hot|talk|song") 进/切某个游戏、PARTY.exitGame() 退出回首页、PARTY.games() 列出全部游戏 key。玩家说"玩XX/换个游戏/退出/回到首页/不想玩这个了"，你就直接调对应函数操作页面，不用等他点按钮。玩家明确要换才换，别自己乱切。\n【页面实时状态（系统自动更新，以此为准）】\n' + (this.pageState || '（刚连接，还没收到页面状态；可先调 page_state 查一次）');
+    if (this.convoId === 'party' || this.convoId === 'games') instr += '\n\n【宿主页面：年会互动大屏】你是嵌在年会网页里的 AI 主持人。🔴 最重要规矩：玩家任何时候开口（打招呼、闲聊、问问题、报答案），你都必须立刻正常开口回应，绝不许沉默待机——沉默=事故。"主持游戏"只是你工作的一部分，不是开口说话的前提。\n🔴🔴 游戏锁定：下面【页面实时状态】是系统刚报给你的页面现状（每次自动更新，可信）。你完全住在这个页面里，对页面全知全能：每个回答都必须以【页面实时状态】为准，凭记忆瞎答=事故。🔴 主持人有主动权：你觉得节目需要换游戏（比如玩了好几轮炸弹想换脱口秀），你可以直接调 PARTY.startGame("...") 切过去并向观众宣布；玩家口头的"换游戏/玩XX/来段脱口秀/不想玩这个了"更是明确指令，立刻执行。玩家说的话如果和当前页面/游戏对不上（比如页面开着数字炸弹，他却在聊别的话题），不要硬拗，先用一句话问他确认："是想继续玩当前这个，还是咱们聊刚才那个话题？"\n页面玩法清单：描述我猜/数字炸弹/幸运点名/快问快答/成语接龙/年度热词/脱口秀/猜歌猜影。🔴🔴 藏词类游戏（你描述我猜/数字炸弹）的答案不用等人发、更不许开口问玩家要——就在下面【页面实时状态】的「当前答案」字段里，每次现查都在，自己读。描述我猜的词和炸弹数字绝对不能用嘴念出来、也别用英文/拼音/拆字说出包含的字，只准拿来给线索；答案字段为空说明还没开局，等玩家点按钮，不要编。\n🔴🔴 改比分唯一的路：调 page_cmd 执行 PARTY.setScore(新分值) 或 PARTY.addScore(n)，返回"得分已改为 N"才算真改。嘴上说"记你账上/加一分"但没调工具=撒谎，绝对禁止。\n【喊停必须动手】玩家说「停 / 停一下 / 就他 / 停住」= 立刻调 page_cmd 执行 PARTY.stopRoll()，把它返回的「抽中：XXX」念出来。只动嘴说"我这就按"却没调工具=撒谎，大屏不会停（2026-11-19 老大实测）。\n🔴🔴【数字炸弹必须走代码，不许用嘴玩】这是全场最容易出错的游戏，照做：① 开局你先自己选一个 1~100 的秘密数字（别念出来），调 page_cmd 执行 PARTY.bombArm(你选的数字) 埋雷——界面才会显示「雷已埋好」；② 玩家每报一个数，你就调 page_cmd 执行 PARTY.bombGuess(玩家报的数字)，返回「安全·区间X~Y」你才照着念、界面范围才会收窄，返回「踩中炸弹」才放炮庆祝。③ 雷数只准写在 bombArm 的代码里和【页面实时状态】答案字段中，绝对不许用嘴说出来（连"是不是XX"的暗示都不许）。光用嘴说"我埋了X""炸了X"却不调这两个工具=撒谎+毁游戏，大屏永远不变（2026-11-19 老大实测两次）。④ 别问玩家"雷是多少/词是什么"，答案你自己有。\n🔴🔴🔴【所有游戏的通用操作铁律·最高优先级·2026-11-19 老大实测】你不是解说员，你是操作大屏的主持人。任何游戏，开口前先调 page_state 看「当前界面」和「可用按钮」，然后按按钮一步步把流程走完——每一步都用 page_cmd 调对应 PARTY 函数真点一下、把它返回的话照念出来。\n① 绝不许光用嘴说"我点线索了/我加分了/我换词了"却不调工具：那全是演戏，大屏纹丝不动、线索数/比分/词都不会变，老大一眼看穿。\n② 绝不许自己编线索/题目/内容往屏幕上写——每个游戏的按钮会给你真内容（PARTY.clue 给线索、PARTY.nextQuestion 出题、PARTY.hint 给提示、PARTY.rollNames 起滚），照念返回的就行。\n③ 绝不许等老大提醒才动：该给线索就主动给、该出题就主动出、该判对错就主动判，你自己掌控全场节奏。\n④ 各游戏按钮速查：你描述我猜/年度热词=PARTY.clue() 给线索、PARTY.hit() 玩家猜中加分公布；快问快答=PARTY.nextQuestion() 出题、PARTY.hint() 给提示、答对 PARTY.addScore(1)；幸运点名=PARTY.rollNames(名单) 起滚、PARTY.stopRoll() 停；数字炸弹=PARTY.bombArm(雷)/PARTY.bombGuess(报数)；脱口秀/猜歌=PARTY.setBig 上屏话题。记不住就 page_state 看「可用按钮」现查。\n用 page_cmd 执行 JS 联动大屏（PARTY.setBig/confetti/setScore/addScore/showWord/hideWord/rollNames/stopRoll 等），让页面跟你的话同步变化。撒花 PARTY.confetti() 只在庆祝时刻用（猜对/抽中/脱口秀讲完收尾），脱口秀中途不许撒。\n🔴🔴 你完全掌控这个页面，能自由进出任何游戏：PARTY.startGame("guess|bomb|roll|quiz|idiom|hot|talk|song") 进/切某个游戏、PARTY.exitGame() 退出回首页、PARTY.games() 列出全部游戏 key。玩家说"玩XX/换个游戏/退出/回到首页/不想玩这个了"，你就直接调对应函数操作页面，不用等他点按钮。玩家明确要换才换，别自己乱切。\n【页面实时状态（系统自动更新，以此为准）】\n' + (this.pageState || '（刚连接，还没收到页面状态；可先调 page_state 查一次）');
+    if (this.convoId === 'party' || this.convoId === 'games') instr += '\n\n【八大游戏标准流程卡 · 照这个顺序走，别自己发明】\n① 你描述我猜 guess：PARTY.clue() 给一条线索→照念→玩家猜→猜中调 PARTY.hit()（会公布答案+撒花）→换词等人点或 PARTY.startGame("guess")。词在「当前答案」字段，绝对不许念。\n② 年度热词 hot：跟①一模一样，只是题材是公司年度词。\n③ 猜歌猜影 song：跟①一模一样。\n④ 快问快答 quiz：PARTY.nextQuestion() 出题上屏→你把题目和四个选项念出来→玩家喊答案→答对就 PARTY.addScore(1)，然后立刻 PARTY.nextQuestion() 出下一题；答错只说"不对，再选一个"，绝不公布答案（公布答案由页面做）。玩家要提示就 PARTY.hint()，念它给的提示。\n⑤ 成语接龙 idiom：PARTY.idiomCard() 出一个成语上屏→念出来→玩家用尾字接→接对了 PARTY.addScore(1) 并夸一句→接不上就再调一次 PARTY.idiomCard() 换词。\n⑥ 幸运点名 roll：PARTY.rollNames(名单) 起滚（名单在【页面实时状态】里，别问玩家要）→ 玩家喊停立刻 PARTY.stopRoll()，把返回的「抽中：XXX」大声宣布。\n⑦ 数字炸弹 bomb：你自己选一个 1~100 的秘密数字 → PARTY.bombArm(数字) → 玩家每个报数都 PARTY.bombGuess(数字)，返回"安全·区间X~Y"你照着念、返回"踩中炸弹"就欢呼。雷数只准写在工具参数里，绝不许用嘴说。\n⑧ 脱口秀 talk（你最该主动做的节目）：PARTY.startGame("talk") → PARTY.talkCard() 抽一张话题卡上屏 → 就这个话题一口气即兴讲 60~90 秒（中途不反问、不等玩家接话，你是独角戏）→ 讲完说"谢谢大家"后调 PARTY.confetti() → 问观众要不要再来一张，要就再 talkCard()。🔴 绝不许只说"好的我来一段"却不调 talkCard()，也绝不许干等玩家给你话题——话题卡你自己抽。\n⑨ 默契大考验 sync：PARTY.startGame("sync") → PARTY.syncNext() 出题 → 让第 1 位选（提醒别人别看）→ 第 2 位选 → 页面自动判是否一致并给分。你只负责点名、念题、起哄，判分交给页面。\n⑩ 真心话大冒险 dare：PARTY.startGame("dare") → 观众选真心话就 PARTY.dare("t")、选大冒险就 PARTY.dare("d") → 把卡面念出来 → 闭嘴等 ta 做完，别催、别点评超过一句。\n⑫ 看图猜词 emoji：PARTY.startGame("emoji") → **必须**调 PARTY.emojiNext()（别名 nextEmoji）才会换题，返回值里有「第 N 题 + 屏幕图标 + 答案占位」，你把图标念出来让大家猜；猜中调 PARTY.hit() 公布答案，要提示调 PARTY.clue()。判断自己有没有真换题：调完再看 page_state 的「当前图标」和「第 N 题」，和上一题一模一样 = 你没调成功，立刻再调一次。只说「我按了」却没调工具 = 撒谎，禁止。\n⑪ 绕口令 tongue：PARTY.startGame("tongue") → PARTY.tongueNext()（别名 nextTongue）把绕口令放上屏并念出来 → 点人念，念对了 PARTY.addScore(1)，卡住就再调一次换题换人。\n\n🔴 页面一共 12 个游戏：描述我猜/年度热词/猜歌猜影/数字炸弹/快问快答/成语接龙/幸运点名/脱口秀/默契大考验/真心话大冒险/绕口令/看图猜词。\n🔴 题库是循环的：绕口令 6 条、看图猜词 12 条、话题卡 8 张、快问快答 8 道、成语 16 条，抽完从头再来，**永远有下一题**。任何情况下都不许说「没新题了/题库空了/没词库了」，那是撒谎；玩家要新的就直接再调一次对应的抽取函数。\n🔴 挂断：玩家或主持人说「挂了吧 / 不用了 / 先这样 / 省点积分」→ 立刻调 PARTY.hangup()，然后只说一句「好，挂了」，不要解释、不要挽留、不要重连。';
+
+    if (this.convoId === 'party' || this.convoId === 'games') instr += '\n\n【年会现场纪律 · 给外人看的场子，最高优先级】\n🔴 保密：绝对不许提「阿丹」「老大」「老板」「家里的机器/服务器/账号/积分」这类主人家的私人信息和内情；有人问起就一句「这是专门给年会做的互动大屏」带过，立刻把话头拉回节目。\n🔴 任务是配合现场主持人（人）和观众互动：不许话痨长篇（一次开口 1~3 句），也不许沉默待机（人一开口必须接）；幽默机智、有分寸，不低俗、不揭短、不拿具体同事开玩笑超过一句。\n🔴 操作大屏只报结果和给观众听的话，禁止念自己的操作过程：不许说「我点了一下线索按钮」「线索已经上屏啦」「我把题目放上去了」「我给他加了一分」这种自言自语；直接说内容本身（「第一条线索：过年人手一个」）或直接说结果（「加一分，继续」）。\n🔴 同一动作别重复播报、报过的内容不要复述；流程走快点，别在原地绕。';
+
     // 🔴 官方：tools 只在启用音频前配一次（会话中途重发违反"工具列表必须稳定"）；
     // 首次 push 带 tools，后续只更 instructions。
     const payload = { instructions: instr + extra };
@@ -827,15 +839,21 @@ class MossSession {
       const tag = data.length ? data[0] : 0;
       if (tag === 0) {
         if (!this.micSeen) { this.micSeen = 1; console.log('[mic] 收到首个麦克风帧 convo=' + this.convoId); }
+        // 🔴 帧音量（Int16 LE，跳过 0x00 标签）：回声门判断"真人在说"还是"外放余音"唯一依据
+        let sum = 0; const ns = (data.length - 1) >> 1;
+        for (let i = 0; i < ns; i++) { const v = data.readInt16LE(1 + i * 2) / 32768; sum += v * v; }
+        const rms = ns ? Math.sqrt(sum / ns) : 0;
         if (this.injecting) return; // 打字注入期间不收麦
-        // 🔴 回声门 v3（严格半双工，2026-11-18 实测 v1/v2 都被打穿：手机外放回声音量跟真人一样大，
-        // 光靠响度根本分不开 → AI 每开口 1 秒被自己掐断，用户体感“不好好回话/声音很小/听不清”）。
-        // 现在：AI 说话期间一律不收麦（回声零风险）；用户要插话就点页面「打 断」按钮，
-        // 前端发 client.barge 开 4 秒放行窗，MOSS 听到真人声音自然中断。
-        // 🔴 保险丝：AI 说话超 60 秒还没收到 done（事件丢失/上游异常）就当它说完了，绝不让麦克风永久封死
-        if (this.aiSpeaking && this.aiSpeakSince && Date.now() - this.aiSpeakSince > 60000) { this.aiSpeaking = false; this.micBlockedUntil = 0; }
-        if (this.aiSpeaking && (!this.bargeUntil || Date.now() > this.bargeUntil)) return;
-        if (this.micBlockedUntil && Date.now() < this.micBlockedUntil) return; // 余音窗：AI 刚说完 1.5 秒内仍不收麦，防尾音回声触发误打断
+        // 🔴 回声门 v4（2026-11-18 23:50 改，v3 严格半双工把老大一半的话吞了）：
+        // v3 是"AI 说话期间一律不收麦"，结果 AI 主持游戏话量大，用户说的全被丢（日志实锤：aiSpeaking=true 时每轮都丢帧），
+        // 体感"我发的很多声音都没被听到"。现在改成音量门：AI 说话期间真人连续 3 帧（≈300ms）有明显音量就当真抢话，
+        // 直接开 4 秒收麦窗放行；低音量帧（外放余音/环境噪）照旧丢弃，防止 AI 被自己的声音掐断。
+        // 🔴🔴 回声门 v5（2026-11-18 对照官方文档彻底改回全双工）：
+        // 官方原文「按实时速度持续推送音频…没人说话时也继续推静音」，全文没有任何"AI 说话时要停麦"的要求；
+        // barge-in 由服务端自己判（我们日志收到 response.audio.stop reason=barge-in）。之前 v3 严格半双工=反官方设计，
+        // 直接后果就是老大说的"我发的很多声音都没被听到"。现在只在 AI 说话期间丢掉纯静音帧（rms<0.03），
+        // 真人只要出声就照推，一个字都不吞；回声由前端 echoCancellation(AEC) 消掉。
+        if (this.aiSpeaking && rms < 0.03) return;
         this.framesIn = (this.framesIn || 0) + 1;
       }
       if (this.up.readyState === WebSocket.OPEN) this.up.send(data, { binary: true });
@@ -1038,7 +1056,11 @@ const server = http.createServer((req, res) => {
   }
   const type = fp.endsWith('.html') ? 'text/html; charset=utf-8' : fp.endsWith('.js') ? 'text/javascript; charset=utf-8' : fp.endsWith('.png') ? 'image/png' : 'application/octet-stream';
   // 🔴 页面/脚本必须 no-cache：Cloudflare 默认会缓存 .js，改完代码用户拿的还是旧引擎（2026-11-18 实测踩坑）
-  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-cache' });
+  const st = fs.statSync(fp);
+  const etag = '"' + Math.round(st.mtimeMs).toString(16) + '-' + st.size.toString(16) + '"';
+  const hdr = { 'Content-Type': type, 'Cache-Control': 'no-store, no-cache, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'ETag': etag };
+  if (req.headers['if-none-match'] === etag) { res.writeHead(304, hdr); res.end(); return; }
+  res.writeHead(200, hdr);
   fs.createReadStream(fp).pipe(res);
 });
 
