@@ -8,9 +8,9 @@ MOSS-Live 全双工语音互动网页。浏览器(麦克风) ↔ 本服务(WS �
 npm i
 MOSS_API_KEY=sk-xxx PORT=3900 node server.mjs
 # 可选扩展（不配也能跑，语音/游戏全部正常）：
-#   MOSS_API_KEY_PARTY=sk-yyy   第二个账号 key，给 /party 用（官方每账号并发=1，两页同开必须配）
+#   MOSS_MAIN_API_KEY=sk-yyy        第二个账号 key，给 /party 用（官方每账号并发=1，两页同开必须配）
 #   OPENMEM_URL=http://host:3466/mcp   接记忆中枢，开启 search_memory/save_memory
-#   WB_BRIDGE_URL=http://host:18799       接后台 agent 桥，开启 dispatch_agent/wb_history")
+#   WB_BRIDGE_URL=http://host:18799       接后台 agent 桥，开启 dispatch_agent/wb_history
 ```
 
 打开 http://127.0.0.1:3900
