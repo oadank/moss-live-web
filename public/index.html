@@ -63,6 +63,10 @@
   .mini { pointer-events:auto; cursor:pointer; border:1px solid rgba(110,200,255,.3); background:rgba(16,26,44,.8); color:#bfe6ff; border-radius:999px; width:46px; height:46px; font-size:18px; transition:.2s; flex:none; }
   .mini:hover { border-color:#63e6ff; }
   .mini.on { background:#16405a; border-color:#41e0a0; }
+  .sel { pointer-events:auto; cursor:pointer; height:46px; border:1px solid rgba(110,200,255,.3); background:rgba(16,26,44,.8); color:#bfe6ff; border-radius:999px; padding:0 12px; font-size:13px; outline:none; flex:none; }
+  .sel:focus { border-color:#63e6ff; }
+  #modeSel { width: 108px; }
+  #modelSel { width: 92px; }
   #txt { pointer-events:auto; width:min(340px,40vw); height:46px; border-radius:999px; border:1px solid rgba(110,200,255,.3); background:rgba(10,16,28,.85); color:#e8eef7; padding:0 18px; font-size:14px; outline:none; }
   #txt:focus { border-color:#63e6ff; }
   #hist { position:fixed; top:92px; left:12px; z-index:60; }
@@ -100,6 +104,10 @@
   @media (max-width: 640px){
     #bar { flex-wrap: nowrap; padding: 10px 6px; gap: 6px; }
     .mini { width: 38px; height: 40px; font-size: 15px; flex: none; }
+    .sel { height: 40px; padding: 0 8px; font-size: 12px; }
+    #modeSel { width: 84px; }
+    #modelSel { width: 70px; }
+    #camBtn, #scrBtn { display: none; } /* 手机不常用摄像头/屏幕共享，腾出底栏宽度 */
     #btn { padding: 12px 20px; font-size: 14px; flex: none; }
     #txt { flex: 1; width: auto; min-width: 0; height: 40px; padding: 0 12px; font-size: 13px; }
     #histBody { width: min(320px, 86vw); }
@@ -120,7 +128,7 @@
 <div class="vignette"></div>
 <header>
   <div class="brand">MOSS · <b>LIVE</b> 语音互动</div>
-  <a id="goParty" href="/party" title="打开 AI 语音互动游戏">🏮 去玩游戏</a>
+  <a id="goParty" href="/games" title="打开 AI 语音互动游戏">🏮 去玩游戏</a>
   <div class="status"><span class="dot" id="dot"></span><span id="stTxt">未连接</span><span id="lvlwrap"><span id="lvl" style="display:block"></span></span></div>
 </header>
 
@@ -140,12 +148,15 @@
 <div id="diag">诊断:等待开始</div>
 <video id="vid" muted playsinline style="display:none"></video>
 <div id="bar">
+  <select id="modeSel" class="sel" title="语音引擎"><option value="moss">MOSS 语音</option><option value="local">本地免费</option></select>
+  <select id="modelSel" class="sel" title="本地模型"><option value="hy4f">hy4f</option><option value="dsv4.1f">dsv4.1f</option><option value="main">main</option></select>
   <button id="camBtn" class="mini" title="摄像头">📷</button>
   <button id="scrBtn" class="mini" title="屏幕共享">🖥️</button>
   <button id="btn">开 始</button>
   <input id="txt" placeholder="打字也可以…" maxlength="300"><button id="txtSend" class="mini">发</button>
 </div>
 
+<script src="/localvoice.js?v=4"></script>
 <script>
 const $ = id => document.getElementById(id);
 const btn = $('btn'), dot = $('dot'), stTxt = $('stTxt');
@@ -527,7 +538,42 @@ function stop(){
   btn.textContent = '开 始'; btn.classList.remove('stop'); btn.disabled = false;
   setStatus('未连接'); tip('已挂断 · 再点开始可重新对话');
 }
-btn.onclick = () => running ? stop() : start();
+btn.onclick = () => { if (running) return stop(); if (($('modeSel').value||'moss')==='local') return startLocal(); start(); };
+
+// ============ 本地免费语音链路（共享引擎 localvoice.js：ASR→大模型→TTS，零语音费） ============
+LocalVoice.init({
+  convo: 'default',
+  getModel: () => $('modelSel').value,
+  allowPageCmd: false,
+  onUser: t => say('user', t),
+  onAi: t => say('ai', t),
+  onAiLive: t => say('ai', t),
+  onStatus: t => setStatus(t, 'on'),
+  onTip: t => tip(t),
+  onAudio: url => LocalVoice.playUrl(url),
+});
+async function startLocal(){
+  if (running || LocalVoice.on) return;
+  try {
+    await LocalVoice.start();
+    running = true; btn.textContent = '挂 断'; btn.classList.add('stop'); btn.disabled = false;
+    setStatus('本地模式', 'on'); tip('本地免费链路已接通：说完停一下自动发。识别、思考、播报每步都有实时状态。');
+  } catch (err) { tip('本地模式启动失败：' + err.message); setStatus('出错', 'err'); }
+}
+$('modeSel').addEventListener('change', async e => {
+  if (running) stop();
+  if (e.target.value === 'local') { await startLocal(); }
+  else tip('已切回 MOSS 实时语音，点「开 始」接通');
+});
+const _stopIdx = stop;
+stop = function(){ if (LocalVoice.on) LocalVoice.stop(); _stopIdx(); };
+const _sendText = sendText;
+sendText = function(){
+  if (!LocalVoice.on) return _sendText();
+  const t = $('txt').value.trim(); if (!t) return;
+  $('txt').value = '';
+  LocalVoice.chatText(t);
+};
 
 // 🔴 刷新不掉线：上次没挂断就刷新 → 自动重连（服务端按 tok 复用上游会话，AI 侧聊天不中断）
 if (localStorage.getItem('moss_live') === '1') {
@@ -544,7 +590,7 @@ function sendText(){
   ws.send(JSON.stringify({ action: 'client.say', text: t }));
   $('txt').value = '';
 }
-$('txtSend').onclick = sendText;
+$('txtSend').onclick = () => sendText();
 $('txt').addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
 
 // ---------- 摄像头 / 屏幕共享（两路可同时开，各自独立开关） ----------

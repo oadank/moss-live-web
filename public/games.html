@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>AI 语音互动游戏 🏮</title>
+<link rel="icon" type="image/svg+xml" href="/icon-party.svg">
+<link rel="apple-touch-icon" href="/icon-party.svg">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0612; color:#fff3e6; font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif; min-height:100vh; overflow-x:hidden; }
+  #bg { position:fixed; inset:0; background:radial-gradient(1100px 560px at 50% -8%, #5a142055, transparent), radial-gradient(900px 500px at 88% 108%, #7a3a1455, transparent), radial-gradient(700px 400px at 8% 100%, #4a103055, transparent); pointer-events:none; }
+  header { padding:26px 20px 12px; text-align:center; position:relative; z-index:5; }
+  header h1 { font-size:clamp(24px,4.2vw,38px); background:linear-gradient(90deg,#ffd479,#ff9d5c,#ff6b9d); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:2px; }
+  header p { color:#c9a68f; font-size:13px; margin-top:6px; }
+  header .lantern { display:inline-block; animation:sway 3s ease-in-out infinite; }
+  @keyframes sway { 0%,100%{ transform:rotate(-6deg);} 50%{ transform:rotate(6deg);} }
+  main { position:relative; z-index:5; max-width:1080px; margin:0 auto; padding:16px 18px 150px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(235px,1fr)); gap:14px; }
+  .card { background:linear-gradient(160deg,#1c0f1a,#140a18); border:1px solid #5a2a3a; border-radius:16px; padding:18px; cursor:pointer; transition:.2s; position:relative; overflow:hidden; }
+  .card:hover { transform:translateY(-3px); border-color:#d67a4a; box-shadow:0 12px 40px #8a2a1a44; }
+  .card .ico { font-size:30px; }
+  .card h3 { margin:8px 0 6px; font-size:17px; color:#ffd479; }
+  .card p { color:#c9a68f; font-size:12.5px; line-height:1.65; }
+  .card .tag { position:absolute; top:12px; right:12px; font-size:10px; color:#ffd479; border:1px solid #8a4a3a; border-radius:20px; padding:2px 8px; background:#2a1218aa; }
+  .card.adv { cursor:pointer; } /* 进阶玩法也能点了，别再灰着像没做完 */
+  #stage { display:none; background:linear-gradient(160deg,#1a0e1c,#120a16); border:1px solid #6a3a4a; border-radius:18px; padding:22px; margin-top:16px; }
+  #stage.on { display:block; }
+  #stage h2 { font-size:20px; display:flex; align-items:center; gap:10px; color:#ffd479; }
+  #stage h2 .back { font-size:12px; color:#ffb37a; cursor:pointer; border:1px solid #8a4a3a; border-radius:14px; padding:3px 10px; margin-left:auto; }
+  #big { min-height:130px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; margin:18px 0; }
+  #big .word { font-size:clamp(34px,7vw,64px); font-weight:700; letter-spacing:6px; color:#ffe2b8; text-shadow:0 0 30px #ff8a4a66; }
+  #big .sub { color:#c9a68f; font-size:13px; margin-top:10px; }
+  #big .ai { font-size:clamp(17px,2.6vw,24px); color:#ffd9a8; line-height:1.7; max-width:92%; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+  button.bt { background:linear-gradient(90deg,#e8543f,#d63a6e); color:#fff; border:0; border-radius:24px; padding:10px 22px; font-size:14px; cursor:pointer; box-shadow:0 4px 16px #d63a6e44; }
+  button.bt.ghost { background:#2a1420; border:1px solid #7a3a4a; box-shadow:none; }
+  button.bt:disabled { opacity:.4; cursor:default; }
+  .stat { display:flex; gap:18px; justify-content:center; color:#c9a68f; font-size:13px; margin-top:12px; }
+  .stat b { color:#ffd479; }
+  textarea.ta { width:100%; min-height:70px; background:#1a0e1c; color:#ffe9d6; border:1px solid #6a3a4a; border-radius:10px; padding:10px; font-size:13px; resize:vertical; }
+  #widget { position:fixed; right:18px; bottom:18px; z-index:60; }
+  #orbWrap { width:96px; height:96px; cursor:pointer; position:relative; }
+  #orbCv { position:absolute; left:50%; top:50%; width:380%; height:380%; transform:translate(-50%,-50%); pointer-events:none; /* 🔴 光球画布巨大（380%），不收 pointer-events 否则把"发送/全屏"按钮的点击全截走 */ }
+  #orbBadge { position:absolute; left:50%; bottom:-4px; transform:translateX(-50%); font-size:10px; color:#ffe2b8; background:#2a1218cc; border:1px solid #8a4a3a; border-radius:12px; padding:1px 8px; white-space:nowrap; }
+  #wPanel { display:none; position:absolute; bottom:112px; right:0; width:min(340px,90vw); background:#180d16f2; border:1px solid #7a3a4a; border-radius:16px; padding:14px; backdrop-filter:blur(10px); box-shadow:0 18px 60px #000a; }
+  #widget.open #wPanel { display:block; }
+  #wPanel .st-line { display:flex; align-items:center; gap:7px; font-size:11.5px; color:#c9a68f; margin-bottom:8px; }
+  #wPanel .dot { width:8px; height:8px; border-radius:50%; background:#6a4a52; }
+  #wPanel .dot.on { background:#5ee0a0; box-shadow:0 0 8px #5ee0a0; }
+  #wPanel .lines { max-height:190px; overflow-y:auto; font-size:12.5px; line-height:1.75; border-top:1px solid #3a2030; padding-top:8px; }
+  /* 🔴 细滚动条（暗金色，跟年会暖色主题搭） */
+  #wPanel .lines::-webkit-scrollbar { width:5px; }
+  #wPanel .lines::-webkit-scrollbar-track { background:transparent; }
+  #wPanel .lines::-webkit-scrollbar-thumb { background:rgba(255,170,110,.28); border-radius:3px; }
+  #wPanel .lines::-webkit-scrollbar-thumb:hover { background:rgba(255,170,110,.5); }
+  #wPanel .lines { scrollbar-width:thin; scrollbar-color:rgba(255,170,110,.28) transparent; }
+  #wPanel .u { color:#ffd479; } #wPanel .a { color:#ffb9d0; } #wPanel .e { color:#ff7a7a; }
+  #wPanel .tin { display:flex; gap:6px; margin-top:10px; }
+  #wPanel input { flex:1; background:#120a14; border:1px solid #5a2a3a; color:#fff3e6; border-radius:10px; padding:8px 10px; font-size:13px; outline:none; }
+  #wPanel input:focus { border-color:#d67a4a; }
+  #wPanel .st { display:flex; gap:8px; margin-top:10px; }
+  #wPanel .st button { flex:1; padding:9px 0; }
+  /* 全屏接管 = 游戏大屏铺满全屏（给现场观众看），AI 挂件缩到右下角继续语音主持 */
+  body.takeover header, body.takeover #cards { display:none !important; }
+  body.takeover main { position:fixed; inset:0; z-index:80; overflow:auto; margin:0; padding:4vh 5vw; background:radial-gradient(1100px 600px at 50% 30%, #3a102055, transparent), #0a0612; }
+  body.takeover #stage { display:block; max-width:1200px; margin:0 auto; border:0; background:transparent; padding:0; }
+  body.takeover #big { min-height:50vh; }
+  body.takeover #big .word { font-size:clamp(60px,18vw,220px); letter-spacing:10px; }
+  body.takeover #big .ai { font-size:clamp(22px,4.2vw,44px); }
+  body.takeover #big .sub { font-size:clamp(14px,2.4vw,20px); }
+  body.takeover #ctl { margin-top:4vh; }
+  body.takeover #ctl .bt { padding:14px 34px; font-size:17px; }
+  body.takeover .stat { font-size:17px; }
+  body.takeover #widget { position:fixed; right:14px; bottom:14px; z-index:95; display:block; background:transparent; }
+  body.takeover #orbWrap { width:110px; height:110px; }
+  body.takeover #orbBadge { display:none; }
+  body.takeover #wPanel { position:absolute; bottom:120px; right:0; width:min(360px,92vw); background:#180d16f2; }
+  #exitTv { display:none; position:fixed; top:16px; right:16px; z-index:95; }
+  body.takeover #exitTv { display:block; }
+  #confetti { position:fixed; inset:0; pointer-events:none; z-index:90; }
+  #cfCv { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:91; }
+  #cfFlash { position:fixed; inset:0; pointer-events:none; z-index:89; background:radial-gradient(circle at 50% 42%, rgba(255,240,200,.85), rgba(255,170,90,.3) 40%, transparent 70%); opacity:0; }
+  #bombFlash { position:fixed; inset:0; pointer-events:none; z-index:88; background:radial-gradient(circle at 50% 45%, rgba(255,150,60,.95), rgba(255,40,20,.55) 45%, transparent 75%); opacity:0; }
+  #bombFlash.on { animation:bombflash .8s ease-out forwards; }
+  @keyframes bombflash { 0%{opacity:0} 10%{opacity:1} 100%{opacity:0} }
+  .bombwrap { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .bombico { font-size:clamp(64px,10vw,120px); line-height:1; filter:drop-shadow(0 0 24px rgba(255,120,50,.55)); animation:bombpulse 1s ease-in-out infinite; display:inline-block; }
+  .bombico.fast { animation-duration:.45s; }
+  .bombico.calm { animation-duration:1.6s; }
+  @keyframes bombpulse { 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.12) } }
+  .bombfuse { font-size:clamp(18px,3vw,30px); letter-spacing:2px; color:#ffd479; }
+  .bomblohi { font-size:clamp(15px,2.4vw,22px); color:#ffe2b8; letter-spacing:3px; }
+  #cfFlash.on { animation:cfflash .9s ease-out forwards; }
+  @keyframes cfflash { 0%{opacity:0} 12%{opacity:1} 100%{opacity:0} }
+  @media (max-width: 700px){ /* 手机：加大触摸目标，别点不准 */
+    #wPanel { padding: 12px; }
+    #wPanel .st button { padding: 13px 0; font-size: 16px; }
+    #wPanel .tin input { height: 42px; font-size: 15px; }
+    #wPanel .tin button { padding: 10px 14px; }
+    #orbWrap { width: 88px; height: 88px; }
+  }
+  .cf { position:absolute; will-change:transform; }
+  .cf.stripe { width:9px; height:18px; border-radius:2px; animation:cfstripe var(--dur) cubic-bezier(.3,.1,.6,1) var(--dl) forwards; }
+  .cf.dot { border-radius:50%; width:10px; height:10px; animation:cfdot var(--dur) ease-out var(--dl) forwards; }
+  .cf.burst { width:8px; height:14px; border-radius:2px; left:50%; top:42%; animation:cfburst var(--dur) cubic-bezier(.15,.6,.35,1) var(--dl) forwards; }
+  @keyframes cfstripe { 0%{ transform:translateY(-4vh) rotate(0) scaleX(1); opacity:1 } 100%{ transform:translateY(104vh) rotate(700deg); opacity:.5 } }
+  @keyframes cfdot { 0%{ transform:translate(0,-4vh); opacity:1 } 100%{ transform:translate(var(--dx),104vh); opacity:.4 } }
+  @keyframes cfburst { 0%{ transform:translate(-50%,-50%) scale(.6); opacity:1 } 100%{ transform:translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) rotate(var(--br)); opacity:0 } }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="cfFlash"></div>
+<div id="bombFlash"></div>
+<div id="confetti"></div>
+<canvas id="cfCv"></canvas>
+<header>
+  <h1><span class="lantern">🏮</span> AI 语音互动游戏 <span class="lantern">🏮</span></h1>
+  <p>真语音 AI 主持人（MOSS 实时全双工 · 能说会做能操作大屏）· 点游戏开玩 · 右下角唤出 AI</p>
+</header>
+<main>
+  <div class="cards" id="cards">
+    <div class="card" data-g="guess"><span class="tag">主推 · 语音核心</span><div class="ico">🗣️</div><h3>AI 你描述我猜</h3><p>大屏出词（可隐藏防偷看），AI 语音层层给线索、绝不说出答案；猜错换说法，猜对撒花计分。</p></div>
+    <div class="card" data-g="bomb"><span class="tag">全员轮流</span><div class="ico">💣</div><h3>数字炸弹</h3><p>AI 心里藏一个数，大家轮流报数缩范围，谁踩中谁“爆炸”，AI 全程烘气氛。</p></div>
+    <div class="card" data-g="roll"><span class="tag">暖场必备</span><div class="ico">🎯</div><h3>AI 幸运点名</h3><p>大屏滚动姓名，喊停抽取，AI 热情宣布幸运观众上台，名单随时改。</p></div>
+    <div class="card" data-g="quiz"><span class="tag">知识抢答</span><div class="ico">⚡</div><h3>AI 快问快答</h3><p>AI 出选择题（公司/行业/年度热词），语音抢答，AI 判定并计分。</p></div>
+    <div class="card" data-g="idiom"><span class="tag">全员接龙</span><div class="ico">🔗</div><h3>成语接龙</h3><p>AI 出首词，大家用最后一个字接龙（同音也算），接不上算输，AI 主持判定。</p></div>
+    <div class="card" data-g="hot"><span class="tag">年度记忆</span><div class="ico">📈</div><h3>年度热词竞猜</h3><p>AI 描述公司项目名/年度大事/热梗，大家抢猜，绝不说出答案。</p></div>
+    <div class="card adv" data-g="talk"><span class="tag">进阶</span><div class="ico">🎤</div><h3>AI 主持脱口秀</h3><p>直接对 AI 说“给张三来段脱口秀”，即兴串词把同事请上台。</p></div>
+    <div class="card adv" data-g="song"><span class="tag">进阶</span><div class="ico">🎵</div><h3>AI 猜歌 / 猜影</h3><p>对 AI 说“来一题猜歌”，它描述意境你抢答。</p></div>
+  </div>
+  <div id="stage">
+    <h2><span id="gName">游戏</span><span class="back" onclick="backToCards()">← 返回游戏列表</span></h2>
+    <div id="big"><div class="sub">点下面按钮开始</div></div>
+    <div class="row" id="ctl"></div>
+    <div class="stat" id="stat"></div>
+    <div id="extra"></div>
+  </div>
+</main>
+
+<div id="widget">
+  <div id="wPanel">
+    <div class="st-line"><span class="dot" id="wdot"></span><span id="wst">未连接 · 点「开 始」接通语音</span></div>
+    <div class="st-line" id="wdiag" style="font-family:monospace;opacity:.75">帧发:0 帧收:0</div>
+    <div class="lines" id="lines"><div class="a">AI 主持人就绪 · 可以聊天，也可以开上面的游戏</div></div>
+    <div class="st-line" style="justify-content:space-between;margin-top:8px"><span style="font-size:11px;color:#8a6a72">本页聊天记录（游戏进度独立保存）</span><button class="bt ghost" id="clrHist" style="padding:4px 10px;font-size:11px">清 空</button></div>
+    <div class="st-line" style="gap:6px;margin-top:8px">
+      <span style="font-size:11px;color:#8a6a72">模式</span>
+      <select id="modeSel" style="flex:1;min-width:0;background:#120a14;border:1px solid #5a2a3a;color:#fff3e6;border-radius:8px;padding:4px 6px;font-size:12px">
+        <option value="moss">MOSS 实时（3积分/分钟）</option>
+        <option value="local">本地免费（慢点）</option>
+      </select>
+      <span style="font-size:11px;color:#8a6a72">模型</span>
+      <select id="modelSel" style="width:86px;background:#120a14;border:1px solid #5a2a3a;color:#fff3e6;border-radius:8px;padding:4px 6px;font-size:12px">
+        <option value="hy4f">hy4f</option>
+        <option value="dsv4.1f">dsv4.1f</option>
+        <option value="main">main</option>
+      </select>
+    </div>
+    <div class="tin"><input id="txt" placeholder="打字给 AI（链接/口令请打字）· 回车发送"></div>
+    <div class="st"><button class="bt" id="wBtn">开 始</button><button class="bt ghost" id="bargeBtn" style="display:none">打 断</button></div>
+  </div>
+  <div id="orbWrap" title="AI 主持人"><canvas id="orbCv"></canvas><div id="orbBadge">AI 主持人 · 点我</div></div>
+</div>
+<button class="bt ghost" id="exitTv" onclick="document.body.classList.remove('takeover')">退出全屏</button>
+<button class="bt ghost" id="tvBtn" style="display:none">全屏接管（备用）</button>
+
+<script src="/localvoice.js?v=4"></script>
+<script>
+const $ = id => document.getElementById(id);
+const CONVO = 'games';
+let ws = null, running = false, rcTimer = null, replacedByOther = false, upFatal = 0;
+// 🔴 tok 键必须和主页分开（之前两页共用 moss_tok，同一浏览器双开=两页抢同一个会话，服务端互踢=无限重连）
+const TOK = localStorage.getItem('moss_tok_games') || (localStorage.setItem('moss_tok_games', String(Date.now().toString(36) + Math.random().toString(36).slice(2, 8))), localStorage.getItem('moss_tok_games'));
+let reconnects = 0;
+let micStream = null, actx = null, pctx = null, analyser = null, node = null, workletURL = null, outGain = null;
+let aiSpeaking = false;
+let micSent = 0, framesRx = 0, lastErr = '';
+function reportErr(kind, msg, where){
+  const line = kind + ':' + String(msg).slice(0, 160) + (where ? ' @' + where : '');
+  try { $('widget').classList.add('open'); tipW(line); } catch(e){}
+  try { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action:'client.log', msg: line })); } catch(e){}
+}
+window.onerror = function(msg, src, lineno, colno){ reportErr('脚本错误', msg, String(src||'').split('/').pop() + ':' + lineno + ':' + colno); };
+window.onunhandledrejection = function(e){ reportErr('Promise错误', (e && e.reason && (e.reason.message || e.reason)) || 'unknown'); };
+
+// ---------- 音频：采集 16k 上行 ----------
+async function startMic(){
+  micStream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } });
+  actx = new AudioContext({ sampleRate: 48000 });
+  if (actx.state === 'suspended') await actx.resume();
+  if (!workletURL) workletURL = URL.createObjectURL(new Blob([`
+    class R extends AudioWorkletProcessor{
+      constructor(){ super(); this.ratio = sampleRate/16000; this.acc=0; this.cnt=0; this.pos=0; this.b=[]; }
+      process(inp){
+        const ch = inp[0][0];
+        if (ch){
+          for (let i=0;i<ch.length;i++){
+            this.acc += ch[i]; this.cnt++; this.pos += this.ratio;
+            if (this.pos >= 1){ this.pos -= 1; this.b.push(this.acc/this.cnt); this.acc=0; this.cnt=0;
+              if (this.b.length >= 1600){ const o = Int16Array.from(this.b.splice(0,1600).map(v=>v<0?v*0x8000:v*0x7fff)); this.port.postMessage(o.buffer,[o.buffer]); } }
+          }
+        }
+        return true;
+      }
+    }
+    registerProcessor('r',R);
+  `], { type:'text/javascript' }));
+  await actx.audioWorklet.addModule(workletURL);
+  const src = actx.createMediaStreamSource(micStream);
+  node = new AudioWorkletNode(actx, 'r');
+  node.port.onmessage = e => {
+    if (running && ws && ws.readyState === 1){
+      // 🔴 上行必须带 tagged-v1 标签：0x00 = 麦克风 PCM16(16k)。不带标签 MOSS 直接无视（=“说话听不到”）
+      const out = new Uint8Array(e.data.byteLength + 1);
+      out[0] = 0; out.set(new Uint8Array(e.data), 1);
+      ws.send(out.buffer);
+      micSent++;
+    }
+    const i16 = new Int16Array(e.data);
+    let sum = 0; for (let i=0;i<i16.length;i+=4) sum += i16[i]*i16[i];
+    const rms = Math.sqrt(sum/(i16.length/4))/32768;
+    vol = rms;
+    // 🔴 本地打断阈值 0.12→0.30：手机外放的 AI 自己声音就能过 0.12，本地一刀切掉播放=“声音很小/听着听着没了”。
+    // 真人大声插话（对着喊）仍能秒断；轻声插话交给服务端回声门判 240ms 后放行
+    if (rms > 0.30 && aiSpeaking) cancelPlayback();
+  };
+  src.connect(node);
+}
+
+// ---------- 播放 48k 下行（自适应缓冲 + 时钟归零防漂移）----------
+let playQ = [], nextStart = 0, liveSrc = [], LEAD = 0.35, lastArrival = 0, mutedUntil = 0, lastUnder = 0;
+function onAudioFrame(ab){
+  if (!pctx) return;
+  if (Date.now() < mutedUntil) return; // 🔴 用户点「打 断」后丢弃下行残留，别边听用户边播 AI
+  framesRx++;
+  if (pctx.state === 'suspended') pctx.resume().catch(() => {});
+  const wall = performance.now();
+  if (lastArrival && wall - lastArrival > 450 && !liveSrc.length && !playQ.length) nextStart = 0;
+  lastArrival = wall;
+  playQ.push(ab);
+  schedulePlayback();
+}
+function schedulePlayback(){
+  if (!pctx || pctx.state !== 'running' || !analyser) return;
+  const now = pctx.currentTime;
+  // 🔴 欠载自适应 0.35~0.9s（固定 0.35 聊久必卡）
+  if (playQ.length === 0 && nextStart < now + 0.05) { LEAD = Math.min(0.9, LEAD + 0.12); lastUnder = performance.now(); }
+  else if (playQ.length > 6 && performance.now() - lastUnder > 2500) LEAD = Math.max(0.35, LEAD - 0.02);
+  if (nextStart < now + LEAD) nextStart = now + LEAD;
+  while (playQ.length){
+    const ab = playQ.shift();
+    const view = new DataView(ab);
+    const n = Math.floor(view.byteLength/2);
+    if (n <= 0) continue;
+    const buf = pctx.createBuffer(1, n, 48000);
+    const d = buf.getChannelData(0);
+    for (let i=0;i<n;i++) d[i] = view.getInt16(i*2, true)/32768;
+    const srcN = pctx.createBufferSource();
+    srcN.buffer = buf; srcN.connect(analyser);
+    const st = nextStart;
+    srcN.start(st);
+    nextStart += buf.duration;
+    const rec = { src: srcN, start: st };
+    liveSrc.push(rec);
+    // 🔴 播完摘掉并 disconnect（不 disconnect 会堆积节点拖死音频线程=越聊越卡）
+    srcN.onended = () => { srcN.disconnect(); const i = liveSrc.indexOf(rec); if (i >= 0) liveSrc.splice(i, 1); };
+  }
+  if (liveSrc.length > 24) { liveSrc = liveSrc.filter(r => { if (r.start < now - 2) { try { r.src.disconnect(); } catch {} return false; } return true; }); }
+}
+function cancelPlayback(){
+  playQ = [];
+  const now = pctx ? pctx.currentTime : 0;
+  for (const r of liveSrc){ if (r.start > now){ try { r.src.onended = null; r.src.stop(); } catch {} } }
+  liveSrc = []; nextStart = 0;
+}
+
+// ---------- WS ----------
+function connect(){
+  return new Promise((res, rej) => {
+    const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    ws = new WebSocket(proto + location.host + '/ws?convo=' + CONVO + '&tok=' + TOK);
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = () => { ws.send(JSON.stringify({ action:'client.page.hello', page:'games' })); res(); };
+    ws.onerror = () => rej(new Error('连接失败'));
+    ws.onclose = () => {
+      if (replacedByOther) { // 🔴 被另一个窗口接管（官方并发数=1）：安静让位，绝不重连，否则两页互抢=秒断风暴
+        running = false; clearTimeout(rcTimer);
+        try { localStorage.removeItem('moss_live_games'); } catch {}
+        wst('已在另一个窗口打开 · 本页让位'); tipW('这个会话在别的窗口连着，本页不再重连（官方限制每账号同时只能 1 路）');
+        $('wBtn').textContent = '开 始';
+        return;
+      }
+      if (upFatal) { // 🔴 上游 4xx（402 额度不足 / 401 key 无效）：重试不可能成功，立刻停，别刷爆账号等封号
+        stopAll();
+        const why = upFatal === 402 ? '账号额度不足（402）' : upFatal === 401 ? 'key 无效（401）' : upFatal === 429 ? '请求过于频繁（429）' : 'HTTP ' + upFatal;
+        wst('连接失败 · 已停止重连'); tipW('语音服务拒绝连接：' + why + '。已停止自动重连，处理后再点「开 始」');
+        return;
+      }
+      if (!running) return;
+      // 🔴 断线自动重连（手机网络抖动频繁断连，之前直接 stopAll=挂件整个收起"AI 最小化消失"）
+      // 🔴 必须限次数：之前无上限重连 + 双开同 tok 互踢 = 重连风暴（12:39 日志实锤连上 1~3 秒就断、无限循环）
+      if (reconnects++ >= 5) { stopAll(); wst('连接断开 · 已停止重试'); tipW('连接反复失败，已停止重连。点「开 始」手动重试'); return; }
+      running = false;
+      try { micStream && micStream.getTracks().forEach(t => t.stop()); } catch {}
+      try { actx && actx.close(); } catch {}
+      try { pctx && pctx.close(); } catch {}
+      ws = null; micStream = null; actx = null; pctx = null; analyser = null;
+      wst('连接断开 · 自动重连…', 'on'); tipW('连接断开，2 秒后自动重连…');
+      clearTimeout(rcTimer); rcTimer = setTimeout(startAll, 2000); // 🔴 定时器存全局，挂断时必须清，否则点挂断 2 秒后又自己活过来
+    };
+    ws.onmessage = e => {
+      try {
+        if (e.data instanceof ArrayBuffer){ onAudioFrame(e.data); return; }
+        let m; try { m = JSON.parse(e.data); } catch { return; }
+        const a = m.action, d = m.data || {};
+        if (a === 'response.audio.started'){ mutedUntil = 0; aiSpeaking = true; wst('AI 说话中 · 想插话点「打 断」', 'on'); const bb = $('bargeBtn'); if (bb && running) bb.style.display = ''; }
+        else if (a === 'response.audio.done' || a === 'response.audio.stop' || a === 'response.interrupted'){ aiSpeaking = false; wst('通话中 · 你说它听着', 'on'); if (a !== 'response.audio.done') cancelPlayback(); const bb = $('bargeBtn'); if (bb) bb.style.display = 'none'; }
+        else if (a === 'input.transcript.done'){ onHeard(d.text || ''); }
+        else if (a === 'input.speech.started'){ wst('🎤 听到你在说话…', 'on'); }
+        else if (a === 'input.speech.stopped'){ wst('通话中 · 你说它听着', 'on'); }
+        else if (a === 'output.transcript.done'){ onAiSay(d.text || ''); }
+        else if (a === 'response.ended'){ if (!liveSrc.length){ nextStart = 0; } }
+        else if (a === 'server.upstream.fatal'){ upFatal = d.http || -1; }
+        else if (a === 'server.replaced'){ replacedByOther = true; tipW('检测到另一个窗口接管了 AI，本页自动让位'); }
+        else if (a === 'server.upstream.closed'){ wst('服务断开 · 点「挂断」再「开始」重连', 'on'); tipW('语音服务断开' + (d.code ? '（'+d.code+(d.reason?' '+d.reason:'')+'）' : '') + '：402=账号余额不足，401=key无效，点「开 始」重试'); }
+        else if (a === 'server.typed.error'){ tipW('语音合成失败：' + (d.msg || '') + '（' + (d.text || '') + '）——再点一次发送试试'); }
+        else if (a === 'server.page.cmd'){
+          let out = '', ok = true;
+          const code = m.code || d.code; // 🔴 服务端把 code 放消息顶层（不在 data 里），之前读 d.code 恒 undefined → 恒回 "ok"，AI 拿不到页面任何真实状态（11-18 日志实锤）
+          try { out = Function('"use strict";return (' + code + ')')(); if (out === undefined) out = 'ok'; }
+          catch (err){ ok = false; out = err.message; }
+          try { ws.send(JSON.stringify({ action:'client.page.result', cmdId: m.cmdId, ok, result: String(out).slice(0, 1500) })); } catch {}
+        }
+      } catch (err){ reportErr('消息处理异常', err.message, a || ''); }
+    };
+  });
+}
+function wst(t, cls){ $('wst').textContent = t; $('wdot').className = 'dot ' + (cls || ''); }
+function say(who, t, cls){
+  if (!t) return;
+  const line = document.createElement('div');
+  line.className = cls || (who === 'u' ? 'u' : 'a');
+  line.textContent = (who === 'u' ? '🎤 ' : '🤖 ') + t;
+  const box = $('lines'); box.appendChild(line); box.scrollTop = box.scrollHeight;
+  if (who === 'a') stageAi(t);
+}
+function onHeard(t){
+  if (!t) return;
+  const secret = game && (game.type === 'guess' || game.type === 'bomb') && game.playing;
+  if (secret){ say('u', '（玩家发言中…）'); return; } // 防大屏泄露词语/炸弹
+  say('u', t);
+}
+function onAiSay(t){
+  say('a', t);
+  PARTY.say(t); // 大屏只经这一个口显示最新一句（原地替换，不堆叠、不重复）
+}
+function type(t){ if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action:'client.say', text:t })); else tipW('先点「开 始」接通 AI'); }
+
+// ---------- 防锁屏：Wake Lock + 静音循环音频兜底 ----------
+let wakeLock = null, silentAudio = null;
+async function keepAwakeOn(){
+  try { if ('wakeLock' in navigator){ wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch {}
+  try {
+    if (!silentAudio){
+      const rate = 8000, n = rate * 3, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+      const wr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+      wr(0,'RIFF'); v.setUint32(4, 36 + n*2, true); wr(8,'WAVE'); wr(12,'fmt '); v.setUint32(16,16,true);
+      v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,rate,true); v.setUint32(28,rate*2,true);
+      v.setUint16(32,2,true); v.setUint16(34,16,true); wr(36,'data'); v.setUint32(40,n*2,true);
+      silentAudio = new Audio(URL.createObjectURL(new Blob([buf], { type:'audio/wav' })));
+      silentAudio.loop = true;
+    }
+    silentAudio.play().catch(() => {});
+  } catch {}
+}
+function keepAwakeOff(){ try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; try { silentAudio && silentAudio.pause(); } catch {} }
+document.addEventListener('visibilitychange', () => { if (!document.hidden && running) keepAwakeOn(); });
+
+// ---------- 挂件控制 ----------
+function tipW(t){ const d = document.createElement('div'); d.className='e'; d.textContent='· ' + t; $('lines').appendChild(d); $('lines').scrollTop = 1e9; $('widget').classList.add('open'); }
+let startTries = 0, starting = false;
+async function startAll(){
+  if (starting || running) return; // 防重入：游戏按钮自动接通时避免重复建连
+  clearTimeout(rcTimer); rcTimer = null;
+  if (startTries >= 2) { startTries = 0; wst('未连接'); tipW('连接多次失败，已停止重试。点「开 始」手动重试'); return; } // 🔴 失败重试也限次数，别无限打服务器
+  starting = true;
+  $('wBtn').disabled = true;
+  try {
+    wst('请求麦克风…'); tipW('请求麦克风权限…');
+    await startMic();
+    wst('连接服务…'); tipW('连接语音服务…');
+    pctx = new AudioContext({ sampleRate: 48000 });
+    if (pctx.state === 'suspended') await pctx.resume();
+    analyser = pctx.createAnalyser(); analyser.fftSize = 256;
+    // 🔴 音量链路：AI 语音源 → analyser(取频谱给光球) → outGain(2.6倍放大+软限幅) → 扬声器。
+    // 之前源只连 analyser 不连 destination，靠 analyser 透传，手机外放音量小；且 MOSS 下行本身电平低。
+    outGain = pctx.createGain(); outGain.gain.value = 2.6;
+    const comp = pctx.createDynamicsCompressor();
+    comp.threshold.value = -10; comp.knee.value = 6; comp.ratio.value = 12; comp.attack.value = 0.003; comp.release.value = 0.1;
+    analyser.connect(comp); comp.connect(outGain); outGain.connect(pctx.destination);
+    await connect();
+    running = true; startTries = 0; reconnects = 0;
+    try { localStorage.setItem('moss_live_games', '1'); } catch {}
+    keepAwakeOn();
+    $('wBtn').textContent = '挂 断'; wst('通话中 · 你说它听着', 'on'); tipW('语音已接通，直接说话吧');
+  } catch (err){
+    lastErr = err.message;
+    if (startTries < 1){ startTries++; wst('连接失败，自动重试…'); tipW('连接失败，1.5 秒后自动重试…'); starting = false; clearTimeout(rcTimer); rcTimer = setTimeout(startAll, 1500); return; }
+    startTries = 0; wst('出错'); tipW('出错：' + err.message + '（常见：麦克风权限被拒/无麦克风/非 https）');
+  }
+  starting = false;
+  $('wBtn').disabled = false;
+}
+function stopAll(){
+  running = false;
+  clearTimeout(rcTimer); rcTimer = null; // 🔴 挂断必须清掉待触发的自动重连（之前挂断后 2 秒定时器照跑=自己又连回去，老大骂的"点挂断也自动重试"）
+  try { localStorage.removeItem('moss_live_games'); } catch {}
+  try { ws && ws.close(); } catch {}
+  try { micStream && micStream.getTracks().forEach(t => t.stop()); } catch {}
+  try { actx && actx.close(); } catch {}
+  try { pctx && pctx.close(); } catch {}
+  ws = null; micStream = null; actx = null; pctx = null; analyser = null;
+  keepAwakeOff();
+  wst('未连接 · 点「开 始」接通语音');
+  $('wBtn').textContent = '开 始'; tipW('已挂断');
+}
+$('wBtn').onclick = () => { if (running) return stopAll(); if (($('modeSel').value||'moss')==='local') return startLocalW(); startAll(); };
+let lvLine = null; // 打字机临时行：AI 边想边出字时原地更新，定稿后不再追加重复行
+// ============ 本地免费语音链路（共享引擎 localvoice.js：ASR→大模型→TTS，零语音费） ============
+LocalVoice.init({
+  convo: 'games',
+  getModel: () => $('modelSel').value,
+  allowPageCmd: true,
+  onUser: t => say('u', '🎤 ' + t),
+  onAi: t => { if (lvLine) { lvLine.textContent = '🤖 ' + t; lvLine = null; stageAi(t); } else say('a', t); },
+  onAiLive: t => { if (!lvLine){ lvLine = document.createElement('div'); lvLine.className = 'a'; $('lines').appendChild(lvLine); } lvLine.textContent = '🤖 ' + t; $('lines').scrollTop = 1e9; },
+  onStatus: t => wst(t, 'on'),
+  onTip: t => tipW(t),
+  onAudio: url => LocalVoice.playUrl(url),
+  getPageState: () => (typeof PARTY !== 'undefined' && PARTY.state) ? PARTY.state() : '',
+});
+async function startLocalW(){
+  if (running || LocalVoice.on) return;
+  try {
+    await LocalVoice.start();
+    running = true; $('wBtn').textContent = '挂 断';
+    tipW('本地免费链路已接通：说完停一下自动发。识别、思考、播报每步都有实时状态。');
+  } catch (err) { tipW('本地模式启动失败：' + err.message); }
+}
+$('modeSel').addEventListener('change', async e => {
+  if (running) stopAll();
+  if (e.target.value === 'local') { await startLocalW(); }
+  else tipW('已切回 MOSS 实时语音模式，点「开 始」接通');
+});
+// 🔴 游戏按钮等自动接通也按模式路由：本地模式绝不建 MOSS 连接（否则撞 402 + 打字双通道显示两遍）
+const _startAllOrig = startAll;
+startAll = async function(){ if (($('modeSel').value||'moss')==='local') return startLocalW(); return _startAllOrig(); };
+// 本地模式下「挂 断」也要停引擎；打字改走本地链路
+const _stopAll = stopAll;
+stopAll = function(){ if (LocalVoice.on) LocalVoice.stop(); _stopAll(); };
+const _type = type;
+type = function(t){
+  if (!LocalVoice.on) return _type(t);
+  LocalVoice.chatText(t);
+};
+// 🔴 打断按钮：AI 说话期间服务端不收麦（防手机外放回声自断），要插话点这个 → 开 4 秒收麦窗
+$('bargeBtn').onclick = () => {
+  if (!ws || ws.readyState !== 1) return;
+  cancelPlayback(); aiSpeaking = false; $('bargeBtn').style.display = 'none';
+  mutedUntil = Date.now() + 4000; // 打断后 4 秒内丢弃下行残留音频，只留真人声音
+  ws.send(JSON.stringify({ action:'client.barge' }));
+  wst('请说，我在听…', 'on');
+};
+// 🔴 刷新不掉线：上次没挂断就刷新 → 自动重连（服务端按 tok 复用上游，AI 侧聊天不中断）
+if (localStorage.getItem('moss_live_games') === '1') {
+  setTimeout(() => { startAll(); }, 800);
+}
+$('orbWrap').onclick = () => $('widget').classList.toggle('open');
+$('tvBtn').onclick = () => {
+  document.body.classList.add('takeover'); // 全屏接管：游戏大屏铺满，AI 缩右下角，跟是否连语音无关
+  $('widget').classList.remove('open');
+  if (!game) openStage('guess'); // 没选游戏就默认上"你描述我猜"大屏
+  if (!running) tipW('已全屏显示。点「开 始」接通语音，AI 才能出声主持');
+};
+function sendTyped(){ const t = $('txt').value.trim(); if (!t) return; if (!LocalVoice.on) say('u', t + '（打字）'); type(t); $('txt').value = ''; }
+$('txt').addEventListener('keydown', e => { if (e.key === 'Enter') sendTyped(); });
+setInterval(() => { if (running) $('wdiag').textContent = '帧发:' + micSent + ' 帧收:' + framesRx + ' 待播:' + liveSrc.length + ' ctx:' + (pctx ? pctx.state : '-') + ' 采样:' + (pctx ? pctx.sampleRate : '-') + (lastErr ? ' err:' + lastErr : ''); }, 2000);
+
+// ---------- 光球动画（主页同款：频谱节拍扩散环，无电弧）----------
+const cv = $('orbCv'), cx = cv.getContext('2d');
+let vol = 0; // 麦克风实时音量（worklet 里更新）
+const parts = Array.from({length: 60}, () => ({
+  a: Math.random()*Math.PI*2, r: .35+Math.random()*.55, s: .0015+Math.random()*.004,
+  z: .4+Math.random()*.6
+}));
+const rings = [];
+let lastBeat = 0, lastBeatT = 0, frameSkip = 0;
+const freqData = new Uint8Array(128);
+function drawOrb(t){
+  frameSkip++;
+  if (frameSkip & 1) { requestAnimationFrame(drawOrb); return; } // 30fps，给音频线程让路
+  const w = cv.clientWidth || 96, h = cv.clientHeight || 96;
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  if (cv.width !== w*dpr || cv.height !== h*dpr){ cv.width = w*dpr; cv.height = h*dpr; }
+  cx.setTransform(dpr,0,0,dpr,0,0);
+  cx.clearRect(0,0,w,h);
+  const cxp = w/2, cyp = h/2;
+  const wrapW = $('orbWrap').clientWidth || 96;
+  const base = wrapW * .30;
+  // 频谱驱动：低频能量 = 节拍
+  let bass = 0;
+  if (analyser && pctx && pctx.state === 'running'){
+    analyser.getByteFrequencyData(freqData);
+    let bs = 0; for(let i=1;i<=10;i++) bs += freqData[i];
+    bass = bs/10/255;
+  }
+  const energy = Math.max(bass, vol*0.9);
+  if (energy > 0.22 && t - lastBeatT > 160 && (energy > lastBeat*1.12 || t - lastBeatT > 340)){
+    lastBeat = energy; lastBeatT = t;
+    rings.push({ r: base*1.05, a: Math.min(.6, .22 + energy*.5) });
+  }
+  if (lastBeatT && t - lastBeatT > 900) lastBeat = 0;
+  const R = base * (1 + energy*.45 + Math.sin(t/900)*.03);
+  // 节拍扩散环（音乐节奏感）
+  for (let i = rings.length-1; i >= 0; i--){
+    const rg = rings[i];
+    rg.r += Math.max(1.5, base*.02); rg.a *= .965;
+    if (rg.a < .02 || rg.r > Math.max(w,h)*.7) { rings.splice(i,1); continue; }
+    cx.strokeStyle = 'rgba(255,190,130,' + rg.a + ')';
+    cx.lineWidth = 2;
+    cx.beginPath(); cx.arc(cxp,cyp,rg.r,0,7); cx.stroke();
+  }
+  const g = cx.createRadialGradient(cxp,cyp,R*.15, cxp,cyp,R*2.1);
+  if (aiSpeaking || energy > .15){
+    g.addColorStop(0,'rgba(255,235,200,.98)'); g.addColorStop(.4,'rgba(255,160,100,.55)');
+    g.addColorStop(.72,'rgba(214,58,110,.24)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  } else {
+    g.addColorStop(0,'rgba(255,220,170,.95)'); g.addColorStop(.4,'rgba(255,140,90,.5)');
+    g.addColorStop(.72,'rgba(214,58,110,.22)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  }
+  cx.fillStyle = g; cx.beginPath(); cx.arc(cxp,cyp,R*2.1,0,7); cx.fill();
+  cx.fillStyle = 'rgba(255,244,230,.96)'; cx.beginPath(); cx.arc(cxp,cyp,R*.45,0,7); cx.fill();
+  for (const p of parts){
+    p.a += p.s * (1 + energy*5);
+    const rr = R * (1.3 + p.r*1.1 + energy*.1);
+    cx.fillStyle = 'rgba(255,190,140,' + (.12 + p.z*.3*(0.4+energy)) + ')';
+    cx.beginPath(); cx.arc(cxp+Math.cos(p.a)*rr, cyp+Math.sin(p.a)*rr*.7, 1 + p.z*2, 0, 7); cx.fill();
+  }
+  requestAnimationFrame(drawOrb);
+}
+requestAnimationFrame(drawOrb);
+
+// ---------- 游戏 ----------
+let game = null;
+const WORDS = ['年终奖','团建','加班','KPI','红包','年会','老板','食堂','打卡','周报','需求','上线','复盘','加班餐','电梯','工位',
+'摸鱼','画饼','对齐','赋能','闭环','内卷','躺平','甩锅','背锅','晋升','调薪','裁员','面试','试用期','五险一金','年假','病假','调休','报销','出差','会议室','白板','程序员','产品经理','设计师','运营','销售','财务','人事','行政','前台','保安','咖啡机','饮水机','绿植','空调','投影仪','工牌','门禁','钉钉','飞书','PPT','Excel','OKR','绩效','双薪','抽奖','一等奖','吉祥物','主持人','麦克风','音响','舞台','灯光','彩排','节目单','合唱','舞蹈','小品','相声','魔术','奖杯','证书','合影','朋友圈','自由职业','创业','融资','上市','期权','股票','裁员名单','猎头','简历','Offer','入职','离职','转正','实习','师徒制','导师','团建游戏','拔河','桌游','烧烤','火锅','奶茶','外卖','快递','下午茶','夜宵','早餐','食堂阿姨','窗口','排队','占座','摸鱼大赛','划水','搬砖','996','007','大小周','弹性工作制','远程办公','居家办公','视频会议','静音','开麦','摄像头','美颜','滤镜','表情包','梗','热搜','直播','短视频','点赞','关注','转发','评论','弹幕','一键三连'];
+let lastWord = '';
+function pickWord(){ let w; do { w = WORDS[Math.floor(Math.random()*WORDS.length)]; } while (w === lastWord && WORDS.length > 1); lastWord = w; return w; }
+function openStage(type){
+  game = { type, playing:false, score:0, wrong:0, clues:0 };
+  $('cards').style.display = 'none';
+  $('stage').classList.add('on');
+  $('gName').textContent = { guess:'🗣️ AI 你描述我猜', bomb:'💣 数字炸弹', roll:'🎯 AI 幸运点名', quiz:'⚡ AI 快问快答', idiom:'🔗 成语接龙', hot:'📈 年度热词竞猜', talk:'🎤 AI 主持脱口秀', song:'🎵 AI 猜歌 / 猜影' }[type];
+  $('big').innerHTML = '<div class="sub">点下面按钮开始</div>';
+  $('stat').innerHTML = ''; $('extra').innerHTML = ''; $('ctl').innerHTML = '';
+  if (type === 'guess') ctlGuess();
+  if (type === 'bomb') ctlBomb();
+  if (type === 'roll') ctlRoll();
+  if (type === 'quiz') ctlQuiz();
+  if (type === 'idiom') ctlIdiom();
+  if (type === 'hot') ctlHot();
+  if (type === 'talk') ctlTalk();
+  if (type === 'song') ctlSong();
+  if (!running) tipW('提示：先点右下角挂件「开 始」，AI 才能语音主持');
+  saveState(); // 进度落盘：刷新/重开回来还是这个游戏、这个分
+  sendPageState(); // 切游戏立刻上报，AI 下一句就在新游戏上下文里
+}
+function backToCards(){ game = null; try { localStorage.removeItem('moss_games_state'); } catch {} $('stage').classList.remove('on'); $('cards').style.display = ''; sendPageState(); }
+// 🔴 页面状态主动上报：服务端把它拼进 AI 指令 = AI 每轮开口前都实时知道在玩哪个游戏，不靠它自己想起来查
+function sendPageState(){ try { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action: 'client.page.state', state: PARTY.state() })); } catch {} }
+// 🔴 进度落盘：刷新/关闭重开，游戏、比分、当前词都还在（老大：不保存进度太尴尬）
+function saveState(){ if (game) try { localStorage.setItem('moss_games_state', JSON.stringify(game)); } catch {} }
+function restoreState(){
+  let s = null; try { s = JSON.parse(localStorage.getItem('moss_games_state') || 'null'); } catch {}
+  if (!s || !s.type || !document.querySelector('.card[data-g="' + s.type + '"]')) return;
+  openStage(s.type);
+  Object.assign(game, s);
+  stat();
+  if (s.type === 'guess' || s.type === 'hot') big('<div class="sub">大屏词语（默认隐藏，点「显示词语」再给玩家看）</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div>');
+  else if (s.type === 'bomb') big('<div class="ai">炸弹已埋好（1~100），继续轮流报数</div>');
+  else if (s.type === 'roll') big('<div class="word" id="rollname" style="font-size:clamp(40px,10vw,120px)">?</div>');
+  else big('<div class="ai">上次的进度已恢复，点按钮继续</div>');
+  tipW('已恢复上次游戏进度：' + (s.type === 'guess' ? '你描述我猜' : s.type === 'bomb' ? '数字炸弹' : s.type === 'roll' ? '幸运点名' : s.type === 'quiz' ? '快问快答' : s.type === 'idiom' ? '成语接龙' : s.type === 'hot' ? '年度热词' : s.type === 'talk' ? '脱口秀' : '猜歌猜影') + ' · 得分 ' + (s.score || 0));
+}
+restoreState();
+// 🔴 清空本页聊天记录：DELETE /convos/party（服务端会连语音会话一起终止=真·新对话），进度不受影响（进度在 moss_party_state）
+const clrBtn = $('clrHist');
+if (clrBtn) clrBtn.onclick = async () => {
+  if (!confirm('清空本页聊天记录？（游戏进度和比分不会丢）')) return;
+  try {
+    await fetch('/convos/games', { method: 'DELETE' });
+    $('lines').innerHTML = '<div class="a">聊天记录已清空 · 点「开 始」重新接通语音，就是全新对话</div>';
+    if (running) { stopAll(); tipW('语音已断开（旧会话已终止），点「开 始」即开新对话'); }
+  } catch { tipW('清空失败，请重试'); }
+};
+// 🔴 聊天记录落盘恢复：刷新后挂件里还能看到刚才聊的内容（之前刷新=全空白）
+(function loadPartyHist(){
+  try {
+    fetch('/history?id=games').then(r => r.json()).then(j => {
+      const ts = (j.turns || []).slice(-20);
+      if (!ts.length) return;
+      const box = $('lines'); box.innerHTML = '<div class="e">· —— 以上是上次聊天记录 ——</div>';
+      for (const t of ts) { const d = document.createElement('div'); d.className = t.who === '用户' ? 'u' : 'a'; d.textContent = (t.who === '用户' ? '🎤 ' : '🤖 ') + t.text; box.appendChild(d); }
+      box.scrollTop = 1e9;
+    }).catch(() => {});
+  } catch {}
+})();
+document.querySelectorAll('.card[data-g]').forEach(c => c.onclick = () => openStage(c.dataset.g));
+function stat(){ if (game){ $('stat').innerHTML = '线索 <b>' + game.clues + '</b> ｜ 猜错 <b>' + game.wrong + '</b> ｜ 得分 <b>' + game.score + '</b>'; saveState(); sendPageState(); } }
+function big(html){ $('big').innerHTML = html; }
+function ctlBtn(txt, fn, ghost){ const b = document.createElement('button'); b.className = 'bt' + (ghost ? ' ghost' : ''); b.textContent = txt; b.onclick = fn; $('ctl').appendChild(b); return b; }
+// 🔴 烟花秀（canvas 粒子引擎）：弹升空→顶点炸开→火花带重力+拖尾+余烬闪烁，多波连放，发光叠加
+let cfRaf = null, cfParts = [], cfRockets = [], cfCv = null, cfCx = null, cfEndAt = 0;
+const CF_COLORS = [[255,212,121],[255,138,92],[255,107,157],[201,166,255],[127,216,255],[255,94,94],[255,242,184],[140,255,190]];
+function cfSize(){ if (!cfCv) return; const d = Math.min(2, window.devicePixelRatio||1); cfCv.width = innerWidth*d; cfCv.height = innerHeight*d; cfCx.setTransform(d,0,0,d,0,0); }
+function cfBurst(x, y, base){
+  const n = 90 + (Math.random()*50|0);
+  for (let i=0;i<n;i++){
+    const a = (i/n)*Math.PI*2 + Math.random()*0.2;
+    const sp = 3.2 + Math.random()*6.5; // 🔴 更快更炸（实测 2.4~4.2 炸开半径太小，像萤火虫）
+    const c = base || CF_COLORS[(Math.random()*CF_COLORS.length)|0];
+    const tint = Math.random()<.3 ? 255 : c[0];
+    cfParts.push({ x, y, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp, life: 1, decay: .006 + Math.random()*.010, // 寿命加长
+      r: c[0], g: c[1], b: c[2], hi: tint, trail: [], tw: Math.random()<.45, sz: 1.4 + Math.random()*2.2 }); // 粒子加大
+  }
+  // 内圈白热核心（炸点闪光感）
+  for (let i=0;i<26;i++){ const a=Math.random()*Math.PI*2, sp=.5+Math.random()*2.2; cfParts.push({ x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, life:1, decay:.02+Math.random()*.02, r:255,g:250,b:230, hi:255, trail:[], tw:false, sz:2+Math.random()*2.5 }); }
+  // 金色垂柳慢坠（烟花秀的"尾巴"）
+  for (let i=0;i<26;i++){ const a=Math.random()*Math.PI*2, sp=1+Math.random()*2.6; cfParts.push({ x, y, vx:Math.cos(a)*sp*.5, vy:Math.sin(a)*sp*.5-0.6, life:1, decay:.004+Math.random()*.004, r:255,g:215,b:140, hi:255, trail:[], tw:true, sz:1+Math.random()*1.4, willow:true }); }
+}
+function cfLaunch(){
+  const x = innerWidth*(.12 + Math.random()*.76);
+  const targetY = innerHeight*(.14 + Math.random()*.3);
+  cfRockets.push({ x, y: innerHeight+10, vy: -(13+Math.random()*5), targetY, r:255,g:230,b:190, trail:[] }); // 🔴 升空更快（原来 9~13 半屏飘 1 秒，观感=小灰点）
+}
+function cfTick(){
+  const now = performance.now();
+  cfCx.clearRect(0,0,innerWidth,innerHeight);
+  cfCx.globalCompositeOperation = 'lighter';
+  // 弹（升空拖尾）
+  for (let i=cfRockets.length-1;i>=0;i--){
+    const rk = cfRockets[i];
+    rk.trail.push({x:rk.x, y:rk.y}); if (rk.trail.length>6) rk.trail.shift();
+    rk.y += rk.vy; rk.vy += .12; rk.x += Math.sin(now/300+i)*.4;
+    cfCx.strokeStyle = 'rgba(255,235,190,.9)'; cfCx.lineWidth = 2;
+    cfCx.beginPath(); for (let t=0;t<rk.trail.length;t++){ const p=rk.trail[t]; t?cfCx.lineTo(p.x,p.y):cfCx.moveTo(p.x,p.y); } cfCx.stroke();
+    cfCx.fillStyle = '#fff6d8'; cfCx.beginPath(); cfCx.arc(rk.x, rk.y, 2.2, 0, 7); cfCx.fill();
+    if (rk.y <= rk.targetY || rk.vy >= -1){ cfBurst(rk.x, rk.y); cfRockets.splice(i,1); }
+  }
+  // 火花
+  for (let i=cfParts.length-1;i>=0;i--){
+    const p = cfParts[i];
+    p.trail.push({x:p.x, y:p.y}); if (p.trail.length>7) p.trail.shift(); // 拖尾加长=流星感
+    p.vx *= .982; p.vy = p.vy*.982 + .055;
+    p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+    if (p.life <= 0 || p.y > innerHeight+20){ cfParts.splice(i,1); continue; }
+    const al = Math.min(1, p.life * 1.35) * (p.tw ? (.6 + .4*Math.sin(now/60 + i)) : 1);
+    // 🔴 颜色分量必须取整：粒子位置带小数不影响，但 rgba() 里出现浮点色值（如 138.42）整串会被浏览器判非法丢弃=画面空白
+    const cr = p.r|0, cg = p.g|0, cb = p.b|0, ch = p.hi|0, A = al.toFixed(3), A65 = (al*.65).toFixed(3), A55 = (al*.55).toFixed(3);
+    // 拖尾：宽而淡的尾迹 → 头亮
+    cfCx.strokeStyle = `rgba(${cr},${cg},${cb},${A65})`; cfCx.lineWidth = p.sz*1.1; cfCx.lineCap = 'round';
+    if (p.trail.length>1){ cfCx.beginPath(); cfCx.moveTo(p.trail[0].x,p.trail[0].y); for (let t=1;t<p.trail.length;t++) cfCx.lineTo(p.trail[t].x,p.trail[t].y); cfCx.lineTo(p.x,p.y); cfCx.stroke(); }
+    // 光晕（lighter 混合下叠出辉光）
+    const gr = cfCx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.sz*3.2);
+    gr.addColorStop(0,`rgba(${ch},${cg},${cb},${A55})`); gr.addColorStop(1,'rgba(0,0,0,0)');
+    cfCx.fillStyle = gr; cfCx.beginPath(); cfCx.arc(p.x,p.y,p.sz*3.2,0,7); cfCx.fill();
+    cfCx.fillStyle = `rgba(255,255,240,${A})`; cfCx.beginPath(); cfCx.arc(p.x,p.y,p.sz*.75,0,7); cfCx.fill();
+  }
+  cfCx.globalCompositeOperation = 'source-over';
+  if (cfRockets.length || cfParts.length || now < cfEndAt){ cfRaf = requestAnimationFrame(cfTick); }
+  else { cfRaf = null; cfCx.clearRect(0,0,innerWidth,innerHeight); }
+}
+function confetti(){ fireworks(); } // 兼容旧调用名，默认烟花
+// 🎊 彩带雨：普通得分/欢迎，从天而降的彩带+纸屑（不做爆闪，轻快不抢戏）
+function ribbons(){
+  const c = $('confetti'); if (!c) return;
+  c.innerHTML = '';
+  const colors = ['#ffd479','#ff8a5c','#ff6b9d','#ffe2b8','#c9a6ff','#7fd8ff','#fff3c4'];
+  const rnd = (a,b) => a + Math.random()*(b-a);
+  for (let i=0;i<110;i++){
+    const s = document.createElement('span'); s.className = 'cf stripe';
+    s.style.left = rnd(-2,100) + 'vw';
+    s.style.background = colors[(Math.random()*colors.length)|0];
+    s.style.setProperty('--dur', rnd(2.2,4.2).toFixed(2) + 's');
+    s.style.setProperty('--dl', rnd(0,0.9).toFixed(2) + 's');
+    s.style.opacity = rnd(.8,1).toFixed(2);
+    s.style.height = rnd(12,26).toFixed(0) + 'px';
+    c.appendChild(s);
+  }
+  for (let i=0;i<40;i++){
+    const s = document.createElement('span'); s.className = 'cf dot';
+    s.style.left = rnd(0,100) + 'vw';
+    s.style.background = colors[(Math.random()*colors.length)|0];
+    s.style.setProperty('--dx', rnd(-70,70).toFixed(0) + 'px');
+    s.style.setProperty('--dur', rnd(2.8,4.6).toFixed(2) + 's');
+    s.style.setProperty('--dl', rnd(0,1.2).toFixed(2) + 's');
+    c.appendChild(s);
+  }
+  setTimeout(() => { c.innerHTML = ''; }, 5200);
+}
+function fireworks(){
+  if (!cfCv){ cfCv = $('cfCv'); if (!cfCv) return; cfCx = cfCv.getContext('2d'); addEventListener('resize', cfSize); }
+  cfSize();
+  const fl = $('cfFlash'); if (fl){ fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on'); }
+  try { document.body.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}], {duration:260, easing:'ease-out'}); } catch {}
+  // 三波连放：立刻 3 发，0.5s 再 3 发，1.1s 再 2 发（像真烟花表演，不是一次性）
+  for (let i=0;i<3;i++) setTimeout(cfLaunch, i*120);
+  for (let i=0;i<3;i++) setTimeout(cfLaunch, 500 + i*140);
+  for (let i=0;i<2;i++) setTimeout(cfLaunch, 1150 + i*180);
+  cfEndAt = performance.now() + 3600;
+  if (!cfRaf) cfRaf = requestAnimationFrame(cfTick);
+}
+function stageAi(t){
+  if (!game) return;
+  if ((game.type === 'guess' || game.type === 'hot') && game.playing){
+    if (/对了|答对|正确|恭喜|厉害|算你赢|你赢了/.test(t)){ game.playing = false; game.score++; big('<div class="word">🎉 猜对了！</div><div class="sub">答案：' + game.word + '</div>'); ribbons(); } // 普通得分=彩带雨
+    else { if (/不对|错了|再猜|不是/.test(t)) game.wrong++; game.clues++; } // AI 每次回复=一条新线索；只有明确说“不对”才算猜错（“第N条线索”不再误记猜错）
+    stat();
+  }
+  if (game.type === 'bomb' && game.playing){
+    if (/砰|爆炸/.test(t)){ game.playing = false; bombBoom(t); }
+    else { const m = t.match(/(\d+)\s*[~～到至-]+\s*(\d+)/); if (m) bombShow(+m[1], +m[2]); else big('<div class="ai">' + t + '</div>'); }
+  }
+  if (game.type === 'quiz' && game.playing){
+    if (/答对|正确|加一分|恭喜/.test(t)){ game.score++; }
+    else if (/答错|不对|遗憾/.test(t)){ game.wrong++; }
+    stat();
+  }
+  if ((game.type === 'song') && game.playing){ // 猜歌猜影：线索累计，猜对加分撒花
+    if (/对了|答对|就是《|正确|猜中/.test(t)){ game.playing = false; game.score++; ribbons(); } // 猜对=彩带雨
+    else { if (/不对|错了|再猜|不是/.test(t)) game.wrong++; game.clues++; }
+    stat();
+  }
+}
+function ctlGuess(){
+  $('ctl').innerHTML = ''; // 🔴 "换一个词"会重入本函数，不清空按钮会翻倍
+  game.word = pickWord();
+  big('<div class="sub">大屏词语（默认隐藏，点「显示词语」再给玩家看）</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div>');
+  const b1 = ctlBtn('显示词语', () => { const w = $('wshow'); if (!w) return; if (w.textContent === '•••••'){ w.textContent = w.dataset.r; b1.textContent = '隐藏词语'; } else { w.dataset.r = w.textContent; w.textContent = '•••••'; b1.textContent = '显示词语'; } }, true);
+  ctlBtn('开始（AI 给线索）', async () => {
+    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+    game.playing = true; game.clues = 0; game.wrong = 0; stat();
+    type('【游戏】现在玩"AI描述我猜"。词是「' + game.word + '」。请你用语音给线索，一次只给一条，绝对不能说出这个词本身或包含它的字。玩家会语音猜，猜错你就说"不对"并给下一条更明显的线索，猜对就热烈庆祝并说"对了"。');
+    tipW('AI 正在出第一条线索…'); // 不再整屏替换——保留 #wshow，避免“显示词语”按钮空指针
+  });
+  ctlBtn('换一个词', () => ctlGuess(), true);
+}
+function bombShow(lo, hi){
+  const span = hi - lo; // 区间越小，引信烧得越急
+  const cls = span <= 8 ? 'fast' : span >= 60 ? 'calm' : '';
+  const dots = span <= 8 ? '🔥🔥🔥' : span <= 25 ? '🔥🔥' : '🔥';
+  big('<div class="bombwrap"><div class="bombico ' + cls + '" id="bombIco">💣</div><div class="bombfuse">' + dots + ' 引信 ' + span + ' 格</div><div class="bomblohi">' + lo + ' ～ ' + hi + '</div></div>');
+}
+function bombBoom(t){
+  const fl = $('bombFlash');
+  if (fl){ fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on'); }
+  try { document.body.animate([{transform:'translate(0,0)'},{transform:'translate(-9px,6px)'},{transform:'translate(8px,-7px)'},{transform:'translate(-5px,4px)'},{transform:'translate(0,0)'}], {duration:420, easing:'ease-out'}); } catch {}
+  fireworks(); // 爆炸=最high时刻，放烟花
+  big('<div class="word" style="animation:bombpulse .3s ease-in-out 3">💥 砰！</div><div class="sub">' + (game.bomb != null ? '炸弹就是 ' + game.bomb : t.slice(0, 40)) + ' · 下一轮再埋</div>');
+}
+function ctlBomb(){
+  $('ctl').innerHTML = ''; // 防重入按钮翻倍
+  game.bomb = 1 + Math.floor(Math.random()*100);
+  big('<div class="sub">炸弹已埋好（1~100），主持界面知道，观众别喊</div><div class="ai">点「开始」让 AI 主持</div>');
+  ctlBtn('开始', async () => {
+    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+    game.playing = true;
+    type('【游戏】数字炸弹开始，炸弹是 ' + game.bomb + '（1到100，绝对保密，别说出来）。玩家轮流报数，你根据炸弹播报当前安全区间并营造紧张气氛，谁报中炸弹就大喊"砰！爆炸了"。');
+    big('<div class="ai">AI：都别眨眼，炸弹已经埋好…</div>');
+  });
+  ctlBtn('再埋一颗', () => ctlBomb(), true);
+}
+function ctlRoll(){
+  $('extra').innerHTML = '<div style="margin-top:10px"><div style="color:#c9a68f;font-size:12px;margin-bottom:4px">名单（每行一个，可改）</div><textarea class="ta" id="names">张伟&#10;李娜&#10;王强&#10;刘敏&#10;陈杰&#10;杨帆&#10;赵磊&#10;孙悦</textarea></div>';
+  big('<div class="sub">点「开始滚动」，再点「停！」抽取</div><div class="word" id="rollname">🏆</div>');
+  let timer = null, b2 = null;
+  ctlBtn('开始滚动', () => {
+    const names = $('names').value.split('\n').map(s => s.trim()).filter(Boolean);
+    if (!names.length) return tipW('名单是空的');
+    if (timer) return;
+    timer = setInterval(() => { $('rollname').textContent = names[Math.floor(Math.random()*names.length)]; }, 80);
+    b2.disabled = false;
+  }, true);
+  b2 = ctlBtn('停！', () => {
+    if (!timer) return;
+    clearInterval(timer); timer = null; b2.disabled = true;
+    const winner = $('rollname').textContent;
+    game.score++; stat();
+    type('【游戏】幸运点名结果：「' + winner + '」被抽中了！请热情宣布，让他上台领奖或互动，并说一句烘托气氛的话。');
+    big('<div class="word">🎉 ' + winner + '</div><div class="sub">AI 正在宣布…</div>');
+    fireworks(); // 抽中幸运观众=高光时刻，用烟花
+  });
+  b2.disabled = true;
+}
+function ctlQuiz(){
+  $('ctl').innerHTML = ''; // 防重入按钮翻倍
+  big('<div class="sub">AI 出题（公司/行业/年度热词），语音抢答</div><div class="ai">点「开始出题」</div>');
+  ctlBtn('开始出题', async () => {
+    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+    game.playing = true; stat();
+    type('【游戏】快问快答开始：请出一道关于公司文化、行业常识或年度热词的选择题（A/B/C/D），先念题目和四个选项，然后等玩家语音回答。玩家答对就庆祝并说"答对了"，答错就说"答错了"并公布正确答案，然后出下一题。');
+    big('<div class="ai">AI 正在出题…</div>');
+  });
+  ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
+}
+function ctlIdiom(){
+  $('ctl').innerHTML = ''; // 防重入按钮翻倍
+  big('<div class="sub">AI 出第一个成语，大家用尾巴字接（同音也算）</div><div class="ai">点「开始接龙」</div>');
+  ctlBtn('开始接龙', async () => {
+    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+    game.playing = true; stat();
+    type('【游戏】成语接龙开始：你先出一个常用成语，然后玩家用它的最后一个字接下一个成语（同音字也算）。玩家接对了你就夸一句并用玩家接的那个成语继续；接不上或接错就提醒并扣一分，几轮后宣布赢家。');
+    big('<div class="ai">AI 正在想第一个成语…</div>');
+  });
+  ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
+}
+function ctlHot(){
+  $('ctl').innerHTML = ''; // 🔴 "换一个"会重入本函数，不清空按钮会翻倍
+  const HOT = ['年终奖','团建','KPI','需求评审','上线冲刺','年会节目','优秀员工','跨年钟声','开门红'];
+  game.word = HOT[Math.floor(Math.random()*HOT.length)];
+  big('<div class="sub">热词已抽好（默认隐藏，点「显示词语」再给玩家看）</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div>');
+  const bh = ctlBtn('显示词语', () => { const w = $('wshow'); if (w.textContent === '•••••'){ w.textContent = w.dataset.r; bh.textContent = '隐藏词语'; } else { w.dataset.r = w.textContent; w.textContent = '•••••'; bh.textContent = '显示词语'; } }, true);
+  ctlBtn('开始竞猜', async () => {
+    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+    game.playing = true; game.clues = 0; game.wrong = 0; stat();
+    type('【游戏】年度热词竞猜：词是「' + game.word + '」。用语音给大家描述这个公司年度词/事件，一次一条线索，绝不说出词本身；猜错就换更明显的说法，猜对就庆祝并宣布，然后换下一个。');
+    big('<div class="ai">AI 正在编第一条线索…</div>');
+  });
+  ctlBtn('换一个', () => ctlHot(), true);
+}
+function ctlTalk(){
+  $('ctl').innerHTML = ''; // 防重入按钮翻倍
+  big('<div class="sub">AI 主持人现挂一段脱口秀，可点名同事串上台</div><div class="ai">点「开讲」，或直接对 AI 说「给某某来段脱口秀」</div>');
+  ctlBtn('开讲', async () => {
+    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+    game.playing = true; stat();
+    type('【游戏】脱口秀开始：你是年会 AI 主持人，现在直接开讲，一口气讲满 60~90 秒（讲完自然收尾"谢谢大家"再停，中途绝不反问、不等玩家接话——你是独角戏专场）。主题围绕公司这一年的趣事、善意玩梗（绝不揭短、不开人身玩笑），中途自然点名一位同事请 ta 上台互动一句。🔴 撒花只在整段讲完、说"谢谢大家"之后调用一次 PARTY.confetti()，开头和中途绝对不许撒花。');
+    big('<div class="ai">🎤 脱口秀开讲，都坐好了…</div>');
+  });
+  ctlBtn('点一个人', async () => {
+    // 🔴 手机浏览器不支持 prompt()（报 "prompt() is not supported"），改成大屏内嵌输入框
+    const ex = $('extra');
+    ex.innerHTML = '<div style="margin-top:10px"><input class="ta" id="talkname" placeholder="输入同事名字，再点「就TA」" style="width:min(320px,80vw);padding:10px;border-radius:10px;border:1px solid #ff8a5c66;background:#180d16;color:#ffe8d6;font-size:15px"><button class="bt" id="goName" style="margin-left:8px">就TA</button></div>';
+    $('goName').onclick = async () => {
+      const n = ($('talkname').value || '').trim();
+      if (!n) return tipW('先输入名字');
+      if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+      game.playing = true; stat();
+      type('【游戏】给「' + n + '」来段脱口秀：即兴串词，把这位同事夸出花又逗乐全场，热情请 ta 上台，30~60 秒，全程善意不揭短。讲完调用 PARTY.confetti() 撒花。');
+      big('<div class="ai">AI 正在为「' + n + '」串词…</div>');
+      ex.innerHTML = '';
+    };
+  }, true);
+}
+function ctlSong(){
+  $('ctl').innerHTML = ''; // 防重入按钮翻倍
+  big('<div class="sub">AI 描述一首歌或一部电影的意境、名场面、经典台词，大家抢答</div><div class="ai">点「来一题」，或直接对 AI 说「来一题猜歌」</div>');
+  ctlBtn('来一题', async () => {
+    if (!running) { tipW('正在自动接通语音…'); await startAll(); }
+    game.playing = true; game.clues = 0; game.wrong = 0; stat();
+    type('【游戏】猜歌猜影开始：你自己在心里选一首大家熟知的中文歌或一部热门电影，答案只记在你脑子里、绝对不许说出口，也不许说出歌名/片名里的任何字。然后用语音描述它的意境、名场面或经典台词，一次只给一条线索，由隐到显。玩家抢答：猜对你就说"对了！就是《答案》"并调用 PARTY.confetti() 撒花、PARTY.setScore 给答对者加一分，然后换下一题；猜错就说"不对"并给下一条更明显的线索。');
+    big('<div class="ai">AI 正在想题…</div>');
+  });
+  ctlBtn('给提示', async () => {
+    if (!running || !game.playing) return tipW('先点「来一题」');
+    type('【游戏】继续刚才的猜歌猜影，再给一条更明显的线索，还是绝对别说出答案。');
+  }, true);
+}
+
+// ---------- PARTY API：AI 通过 page_cmd 调它操作大屏 ----------
+let rollTimer = null;
+window.PARTY = {
+  startGame(type){ if (['guess','bomb','roll','quiz','idiom','hot','talk','song'].includes(type)) { openStage(type); return '已切到游戏：' + type; } return '未知游戏：' + type + '（可选 guess/bomb/roll/quiz/idiom/hot/talk/song）'; },
+  exitGame(){ if (!game) return '本来就在游戏列表首页'; backToCards(); return '已退出游戏，回到游戏列表首页'; },
+  games(){ return JSON.stringify(['guess:你描述我猜','bomb:数字炸弹','roll:幸运点名','quiz:快问快答','idiom:成语接龙','hot:年度热词','talk:脱口秀','song:猜歌猜影']); },
+  showWord(w){ if (game && game.type === 'guess'){ game.word = String(w); big('<div class="sub">大屏词语</div><div class="word">' + w + '</div>'); return '词语已上屏'; } return '当前不在描述我猜'; },
+  hideWord(){ const w = $('wshow'); if (w && w.textContent !== '•••••'){ w.dataset.r = w.textContent; w.textContent = '•••••'; return '已隐藏'; } return '没有可隐藏的词'; },
+  setBig(title, sub){ big('<div class="word" style="font-size:clamp(24px,4.5vw,44px)">' + title + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '')); return '大屏已更新'; },
+  setScore(n){ if (game){ game.score = Number(n)||0; stat(); return '得分已改为 ' + game.score; } return '没在游戏中'; },
+  addScore(n){ if (game){ game.score = (Number(game.score)||0) + (Number(n)||1); stat(); return '得分已加到 ' + game.score; } return '没在游戏中'; },
+  confetti(){ ribbons(); return '彩带已撒（普通庆祝用彩带雨，大结局/冠军请调 PARTY.finale() 烟花秀）'; },
+  fireworks(){ fireworks(); return '烟花已放（高光时刻专用）'; },
+  finale(){ fireworks(); ribbons(); return '大结局：烟花秀+彩带雨全上！'; },
+  rollNames(list){ const names = Array.isArray(list) ? list : String(list||'').split(/[,，\n]/); const ns = names.map(s=>String(s).trim()).filter(Boolean); if (!ns.length) return '名单为空'; if (!game || game.type !== 'roll') openStage('roll'); clearInterval(rollTimer); rollTimer = setInterval(() => { $('rollname').textContent = ns[Math.floor(Math.random()*ns.length)]; }, 80); return '滚动中，共 ' + ns.length + ' 人'; },
+  stopRoll(){ if (rollTimer){ clearInterval(rollTimer); rollTimer = null; const winner = $('rollname').textContent; fireworks(); return '抽中：' + winner; } return '没在滚动'; },
+  say(text){ const box = $('big'); box.querySelectorAll('.ai:not(.ai-live)').forEach(e => e.remove()); let d = box.querySelector('.ai-live'); if (!d){ d = document.createElement('div'); d.className = 'ai ai-live'; box.appendChild(d); } d.textContent = String(text).slice(0, 200); return '已上屏'; },
+  // 🔴 实时状态：AI 问“页面有啥/现在玩到哪/几个游戏”必须现查这个，别凭记忆瞎说
+  state(){
+    const GAMES = { guess:'AI你描述我猜', bomb:'数字炸弹', roll:'AI幸运点名', quiz:'AI快问快答', idiom:'成语接龙', hot:'年度热词竞猜', talk:'AI主持脱口秀', song:'AI猜歌猜影' };
+    return JSON.stringify({
+      游戏总数: Object.keys(GAMES).length,
+      游戏清单: Object.values(GAMES),
+      进阶玩法: ['AI主持脱口秀','AI猜歌猜影（语音点播即可）'],
+      当前界面: game ? GAMES[game.type] : '游戏列表首页',
+      正在玩: !!(game && game.playing),
+      比分: game ? { 线索: game.clues, 猜错: game.wrong, 得分: game.score } : null,
+      大屏文字: (($('big') && $('big').innerText) || '').replace(/\s+/g,' ').slice(0,120),
+      可用按钮: [].map.call(document.querySelectorAll('#ctl .bt'), b => b.textContent),
+      语音已接通: running,
+      词库数量: WORDS.length,
+      名单: ($('names') ? $('names').value.split('\n').filter(Boolean) : [])
+    });
+  }
+};
+stat();
+</script>
+</body>
+</html>

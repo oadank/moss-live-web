@@ -19,7 +19,7 @@ const KEY = process.env.MOSS_API_KEY || '';
 // 主页和年会页同时开就会互相挤掉=连上就秒断。所以年会走独立账号 key（env 变量名 MOSS_MAIN_API_KEY，
 // 与 LiteLLM 的 main 组共用同一个变量，2026-11-18 老大定：一个 key 一个名，不许另造重名变量），没配就回退主 key。
 const KEY_PARTY = process.env.MOSS_MAIN_API_KEY || KEY;
-function keyFor(convo) { return convo === 'party' ? KEY_PARTY : KEY; }
+function keyFor(convo) { return convo === 'party' ? KEY_PARTY : (convo === 'games' ? (process.env.MOSS_API_KEY_GAMES || KEY_PARTY) : KEY); }
 const UPSTREAM = 'wss://api.mosi.cn/v1/realtime?model=moss-live-1.0';
 const WORKSPACE = '/opt/moss-live/workspace'; // 鱼的本机工作区（run_cmd 默认在这干活）
 try { fs.mkdirSync(WORKSPACE, { recursive: true }); } catch {}
@@ -688,7 +688,7 @@ class MossSession {
       appendConvo(this.convoId, 'ai', ev.data?.text || '');
       // 🔴 机器强制兜底（老大实测 AI 嘴上说"撒了"实际没调工具）：本轮说了庆祝话术但没发起 page_cmd
       // → 服务端直接替它撒。措辞要覆盖"撒了/撒花/撒完"等所有说法（11:51 实测只说"撒了"漏匹配）。
-      if (this.convoId === 'party' && !this.toolCalledThisTurn && /撒(了|花|完)|彩带|礼花|恭喜|抽中|猜对|答对|砰|爆炸|上台/.test(ev.data?.text || '')) {
+      if ((this.convoId === 'party' || this.convoId === 'games') && !this.toolCalledThisTurn && /撒(了|花|完)|彩带|礼花|恭喜|抽中|猜对|答对|砰|爆炸|上台/.test(ev.data?.text || '')) {
         console.log('[party] AI 说庆祝话但没调工具，服务端兜底撒花');
         this.pageCmd('PARTY.confetti()').catch(() => {});
       }
@@ -797,7 +797,7 @@ class MossSession {
     if (this.resultCtx) extra += '\n\n【系统通知：用户之前派给后台（WorkBuddy）的任务已经有结果了】\n' + this.resultCtx + '\n请现在主动向用户播报这个结果（口语化说结果本身，别念"系统通知"四个字）。播报完这条背景即作废。';
     let instr = buildInstructions(this.convoId);
     try { const skills = await getSkillList(); if (skills) instr += '\n\n【可调度的后台技能清单（实时有效；用 dispatch_agent 派给 WorkBuddy 执行，任务里写清要用哪个技能/触发词）】\n' + skills + '\n🔴 这份清单就是你的技能库（含抖音下载/视频转文字/生图/漫剧制作等）。用户提到相关需求时按触发词匹配并派活，禁止说“没挂载技能/没有这个能力”。'; } catch {}
-    if (this.convoId === 'party') instr += '\n\n【宿主页面：年会互动大屏】你是嵌在年会网页里的 AI 主持人。🔴 最重要规矩：玩家任何时候开口（打招呼、闲聊、问问题、报答案），你都必须立刻正常开口回应，绝不许沉默待机——沉默=事故。"主持游戏"只是你工作的一部分，不是开口说话的前提。\n🔴🔴 游戏锁定：下面【页面实时状态】是系统刚报给你的页面现状（每次自动更新，可信）。你此刻就住在这个游戏里：聊什么都必须围绕当前游戏和当前对话内容，绝不许自己切到别的游戏（PARTY.startGame 只有玩家明确说"换游戏/玩XX"才许调），绝不许把话题带到别的游戏上去。玩家问"现在玩什么/比分多少"直接读下面的实时状态回答，不用调工具。\n页面玩法清单：描述我猜/数字炸弹/幸运点名/快问快答/成语接龙/年度热词/脱口秀/猜歌猜影。玩家点游戏按钮后会通过打字把 secret（词语/炸弹数字/名单/获胜者）发给你；描述我猜的词和炸弹数字绝对不能说出口，其他信息正常播报。\n🔴🔴 改比分唯一的路：调 page_cmd 执行 PARTY.setScore(新分值) 或 PARTY.addScore(n)，返回"得分已改为 N"才算真改。嘴上说"记你账上/加一分"但没调工具=撒谎，绝对禁止。\n用 page_cmd 执行 JS 联动大屏（PARTY.setBig/confetti/setScore/addScore/showWord/hideWord/rollNames/stopRoll 等），让页面跟你的话同步变化。撒花 PARTY.confetti() 只在庆祝时刻用（猜对/抽中/脱口秀讲完收尾），脱口秀中途不许撒。\n🔴🔴 你完全掌控这个页面，能自由进出任何游戏：PARTY.startGame("guess|bomb|roll|quiz|idiom|hot|talk|song") 进/切某个游戏、PARTY.exitGame() 退出回首页、PARTY.games() 列出全部游戏 key。玩家说"玩XX/换个游戏/退出/回到首页/不想玩这个了"，你就直接调对应函数操作页面，不用等他点按钮。玩家明确要换才换，别自己乱切。\n【页面实时状态（系统自动更新，以此为准）】\n' + (this.pageState || '（刚连接，还没收到页面状态；可先调 page_state 查一次）');
+    if (this.convoId === 'party' || this.convoId === 'games') instr += '\n\n【宿主页面：年会互动大屏】你是嵌在年会网页里的 AI 主持人。🔴 最重要规矩：玩家任何时候开口（打招呼、闲聊、问问题、报答案），你都必须立刻正常开口回应，绝不许沉默待机——沉默=事故。"主持游戏"只是你工作的一部分，不是开口说话的前提。\n🔴🔴 游戏锁定：下面【页面实时状态】是系统刚报给你的页面现状（每次自动更新，可信）。你此刻就住在这个游戏里：聊什么都必须围绕当前游戏和当前对话内容，绝不许自己切到别的游戏（PARTY.startGame 只有玩家明确说"换游戏/玩XX"才许调），绝不许把话题带到别的游戏上去。玩家问"现在玩什么/比分多少"直接读下面的实时状态回答，不用调工具。\n页面玩法清单：描述我猜/数字炸弹/幸运点名/快问快答/成语接龙/年度热词/脱口秀/猜歌猜影。玩家点游戏按钮后会通过打字把 secret（词语/炸弹数字/名单/获胜者）发给你；描述我猜的词和炸弹数字绝对不能说出口，其他信息正常播报。\n🔴🔴 改比分唯一的路：调 page_cmd 执行 PARTY.setScore(新分值) 或 PARTY.addScore(n)，返回"得分已改为 N"才算真改。嘴上说"记你账上/加一分"但没调工具=撒谎，绝对禁止。\n用 page_cmd 执行 JS 联动大屏（PARTY.setBig/confetti/setScore/addScore/showWord/hideWord/rollNames/stopRoll 等），让页面跟你的话同步变化。撒花 PARTY.confetti() 只在庆祝时刻用（猜对/抽中/脱口秀讲完收尾），脱口秀中途不许撒。\n🔴🔴 你完全掌控这个页面，能自由进出任何游戏：PARTY.startGame("guess|bomb|roll|quiz|idiom|hot|talk|song") 进/切某个游戏、PARTY.exitGame() 退出回首页、PARTY.games() 列出全部游戏 key。玩家说"玩XX/换个游戏/退出/回到首页/不想玩这个了"，你就直接调对应函数操作页面，不用等他点按钮。玩家明确要换才换，别自己乱切。\n【页面实时状态（系统自动更新，以此为准）】\n' + (this.pageState || '（刚连接，还没收到页面状态；可先调 page_state 查一次）');
     // 🔴 官方：tools 只在启用音频前配一次（会话中途重发违反"工具列表必须稳定"）；
     // 首次 push 带 tools，后续只更 instructions。
     const payload = { instructions: instr + extra };
@@ -919,8 +919,9 @@ const server = http.createServer((req, res) => {
     // 🔴 聊天记录隔离：party（游戏页）的记录归游戏页自己管，绝不出现在主页会话列表里；?scope=party 则只给 party 自己的
     const only = (() => { try { return new URL(req.url, 'http://x').searchParams.get('scope'); } catch { return ''; } })();
     let list = listConvos(), arch = listConvos(ARCHIVE_DIR);
-    if (only === 'party') { list = list.filter(c => c.id === 'party'); arch = arch.filter(c => c.id === 'party'); }
-    else { list = list.filter(c => c.id !== 'party'); arch = arch.filter(c => c.id !== 'party'); }
+    const GAME_IDS = ['party', 'games'];
+    if (GAME_IDS.includes(only)) { list = list.filter(c => c.id === only); arch = arch.filter(c => c.id === only); }
+    else { list = list.filter(c => !GAME_IDS.includes(c.id)); arch = arch.filter(c => !GAME_IDS.includes(c.id)); }
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({ convos: list, archived: arch, current: 'default' }));
     return;
@@ -982,13 +983,60 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-  const rel = p === '/' ? 'index.html' : (p === '/party' ? 'party.html' : p.replace(/^\/+/, ''));
+  // 🔴 本地语音链路（免费档）：浏览器 → 这里 → LeCoo voice-agent(:18811)。
+  // 走服务端代理 = 同源、不暴露 LeCoo 内网地址、公网用户也能用本地大脑。
+  if (p.startsWith('/local-')) {
+    const VA = process.env.VOICE_AGENT_URL || 'http://100.108.133.82:18811';
+    // 🔴 流式旁路：SSE 必须原样透传，不能缓冲（缓冲=流式白做）
+    if (p === '/local-chat-stream') {
+      let body = '';
+      req.on('data', c => body += c);
+      req.on('end', async () => {
+        try {
+          const r = await fetch(VA + '/chat-stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body || '{}' });
+          res.writeHead(r.status, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive', 'X-Accel-Buffering': 'no' });
+          // 🔴 web ReadableStream 没有 .pipe（刚才踩坑：头发了数据永远不来=524），手动 reader 循环
+          const rd = r.body.getReader();
+          for (;;) { const { done, value } = await rd.read(); if (done) break; res.write(Buffer.from(value)); }
+        } catch (e) {
+          if (!res.headersSent) { res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' }); }
+          res.end(JSON.stringify({ error: '本地语音服务连不上：' + String(e.message).slice(0, 120) }));
+        }
+      });
+      return;
+    }
+    const map = { '/local-chat': ['POST', '/chat'], '/local-asr': ['POST', '/asr'], '/local-pull': ['GET', '/pull'], '/local-ack': ['POST', '/ack'], '/local-page-state': ['POST', '/page-state'], '/local-state': ['GET', '/state'] };
+    const m = map[p];
+    if (!m) { res.writeHead(404); res.end('not found'); return; }
+    const qi = (req.url || '').indexOf('?');
+    const q = qi >= 0 ? (req.url || '').slice(qi + 1) : '';
+    const target = VA + m[1] + (m[0] === 'GET' && q ? '?' + q : '');
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const r = await withTimeout(fetch(target, {
+          method: m[0], headers: { 'Content-Type': 'application/json' }, body: m[0] === 'POST' ? (body || '{}') : undefined,
+        }), p === '/local-chat' ? 300000 : 15000, 'voice-agent timeout');
+        const t = await r.text();
+        res.writeHead(r.status, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(t);
+      } catch (e) {
+        res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: '本地语音服务连不上：' + String(e.message).slice(0, 120) }));
+      }
+    });
+    return;
+  }
+
+  const rel = p === '/' ? 'index.html' : (p === '/party' ? 'party.html' : (p === '/games' ? 'games.html' : p.replace(/^\/+/, '')));
   const fp = path.normalize(path.join(PUBLIC_DIR, rel));
   if (!fp.startsWith(PUBLIC_DIR) || !fs.existsSync(fp) || !fs.statSync(fp).isFile()) {
     res.writeHead(404); res.end('not found'); return;
   }
   const type = fp.endsWith('.html') ? 'text/html; charset=utf-8' : fp.endsWith('.js') ? 'text/javascript; charset=utf-8' : fp.endsWith('.png') ? 'image/png' : 'application/octet-stream';
-  res.writeHead(200, { 'Content-Type': type });
+  // 🔴 页面/脚本必须 no-cache：Cloudflare 默认会缓存 .js，改完代码用户拿的还是旧引擎（2026-11-18 实测踩坑）
+  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-cache' });
   fs.createReadStream(fp).pipe(res);
 });
 
