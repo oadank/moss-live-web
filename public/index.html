@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MOSS · LIVE 语音互动</title>
+<title>艾利丹尼森 · 年会 AI 互动</title>
 <link rel="icon" type="image/svg+xml" href="/icon-home.svg">
 <link rel="apple-touch-icon" href="/icon-home.svg">
 <style>
@@ -27,7 +27,7 @@
   .dot.err { background:#ff5470; box-shadow:0 0 10px #ff5470; }
   @media (max-width:640px){ header { padding:12px 16px; } .brand { font-size:12px; letter-spacing:.2em; } #goParty { font-size:12px; padding:5px 10px; } }
   #lvlwrap { width:70px; height:6px; border-radius:3px; background:#1a2436; overflow:hidden; }
-  #lvl { height:100%; width:0%; background:linear-gradient(90deg,#41e0a0,#63e6ff); transition:width .08s linear; }
+  #lvl { height:100%; width:0%; background:linear-gradient(90deg,#ffcf6a,#e4002b); transition:width .08s linear; }
 
   #stage { position:fixed; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center;
     justify-content:flex-end; padding:0 24px 130px; pointer-events:none; }
@@ -115,19 +115,31 @@
   }
   #btn { pointer-events:auto; cursor:pointer; border:none; outline:none; color:#031018; font-weight:700;
     font-size:16px; letter-spacing:.12em; padding:14px 44px; border-radius:999px;
-    background:linear-gradient(135deg,#63e6ff,#41e0a0); box-shadow:0 6px 30px rgba(65,224,160,.35); transition:.25s; }
+    background:linear-gradient(135deg,#ffcf6a,#e4002b); color:#1a0508; box-shadow:0 6px 30px rgba(228,0,43,.45); transition:.25s; }
   #btn:hover { transform:translateY(-2px); }
   #btn.stop { background:linear-gradient(135deg,#ff7d9c,#ff5470); color:#fff; box-shadow:0 6px 30px rgba(255,84,112,.35); }
   #tip { position:fixed; bottom:78px; left:0; right:0; text-align:center; z-index:39; font-size:12px; color:#5d7290; }
   #diag { position:fixed; top:64px; left:12px; z-index:50; font-size:11px; color:#6fa0c8;
     background:rgba(5,10,18,.6); padding:4px 8px; border-radius:6px; font-family:monospace; max-width:70vw; word-break:break-all; pointer-events:none; }
+  /* 红红火火动态底 + 品牌区 */
+  #bgfx { position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(62% 52% at 18% 8%, rgba(228,0,43,.55), transparent 68%),
+      radial-gradient(54% 48% at 86% 18%, rgba(255,146,54,.34), transparent 68%),
+      radial-gradient(66% 56% at 50% 104%, rgba(196,10,40,.42), transparent 70%);
+    animation: bgdrift 17s ease-in-out infinite alternate; }
+  @keyframes bgdrift { from { transform: translate3d(0,0,0) scale(1) } to { transform: translate3d(0,-2%,0) scale(1.07) } }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand img { height:24px; width:auto; background:#fff; padding:4px 8px; border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,.35); }
+  .brand span { font-size:15px; letter-spacing:.18em; color:#ffd9c9; font-weight:600; text-shadow:0 0 18px rgba(255,90,60,.45); }
 </style>
 </head>
 <body>
+<div id="bgfx"></div>
 <canvas id="orb"></canvas>
 <div class="vignette"></div>
 <header>
-  <div class="brand">MOSS · <b>LIVE</b> 语音互动</div>
+  <div class="brand"><img src="/assets/logo-ad.png" alt="Avery Dennison"><span>艾利丹尼森 · 年会 AI 互动</span></div>
   <a id="goParty" href="/games" title="打开 AI 语音互动游戏">🏮 去玩游戏</a>
   <div class="status"><span class="dot" id="dot"></span><span id="stTxt">未连接</span><span id="lvlwrap"><span id="lvl" style="display:block"></span></span></div>
 </header>
@@ -210,26 +222,26 @@ function drawOrb(t){
     const rg = rings[i];
     rg.r += Math.max(1.5, base*.02); rg.a *= .965;
     if (rg.a < .02 || rg.r > Math.max(w,h)*.7) { rings.splice(i,1); continue; }
-    cx.strokeStyle = `rgba(120,220,255,${rg.a})`;
+    cx.strokeStyle = `rgba(255,170,110,${rg.a})`;
     cx.lineWidth = 2;
     cx.beginPath(); cx.arc(cxp,cyp,rg.r,0,7); cx.stroke();
   }
   const g = cx.createRadialGradient(cxp,cyp,R*.1, cxp,cyp,R*1.9);
   if (aiSpeaking || energy > .15){
-    g.addColorStop(0,'rgba(190,245,255,.98)'); g.addColorStop(.35,'rgba(90,200,255,.55)');
-    g.addColorStop(.7,'rgba(70,110,255,.22)'); g.addColorStop(1,'rgba(0,0,20,0)');
+    g.addColorStop(0,'rgba(255,236,196,.98)'); g.addColorStop(.35,'rgba(255,132,64,.55)');
+    g.addColorStop(.7,'rgba(190,20,40,.26)'); g.addColorStop(1,'rgba(20,0,0,0)');
   } else {
-    g.addColorStop(0,'rgba(140,230,255,.95)'); g.addColorStop(.35,'rgba(80,160,255,.45)');
-    g.addColorStop(.7,'rgba(60,80,220,.18)'); g.addColorStop(1,'rgba(0,0,20,0)');
+    g.addColorStop(0,'rgba(255,226,186,.95)'); g.addColorStop(.35,'rgba(255,110,60,.45)');
+    g.addColorStop(.7,'rgba(170,16,36,.20)'); g.addColorStop(1,'rgba(20,0,0,0)');
   }
   cx.fillStyle = g; cx.beginPath(); cx.arc(cxp,cyp,R*1.9,0,7); cx.fill();
-  cx.fillStyle = 'rgba(230,250,255,.95)';
+  cx.fillStyle = 'rgba(255,244,228,.96)';
   cx.beginPath(); cx.arc(cxp,cyp,R*.42,0,7); cx.fill();
   for (const p of parts){
     p.a += p.s * (1 + energy*5);
     const rr = R * (1.25 + p.r*1.15 + energy*.1);
     const x = cxp + Math.cos(p.a)*rr, y = cyp + Math.sin(p.a)*rr*.72;
-    cx.fillStyle = `rgba(150,220,255,${.14+p.z*.4*(0.35+energy)})`;
+    cx.fillStyle = `rgba(255,180,120,${.16+p.z*.4*(0.35+energy)})`;
     cx.beginPath(); cx.arc(x,y,1.2+p.z*2.4,0,7); cx.fill();
   }
   requestAnimationFrame(drawOrb);
