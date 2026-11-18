@@ -145,6 +145,7 @@
     <div class="st-line" id="wdiag" style="font-family:monospace;opacity:.75">帧发:0 帧收:0</div>
     <div class="lines" id="lines"><div class="a">AI 主持人就绪 · 可以聊天，也可以开上面的游戏</div></div>
     <div class="st-line" style="justify-content:space-between;margin-top:8px"><span style="font-size:11px;color:#8a6a72">本页聊天记录（游戏进度独立保存）</span><button class="bt ghost" id="clrHist" style="padding:4px 10px;font-size:11px">清 空</button></div>
+    <div class="st-line" style="gap:6px;margin-top:6px"><span style="font-size:11px;color:#8a6a72">麦克风</span><select id="micSel" style="flex:1;min-width:0;background:#120a14;border:1px solid #5a2a3a;color:#fff3e6;border-radius:8px;padding:4px 6px;font-size:12px"><option value="">自动（系统默认）</option></select></div>
     <div class="tin"><input id="txt" placeholder="打字给 AI（链接/口令请打字）· 回车发送"></div>
     <div class="st"><button class="bt" id="wBtn">开 始</button><button class="bt ghost" id="bargeBtn" style="display:none">打 断</button></div>
   </div>
@@ -172,49 +173,30 @@ window.onerror = function(msg, src, lineno, colno){ reportErr('脚本错误', ms
 window.onunhandledrejection = function(e){ reportErr('Promise错误', (e && e.reason && (e.reason.message || e.reason)) || 'unknown'); };
 
 // ---------- 音频：采集 16k 上行 ----------
+(function fillMicSel(){
+  // 麦克风手动选择口（XDB 这类多设备机器默认口可能是空的，选一次记住）
+  const sel = $('micSel'); if (!sel) return;
+  navigator.mediaDevices && navigator.mediaDevices.enumerateDevices().then(ds => {
+    const ins = ds.filter(d => d.kind === 'audioinput');
+    if (ins.length < 2) return; // 单麦机器不显示选择干扰
+    ins.forEach((d, i) => { const op = document.createElement('option'); op.value = d.deviceId; op.textContent = d.label || ('麦克风' + (i+1)); sel.appendChild(op); });
+    try { const saved = localStorage.getItem('moss_mic_id'); if (saved) sel.value = saved; } catch {}
+    sel.onchange = () => { try { sel.value ? localStorage.setItem('moss_mic_id', sel.value) : localStorage.removeItem('moss_mic_id'); } catch {} tipW && tipW(sel.value ? '已选麦克风，下次「开 始」生效' : '已恢复自动麦克风'); };
+    // 授权后 label 才有值：开过一次麦后刷新列表
+    const reload = () => { sel.innerHTML = '<option value="">自动（系统默认）</option>'; fillMicSel(); };
+    if (!ins[0].label) setTimeout(reload, 4000);
+  }).catch(() => {});
+})();
 async function pickMic(){
-  // 🔴 多麦克风自动选"真有信号"的：逐个试音 1.2 秒取峰值，挑峰值最大的（不是第一个）。
-  // 空接口的底噪=纯数字零；真麦哪怕没人说话也有环境底噪。上一版 if(r.ok) 被补丁弄丢=永远选第一个（XDB 22:33 实测事故）。
+  // 🔴 绝不做"反复开关试音"：iOS/安卓先开一关一再开，第二次录音是静音（2026-11-18 手机实测，把好好的链路改坏两次）。
+  // 只在用户手动选过麦克风时用那个 deviceId，否则原样走浏览器默认。
   const base = { echoCancellation:true, noiseSuppression:true };
-  let devs = [];
-  try { devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput'); } catch {}
-  const tryOne = async (constraint) => {
-    let st, ac;
-    try {
-      st = await navigator.mediaDevices.getUserMedia({ audio: constraint });
-      ac = new AudioContext();
-      const an = ac.createAnalyser(); an.fftSize = 1024;
-      ac.createMediaStreamSource(st).connect(an);
-      const buf = new Float32Array(an.fftSize);
-      let peak = 0;
-      await new Promise(r => { const t0 = Date.now(); const iv = setInterval(() => {
-        an.getFloatTimeDomainData(buf);
-        for (let i = 0; i < buf.length; i++) { const a = Math.abs(buf[i]); if (a > peak) peak = a; }
-        if (Date.now() - t0 > 1200) { clearInterval(iv); r(); }
-      }, 100); });
-      return { peak };
-    } catch (e) { return { peak: -1, err: e }; }
-    finally { try { st && st.getTracks().forEach(t => t.stop()); } catch {} try { ac && ac.close(); } catch {} }
-  };
-  if (!devs.length) return navigator.mediaDevices.getUserMedia({ audio: base });
-  // 🔴 只有 1 个（或拿不到列表）麦克风：直接走默认 getUserMedia，绝不试音。
-  //    iOS Safari 先开一关一再开=第二次录音是静音（22:34 手机实测被上一版 pickMic 改坏的根因）。
-  if (devs.length <= 1) return navigator.mediaDevices.getUserMedia({ audio: base });
-  const scored = [];
-  for (const d of devs) {
-    const r = await tryOne(Object.assign({ deviceId: { exact: d.deviceId } }, base));
-    scored.push({ d, peak: r.peak, err: r.err });
-    window.__micProbe = (window.__micProbe||'PICK[') + (d.label||d.deviceId.slice(0,6)) + '=' + (r.peak<0?('!'+r.err.name):r.peak.toFixed(4)) + ' ';
+  let saved = '';
+  try { saved = localStorage.getItem('moss_mic_id') || ''; } catch {}
+  if (saved) {
+    try { return await navigator.mediaDevices.getUserMedia({ audio: Object.assign({ deviceId: { exact: saved } }, base) }); }
+    catch { try { localStorage.removeItem('moss_mic_id'); } catch {} }
   }
-  window.__micProbe += ']';
-  scored.sort((a, b) => b.peak - a.peak);
-  const best = scored[0];
-  if (best.peak > 0) {
-    tipW && tipW('麦克风已选：' + (best.d.label || best.d.deviceId.slice(0, 8)) + '（信号最强）');
-    return navigator.mediaDevices.getUserMedia({ audio: Object.assign({ deviceId: { exact: best.d.deviceId } }, base) });
-  }
-  // 全零/全错：权限错误照抛，否则回退默认设备（可能只是环境太安静）
-  if (best.err && (best.err.name === 'NotAllowedError' || best.err.name === 'NotFoundError')) throw best.err;
   return navigator.mediaDevices.getUserMedia({ audio: base });
 }
 async function startMic(){
