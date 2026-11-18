@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MOSS · LIVE 语音互动</title>
+<link rel="icon" type="image/svg+xml" href="/icon-home.svg">
+<link rel="apple-touch-icon" href="/icon-home.svg">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; overflow:hidden; background:#05060a; color:#e8eef7;
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  #orb { position:fixed; inset:0; width:100vw; height:100vh; transition:all .6s cubic-bezier(.22,1,.36,1); z-index:1; }
+  body.mini #orb { inset:auto; left:-190px; bottom:-190px; width:560px; height:560px; }
+  .vignette { position:fixed; inset:0; pointer-events:none; z-index:2;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,5,.75) 100%); }
+  header { position:fixed; top:0; left:0; right:0; z-index:10; display:flex; align-items:center;
+    justify-content:space-between; padding:18px 28px; }
+  .brand { font-size:15px; letter-spacing:.35em; color:#7fd8ff; text-shadow:0 0 18px rgba(80,200,255,.55); font-weight:600; }
+  .brand b { color:#fff; }
+  #goParty { font-size:13px; color:#ffd9a0; text-decoration:none; padding:7px 16px; border:1px solid rgba(255,180,90,.45);
+    border-radius:999px; background:rgba(255,140,60,.12); text-shadow:0 0 12px rgba(255,170,90,.5); transition:.25s; white-space:nowrap; }
+  #goParty:hover { background:rgba(255,140,60,.28); border-color:rgba(255,200,120,.8); box-shadow:0 0 18px rgba(255,150,70,.4); }
+  .status { font-size:12px; color:#8fa3bd; display:flex; align-items:center; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#556; transition:.3s; }
+  .dot.on { background:#41e0a0; box-shadow:0 0 10px #41e0a0; }
+  .dot.err { background:#ff5470; box-shadow:0 0 10px #ff5470; }
+  @media (max-width:640px){ header { padding:12px 16px; } .brand { font-size:12px; letter-spacing:.2em; } #goParty { font-size:12px; padding:5px 10px; } }
+  #lvlwrap { width:70px; height:6px; border-radius:3px; background:#1a2436; overflow:hidden; }
+  #lvl { height:100%; width:0%; background:linear-gradient(90deg,#41e0a0,#63e6ff); transition:width .08s linear; }
+
+  #stage { position:fixed; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center;
+    justify-content:flex-end; padding:0 24px 130px; pointer-events:none; }
+  #subtitle { width:min(860px,92vw); text-align:center; }
+  .line { font-size:clamp(18px,2.6vw,28px); line-height:1.55; margin:6px 0; }
+  .line.user { color:#cfe0f5; opacity:.85; }
+  .line.ai { color:#8fe3ff; text-shadow:0 0 24px rgba(90,210,255,.35); font-weight:500; }
+  .hint { font-size:13px; color:#5d7290; }
+
+  #panel { position:fixed; top:76px; right:26px; width:min(430px,92vw); max-height:70vh; overflow:auto;
+    background:rgba(10,16,28,.82); border:1px solid rgba(110,200,255,.22); border-radius:16px;
+    backdrop-filter:blur(10px); padding:18px; z-index:20; display:none; box-shadow:0 10px 50px rgba(0,0,0,.5); }
+  body.compact #panel { display:block; }
+  #panel h3 { font-size:13px; letter-spacing:.2em; color:#7fd8ff; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .spin { width:12px; height:12px; border:2px solid rgba(127,216,255,.25); border-top-color:#7fd8ff;
+    border-radius:50%; animation:sp 1s linear infinite; display:inline-block; }
+  @keyframes sp { to { transform:rotate(360deg);} }
+  .titem { border-left:2px solid rgba(127,216,255,.4); padding:6px 10px; margin:8px 0; font-size:13px; color:#bcd2ec; }
+  .titem .tn { color:#fff; font-weight:600; }
+  .titem .ta { color:#7d93b3; word-break:break-all; }
+  .titem.ok { border-color:#41e0a0; }
+  .titem.fail { border-color:#ff5470; }
+  .titem .to { color:#9fe8c8; white-space:pre-wrap; word-break:break-all; max-height:90px; overflow:auto; font-size:12px; }
+
+  #result { position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:30;
+    width:min(680px,92vw); max-height:70vh; overflow:auto; background:rgba(12,20,34,.92);
+    border:1px solid rgba(80,220,170,.35); border-radius:18px; padding:22px 26px; display:none;
+    box-shadow:0 20px 80px rgba(0,0,0,.6); }
+  #result h3 { color:#41e0a0; font-size:14px; letter-spacing:.2em; margin-bottom:10px; }
+  #result pre { white-space:pre-wrap; word-break:break-all; color:#d7e6f5; font-size:14px; line-height:1.7; font-family:inherit; }
+
+  #bar { position:fixed; left:0; right:0; bottom:0; z-index:40; display:flex; justify-content:center; align-items:center; gap:10px; padding:20px; }
+  .mini { pointer-events:auto; cursor:pointer; border:1px solid rgba(110,200,255,.3); background:rgba(16,26,44,.8); color:#bfe6ff; border-radius:999px; width:46px; height:46px; font-size:18px; transition:.2s; flex:none; }
+  .mini:hover { border-color:#63e6ff; }
+  .mini.on { background:#16405a; border-color:#41e0a0; }
+  #txt { pointer-events:auto; width:min(340px,40vw); height:46px; border-radius:999px; border:1px solid rgba(110,200,255,.3); background:rgba(10,16,28,.85); color:#e8eef7; padding:0 18px; font-size:14px; outline:none; }
+  #txt:focus { border-color:#63e6ff; }
+  #hist { position:fixed; top:92px; left:12px; z-index:60; }
+  #histTab { cursor:pointer; width:38px; height:38px; border-radius:12px; border:1px solid rgba(110,200,255,.25); background:linear-gradient(160deg,rgba(16,28,50,.9),rgba(10,16,30,.9)); color:#cfe8ff; font-size:17px; box-shadow:0 6px 24px rgba(0,0,0,.45); transition:.2s; }
+  #histTab:hover { border-color:#63e6ff; transform:translateY(-1px); }
+  #histBody { display:none; position:absolute; left:0; top:46px; width:340px; max-height:64vh; overflow:auto; background:rgba(8,14,26,.55); border:1px solid rgba(110,200,255,.16); border-radius:14px; padding:10px; box-shadow:0 12px 40px rgba(0,0,0,.35); backdrop-filter:blur(6px); }
+  #histBody::-webkit-scrollbar { width:6px; }
+  #histBody::-webkit-scrollbar-thumb { background:rgba(120,170,220,.28); border-radius:3px; }
+  /* 🔴 统一细滚动条（系统默认灰粗条跟深色主题不搭） */
+  #panel::-webkit-scrollbar, #tasks::-webkit-scrollbar, #result::-webkit-scrollbar, #resultBody::-webkit-scrollbar { width:6px; }
+  #panel::-webkit-scrollbar-track, #tasks::-webkit-scrollbar-track, #result::-webkit-scrollbar-track { background:transparent; }
+  #panel::-webkit-scrollbar-thumb, #tasks::-webkit-scrollbar-thumb, #result::-webkit-scrollbar-thumb { background:rgba(127,216,255,.25); border-radius:3px; }
+  #panel::-webkit-scrollbar-thumb:hover, #tasks::-webkit-scrollbar-thumb:hover { background:rgba(127,216,255,.45); }
+  #panel, #tasks, #result, #resultBody { scrollbar-width:thin; scrollbar-color:rgba(127,216,255,.25) transparent; }
+  #hist.open #histBody, #hist.pinned #histBody { display:block; }
+  @media (hover: hover){ #hist:hover #histBody { display:block; } } /* 只在真悬停设备生效，手机点按不再被 sticky hover 卡住 */
+  #hist.pinned #histTab { border-color:#41e0a0; }
+  .hline { font-size:11.5px; line-height:1.5; color:#c6d8ee; padding:5px 9px; margin:4px 0; border-radius:10px; background:rgba(120,160,220,.05); word-break:break-all; }
+  .hline b { display:block; font-size:9.5px; letter-spacing:.12em; color:#8fb7d8; margin-bottom:1px; font-weight:600; }
+  .hline.hu { background:rgba(255,200,110,.08); border-left:2px solid rgba(255,212,121,.7); }
+  .hline.hu b { color:#ffd479; }
+  .hline .ts { float:right; font-size:9px; color:#5d7290; font-weight:400; letter-spacing:0; }
+  .hline.ha { background:rgba(127,216,255,.07); border-left:2px solid rgba(127,216,255,.6); }
+  .hline.ha b { color:#7fd8ff; }
+  .hbtn { cursor:pointer; border:1px solid rgba(65,224,160,.5); background:rgba(20,50,40,.6); color:#9fe8c8; border-radius:8px; padding:4px 10px; font-size:12px; transition:.15s; }
+  .hbtn:hover { border-color:#41e0a0; }
+  .hline.convo { cursor:pointer; padding:7px 10px; background:rgba(120,160,220,.05); }
+  .hline.convo:hover { background:rgba(80,160,255,.14); }
+  .hline.convo.cur { background:linear-gradient(135deg,rgba(65,224,160,.17),rgba(65,224,160,.06)); border-left:2px solid #41e0a0; }
+  .hline .cnt { float:right; color:#5d7290; font-size:11px; }
+  .hline.convo { display:flex; align-items:center; gap:6px; }
+  .hline.convo .ct { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hline .acts { display:flex; gap:4px; flex:none; }
+  .hbtn.act-del { border-color:rgba(255,84,112,.45); color:#ff9db1; background:rgba(60,16,28,.45); }
+  @media (max-width: 640px){
+    #bar { flex-wrap: nowrap; padding: 10px 6px; gap: 6px; }
+    .mini { width: 38px; height: 40px; font-size: 15px; flex: none; }
+    #btn { padding: 12px 20px; font-size: 14px; flex: none; }
+    #txt { flex: 1; width: auto; min-width: 0; height: 40px; padding: 0 12px; font-size: 13px; }
+    #histBody { width: min(320px, 86vw); }
+    #hist { top: 122px; } /* 手机上诊断条折两行，按钮往下挪，别被压住 */
+  }
+  #btn { pointer-events:auto; cursor:pointer; border:none; outline:none; color:#031018; font-weight:700;
+    font-size:16px; letter-spacing:.12em; padding:14px 44px; border-radius:999px;
+    background:linear-gradient(135deg,#63e6ff,#41e0a0); box-shadow:0 6px 30px rgba(65,224,160,.35); transition:.25s; }
+  #btn:hover { transform:translateY(-2px); }
+  #btn.stop { background:linear-gradient(135deg,#ff7d9c,#ff5470); color:#fff; box-shadow:0 6px 30px rgba(255,84,112,.35); }
+  #tip { position:fixed; bottom:78px; left:0; right:0; text-align:center; z-index:39; font-size:12px; color:#5d7290; }
+  #diag { position:fixed; top:64px; left:12px; z-index:50; font-size:11px; color:#6fa0c8;
+    background:rgba(5,10,18,.6); padding:4px 8px; border-radius:6px; font-family:monospace; max-width:70vw; word-break:break-all; pointer-events:none; }
+</style>
+</head>
+<body>
+<canvas id="orb"></canvas>
+<div class="vignette"></div>
+<header>
+  <div class="brand">MOSS · <b>LIVE</b> 语音互动</div>
+  <a id="goParty" href="/party" title="打开 AI 语音互动游戏">🏮 去玩游戏</a>
+  <div class="status"><span class="dot" id="dot"></span><span id="stTxt">未连接</span><span id="lvlwrap"><span id="lvl" style="display:block"></span></span></div>
+</header>
+
+<div id="hist"><button id="histTab" title="聊天记录">📜</button><div id="histBody"><div id="histList">加载中…</div></div></div>
+
+<div id="stage">
+  <div id="subtitle">
+    <div class="line user" id="uLine"></div>
+    <div class="line ai" id="aLine"></div>
+    <div class="hint" id="hint">点下方按钮开始 · 对着麦克风说话即可</div>
+  </div>
+</div>
+
+<div id="panel"><h3><span class="spin"></span> AI 正在干活</h3><div id="tasks"></div></div>
+<div id="result"><h3>任务结果</h3><pre id="resultBody"></pre></div>
+<div id="tip"></div>
+<div id="diag">诊断:等待开始</div>
+<video id="vid" muted playsinline style="display:none"></video>
+<div id="bar">
+  <button id="camBtn" class="mini" title="摄像头">📷</button>
+  <button id="scrBtn" class="mini" title="屏幕共享">🖥️</button>
+  <button id="btn">开 始</button>
+  <input id="txt" placeholder="打字也可以…" maxlength="300"><button id="txtSend" class="mini">发</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const btn = $('btn'), dot = $('dot'), stTxt = $('stTxt');
+let ws = null, micStream = null, actx = null, pctx = null, analyser = null, node = null, workletURL = null, outGain = null, rcTimer = null, replacedByOther = false, upFatal = 0;
+const TOK = localStorage.getItem('moss_tok') || (localStorage.setItem('moss_tok', String(Date.now().toString(36) + Math.random().toString(36).slice(2, 8))), localStorage.getItem('moss_tok'));
+let reconnects = 0;
+let nextAt = 0, running = false, vol = 0, aiSpeaking = false;
+let framesRx = 0, playedN = 0, lastErr = '';
+window.addEventListener('error', e => { lastErr = (e && e.message) || 'unknown'; });
+setInterval(() => {
+  $('diag').textContent = `ws:${ws ? ws.readyState : '-'} 帧收:${framesRx} 播:${playedN} 缓:${Math.max(0, Math.round(queuedMs))}ms 预:${(LEAD * 1000) | 0}ms 断:${gapCount} err:${lastErr || '无'}`;
+}, 500);
+
+// ---------- 光球 ----------
+const cv = $('orb'), cx = cv.getContext('2d');
+const parts = Array.from({length: 60}, () => ({
+  a: Math.random()*Math.PI*2, r: .35+Math.random()*.55, s: .0015+Math.random()*.004,
+  z: .4+Math.random()*.6
+}));
+const rings = [];
+let lastBeat = 0, lastBeatT = 0, frameSkip = 0;
+const freqData = new Uint8Array(128);
+function drawOrb(t){
+  frameSkip++;
+  if (frameSkip & 1) { requestAnimationFrame(drawOrb); return; } // 30fps 足够，给音频线程让路
+  const w = cv.clientWidth, h = cv.clientHeight;
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  if (cv.width !== w*dpr || cv.height !== h*dpr){
+    cv.width = w*dpr; cv.height = h*dpr;
+  }
+  cx.setTransform(dpr,0,0,dpr,0,0);
+  cx.clearRect(0,0,w,h);
+  const cxp = w/2, cyp = h/2;
+  const base = Math.min(w,h) * (document.body.classList.contains('compact') ? .13 : .16);
+  // 频谱驱动：低频能量 = 节拍
+  let bass = 0;
+  if (analyser && pctx && pctx.state === 'running'){
+    analyser.getByteFrequencyData(freqData);
+    let bs = 0; for(let i=1;i<=10;i++) bs += freqData[i];
+    bass = bs/10/255;
+  }
+  const energy = Math.max(bass, vol*0.9);
+  if (energy > 0.22 && t - lastBeatT > 160 && (energy > lastBeat*1.12 || t - lastBeatT > 340)){
+    lastBeat = energy; lastBeatT = t;
+    rings.push({ r: base*1.05, a: Math.min(.6, .22 + energy*.5) });
+  }
+  if (lastBeatT && t - lastBeatT > 900) lastBeat = 0;
+  const R = base * (1 + energy*.45 + Math.sin(t/900)*.03);
+  // 节拍扩散环（音乐节奏感）
+  for (let i = rings.length-1; i >= 0; i--){
+    const rg = rings[i];
+    rg.r += Math.max(1.5, base*.02); rg.a *= .965;
+    if (rg.a < .02 || rg.r > Math.max(w,h)*.7) { rings.splice(i,1); continue; }
+    cx.strokeStyle = `rgba(120,220,255,${rg.a})`;
+    cx.lineWidth = 2;
+    cx.beginPath(); cx.arc(cxp,cyp,rg.r,0,7); cx.stroke();
+  }
+  const g = cx.createRadialGradient(cxp,cyp,R*.1, cxp,cyp,R*1.9);
+  if (aiSpeaking || energy > .15){
+    g.addColorStop(0,'rgba(190,245,255,.98)'); g.addColorStop(.35,'rgba(90,200,255,.55)');
+    g.addColorStop(.7,'rgba(70,110,255,.22)'); g.addColorStop(1,'rgba(0,0,20,0)');
+  } else {
+    g.addColorStop(0,'rgba(140,230,255,.95)'); g.addColorStop(.35,'rgba(80,160,255,.45)');
+    g.addColorStop(.7,'rgba(60,80,220,.18)'); g.addColorStop(1,'rgba(0,0,20,0)');
+  }
+  cx.fillStyle = g; cx.beginPath(); cx.arc(cxp,cyp,R*1.9,0,7); cx.fill();
+  cx.fillStyle = 'rgba(230,250,255,.95)';
+  cx.beginPath(); cx.arc(cxp,cyp,R*.42,0,7); cx.fill();
+  for (const p of parts){
+    p.a += p.s * (1 + energy*5);
+    const rr = R * (1.25 + p.r*1.15 + energy*.1);
+    const x = cxp + Math.cos(p.a)*rr, y = cyp + Math.sin(p.a)*rr*.72;
+    cx.fillStyle = `rgba(150,220,255,${.14+p.z*.4*(0.35+energy)})`;
+    cx.beginPath(); cx.arc(x,y,1.2+p.z*2.4,0,7); cx.fill();
+  }
+  requestAnimationFrame(drawOrb);
+}
+requestAnimationFrame(drawOrb);
+
+// ---------- UI ----------
+function setStatus(txt, cls){ stTxt.textContent = txt; dot.className = 'dot ' + (cls||''); }
+function say(who, text){ $(who==='user'?'uLine':'aLine').textContent = text; }
+function tip(t){ $('tip').textContent = t || ''; }
+function addTask(id, name, args){
+  const d = document.createElement('div'); d.className='titem'; d.id='t_'+id;
+  d.innerHTML = `<div class="tn">🛠 ${name}</div><div class="ta">${JSON.stringify(args)}</div><div class="to"></div>`;
+  $('tasks').prepend(d);
+  document.body.classList.add('compact');
+  $('result').style.display = 'none';
+}
+function endTask(id, ok, output){
+  const d = $('t_'+id); if(!d) return;
+  d.classList.add(ok?'ok':'fail');
+  d.querySelector('.to').textContent = (ok?'✓ ':'✗ ') + output;
+}
+function showResult(text){
+  if(!text) return;
+  $('resultBody').textContent = text;
+  $('result').style.display = 'block';
+  setTimeout(()=>{ $('result').style.display='none'; }, 12000);
+}
+
+// ---------- audio ----------
+async function startMic(){
+  micStream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } });
+  actx = new AudioContext({ sampleRate: 48000 });
+  if (!workletURL) workletURL = URL.createObjectURL(new Blob([`
+    class R extends AudioWorkletProcessor{
+      constructor(o){
+        super();
+        this.b=[]; this.acc=0; this.cnt=0; this.pos=0;
+        this.ratio = (o && o.processorOptions && o.processorOptions.ratio) || 3;
+      }
+      process(inp){
+        const ch = inp[0][0]; if(ch){
+          for(let i=0;i<ch.length;i++){
+            this.acc += ch[i]; this.cnt++; this.pos++;
+            if(this.pos >= this.ratio){
+              this.pos = 0;
+              this.b.push(this.acc/this.cnt);
+              this.acc=0; this.cnt=0;
+              if(this.b.length>=1600){
+                const o=Int16Array.from(this.b.splice(0,1600).map(v=>v<0?v*0x8000:v*0x7fff));
+                this.port.postMessage(o.buffer,[o.buffer]);
+              }
+            }
+          }
+        }
+        return true;
+      }
+    }
+    class P extends AudioWorkletProcessor{
+      constructor(){
+        super();
+        this.q=new Float32Array(96000); this.w=0; this.r=0;
+        this.port.onmessage = e => {
+          const d = new Int16Array(e.data);
+          for(let i=0;i<d.length;i++){ this.q[this.w % 96000] = d[i]/32768; this.w++; }
+          if(this.w - this.r > 90000) this.r = this.w - 90000;
+        };
+      }
+      process(_, outputs){
+        const o = outputs[0][0];
+        for(let i=0;i<o.length;i++){
+          if(this.w > this.r){ o[i] = this.q[this.r % 96000]; this.r++; }
+          else { o[i] = 0; }
+        }
+        return true;
+      }
+    }
+    registerProcessor('r',R);
+    registerProcessor('p',P);
+  `], {type:'text/javascript'}));
+  await actx.audioWorklet.addModule(workletURL);
+  const src = actx.createMediaStreamSource(micStream);
+  node = new AudioWorkletNode(actx, 'r', { processorOptions: { ratio: actx.sampleRate / 16000 } });
+  node.port.onmessage = e => {
+    const i16 = new Int16Array(e.data);
+    let sum = 0;
+    for (let i = 0; i < i16.length; i += 4) sum += i16[i] * i16[i];
+    const rms = Math.sqrt(sum / (i16.length / 4)) / 32768;
+    $('lvl').style.width = Math.min(100, rms * 400) + '%';
+    if (running && ws && ws.readyState === 1) {
+      const out = new Uint8Array(e.data.byteLength + 1);
+      out[0] = 0; // tagged-v1：0x00 = 麦克风 PCM
+      out.set(new Uint8Array(e.data), 1);
+      ws.send(out.buffer);
+    }
+    // 本地抢话辅助：AI 说话时你开口（连续 300ms 有声），立刻停掉 AI 的播放，
+    // 让 MOSS 能听清你（回声不再盖住你），它就会真的被打断
+    // 🔴 本地打断阈值 0.09→0.30：手机外放 AI 自己的声音就能过 0.09，误触发=播放被切（"声音很小/听不清"帮凶之一）
+    if (aiSpeaking && rms > 0.30) { if (++loudRun >= 3) { loudRun = 0; cancelPlayback(); } } else loudRun = 0;
+  };
+  src.connect(node); // 不连 destination，避免回声
+}
+
+// ---------- 播放调度（自适应抗抖：排队链一断就自动加深预缓冲，直到不断流）----------
+let playQ = [], nextStart = 0, liveSrc = [], queuedMs = 0, LEAD = 0.35, gapCount = 0, lastFrameAt = 0, lastArrival = 0, lastUnder = 0;
+let loudRun = 0; // 连续响帧计数（本地抢话判定）
+function onAudioFrame(ab){
+  if (!pctx) return;
+  if (pctx.state === 'suspended') pctx.resume().catch(() => {});
+  const wall = performance.now();
+  if (aiSpeaking && lastFrameAt && wall - lastFrameAt > 600) gapCount++; // 🔴 250→600ms：MOSS 按句生成，句间 300~500ms 停顿是常态，旧阈值把正常句间当断流，leadSec 一路顶到 1.2s 上限=每句都延迟 1.2 秒播，体感"卡成PPT"（11:54 诊断栏实锤 预:1200ms 断:33）
+  lastFrameAt = wall;
+  // 句间停顿（>450ms 没新帧）且没有待播/在播音频 → 播放时钟归零重排。
+  // 不归零的话 nextStart 只进不退，长对话里越漂越远，最终“字幕在跳、声音没了”。
+  if (lastArrival && wall - lastArrival > 450 && !liveSrc.length && !playQ.length) nextStart = 0;
+  lastArrival = wall;
+  queuedMs += (ab.byteLength / 2 / 48000) * 1000;
+  playQ.push(ab);
+  schedulePlayback();
+}
+function schedulePlayback(){
+  if (!pctx || pctx.state !== 'running' || !analyser) return;
+  const now = pctx.currentTime;
+  // 🔴 欠载自适应：队列见底（要断音）就加深缓冲，最长 0.9s；平稳超 2s 再慢慢收回 0.35s。
+  // 之前固定 0.35s 顶着不降，聊天十几轮后上游句间抖动一变大就频繁欠载=“越聊越卡”。
+  if (playQ.length === 0 && nextStart < now + 0.05) { LEAD = Math.min(0.9, LEAD + 0.12); lastUnder = performance.now(); }
+  else if (playQ.length > 6 && performance.now() - lastUnder > 2500) LEAD = Math.max(0.35, LEAD - 0.02);
+  if (nextStart < now + LEAD) nextStart = now + LEAD;
+  while (playQ.length){
+    const ab = playQ.shift();
+    const view = new DataView(ab);
+    const n = Math.floor(view.byteLength / 2);
+    if (n <= 0) continue;
+    queuedMs -= (n / 48000) * 1000;
+    const buf = pctx.createBuffer(1, n, 48000);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = view.getInt16(i * 2, true) / 32768;
+    const src = pctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(analyser);
+    const start = nextStart;
+    src.start(start);
+    nextStart += buf.duration;
+    const rec = { src, start };
+    liveSrc.push(rec);
+    // 🔴 播完必须从数组摘掉并断开连接（之前只 filter 不 disconnect，几十轮后 thousands 个节点挂着 analyser=越聊越卡直到卡死）
+    src.onended = () => { playedN++; src.disconnect(); const i = liveSrc.indexOf(rec); if (i >= 0) liveSrc.splice(i, 1); };
+  }
+  // 兜底清历史：已播完的（start + 时长 < now）定期扫地，防 onended 偶发不触发导致堆积
+  if (liveSrc.length > 24) { liveSrc = liveSrc.filter(r => { if (r.start < now - 2) { try { r.src.disconnect(); } catch {} return false; } return true; }); }
+}
+function cancelPlayback(){
+  playQ = [];
+  queuedMs = 0;
+  const now = pctx ? pctx.currentTime : 0;
+  for (const r of liveSrc){ if (r.start > now){ try { r.src.onended = null; r.src.stop(); } catch {} } }
+  liveSrc = [];
+  nextStart = 0;
+}
+
+// ---------- 全屏/角落状态机：compact=干活中(全屏+右侧任务栏) → mini=出结果(光球缩左下+中间结果卡) → 用户开口回全屏 ----------
+let lastResult = '';
+function enterMini(text){
+  lastResult = text || lastResult || '';
+  document.body.classList.remove('compact');
+  document.body.classList.add('mini');
+  $('resultBody').textContent = lastResult;
+  $('result').style.display = 'block';
+}
+function exitMini(){
+  if (!document.body.classList.contains('mini')) return;
+  document.body.classList.remove('mini');
+  $('result').style.display = 'none';
+}
+$('result').addEventListener('click', () => exitMini()); // 点结果卡也能回全屏
+
+// ---------- 防锁屏：Wake Lock + 静音循环音频兜底 ----------
+let wakeLock = null, silentAudio = null;
+async function keepAwakeOn(){
+  try { if ('wakeLock' in navigator){ wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch {}
+  try {
+    if (!silentAudio){
+      const rate = 8000, n = rate * 3, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+      const wr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+      wr(0,'RIFF'); v.setUint32(4, 36 + n*2, true); wr(8,'WAVE'); wr(12,'fmt '); v.setUint32(16,16,true);
+      v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,rate,true); v.setUint32(28,rate*2,true);
+      v.setUint16(32,2,true); v.setUint16(34,16,true); wr(36,'data'); v.setUint32(40,n*2,true);
+      silentAudio = new Audio(URL.createObjectURL(new Blob([buf], { type:'audio/wav' })));
+      silentAudio.loop = true;
+    }
+    silentAudio.play().catch(() => {});
+  } catch {}
+}
+function keepAwakeOff(){ try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; try { silentAudio && silentAudio.pause(); } catch {} }
+document.addEventListener('visibilitychange', () => { if (!document.hidden && running) keepAwakeOn(); });
+function fmtTs(iso){
+  try { const d = new Date(iso); if (isNaN(d)) return ''; const p = n => String(n).padStart(2, '0');
+    return `${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; } catch { return ''; }
+}
+
+// ---------- ws ----------
+function connect(){
+  return new Promise((res, rej) => {
+    const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    ws = new WebSocket(proto + location.host + '/ws?convo=' + encodeURIComponent(localStorage.getItem('moss_convo') || 'default') + '&tok=' + TOK);
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = () => res();
+    ws.onerror = e => rej(new Error('连接失败'));
+    ws.onclose = () => {
+      // 🔴 刷新/断线自动重连（服务端按 tok 复用上游会话，AI 侧聊天不中断）
+      if (replacedByOther) { running = false; clearTimeout(rcTimer); try { localStorage.removeItem('moss_live'); } catch {} setStatus('已在另一窗口连接 · 本页让位', 'err'); tip('这个会话在别的窗口连着，本页不再重连（官方限制每账号同时只能 1 路）'); return; } // 官方并发数=1，双开互抢=秒断
+      if (upFatal) { stop(); const why = upFatal === 402 ? '账号额度不足（402）' : upFatal === 401 ? 'key 无效（401）' : upFatal === 429 ? '请求过频（429）' : 'HTTP ' + upFatal; setStatus('连接失败 · 已停止重连', 'err'); tip('语音服务拒绝连接：' + why + '，已停止重连'); return; } // 🔴 4xx 重试不会好，停手别刷爆账号
+      if (!running) return;
+      if (reconnects++ > 6) { stop(); tip('重连失败次数过多，请点开始重试'); return; }
+      tip('连接断开，自动重连中…');
+      clearTimeout(rcTimer); rcTimer = setTimeout(() => { try { connect().then(() => tip('已重连 · 继续说话')); } catch {} }, 1200);
+    };
+    ws.onmessage = e => {
+      if (e.data instanceof ArrayBuffer){
+        framesRx++;
+        onAudioFrame(e.data);
+        return;
+      }
+      let m; try { m = JSON.parse(e.data); } catch { return; }
+      const a = m.action, d = m.data || {};
+      if (a === 'session_attached'){ setStatus('已连接', 'on'); }
+      else if (a === 'input.transcript.done'){ exitMini(); say('user', d.text || ''); }
+      else if (a === 'input.speech.started'){ exitMini(); }
+      else if (a === 'response.audio.started'){ aiSpeaking = true; }
+      else if (a === 'response.audio.done'){ aiSpeaking = false; }
+      else if (a === 'response.audio.stop' || a === 'response.interrupted'){ aiSpeaking = false; cancelPlayback(); }
+      else if (a === 'output.transcript.updated'){ say('ai', d.text || ''); }
+      else if (a === 'output.transcript.done'){ say('ai', d.text || ''); if (histPinned || $('hist').classList.contains('open')) loadHist(true); }
+      else if (a === 'response.ended'){
+        if (!liveSrc.length){ nextStart = 0; }
+        // 🔴 一轮对话结束：还没收尾的任务项就地收尾，收起任务面板（此处曾有第二个 response.ended 分支，
+        // if-else 只走第一个，收起逻辑永远执行不到=工具干完活面板一直挂着。已合并，不要再加回来）
+        document.querySelectorAll('.titem:not(.ok):not(.fail)').forEach(t => t.classList.add('ok'));
+        if (!document.querySelector('.titem:not(.ok):not(.fail)')){ document.body.classList.remove('compact'); if (lastResult) enterMini(lastResult); }
+      }
+      else if (a === 'server.upstream.fatal'){ upFatal = d.http || -1; }
+      else if (a === 'server.replaced'){ replacedByOther = true; tip('检测到另一个窗口接管了 AI，本页自动让位'); }
+      else if (a === 'server.upstream.closed'){ setStatus('连接断开', 'err'); }
+      else if (a === 'server.tool.start'){
+        addTask(d.call_id, d.name, d.args);
+        document.body.classList.add('compact');
+        tip('AI 正在调用工具：' + d.name);
+      }
+      else if (a === 'server.tool.done'){
+        endTask(d.call_id, d.ok, d.output);
+        if (d.ok && d.output && d.name !== 'current_time') lastResult = `${d.name}\n\n${d.output}`;
+      }
+      else if (a === 'session.delegation.created'){
+        addTask(d.delegation?.id || 'bg', '后台任务', { objective: d.objective });
+        tip('后台任务：' + (d.objective || ''));
+      }
+      else if (a === 'session.commentary.appended'){
+        if (d.status === 'completed'){ lastResult = d.content || lastResult; if (d.delegation_id) endTask(d.delegation_id, true, d.content || ''); }
+        else if (d.content) { const t = $('t_'+(d.delegation_id||'')); if (t) t.querySelector('.to').textContent = d.content; say('ai', d.content); }
+      }
+      else if (a === 'server.log'){ console.log('[srv]', d.msg); }
+    };
+  });
+}
+
+// ---------- 控制 ----------
+async function start(){
+  btn.disabled = true; tip('请求麦克风权限…');
+  try {
+    await startMic();
+    pctx = new AudioContext({ sampleRate: 48000 });
+    if (pctx.state === 'suspended') await pctx.resume();
+    await pctx.audioWorklet.addModule(workletURL);
+    analyser = pctx.createAnalyser(); analyser.fftSize = 256;
+    // 🔴 音量链路：AI 语音源 → analyser → 放大(2.6倍)+软限幅 → 扬声器。手机外放"听不清"就修在这里
+    outGain = pctx.createGain(); outGain.gain.value = 2.6;
+    const comp = pctx.createDynamicsCompressor();
+    comp.threshold.value = -10; comp.knee.value = 6; comp.ratio.value = 12; comp.attack.value = 0.003; comp.release.value = 0.1;
+    analyser.connect(comp); comp.connect(outGain); outGain.connect(pctx.destination);
+    tip('连接服务…');
+    await connect();
+    running = true;
+    reconnects = 0;
+    try { localStorage.setItem('moss_live', '1'); } catch {}
+    keepAwakeOn();
+    btn.textContent = '挂 断'; btn.classList.add('stop'); btn.disabled = false;
+    setStatus('通话中', 'on'); tip('开始说话吧 · AI 会边听边回');
+  } catch (err) {
+    tip('出错：' + err.message); setStatus('出错', 'err');
+    say('ai', '❌ 启动失败：' + err.message + '（常见原因：麦克风权限被拒 / 浏览器无麦克风 / 页面不是 https）');
+    btn.disabled = false;
+  }
+}
+function stop(){
+  running = false;
+  try { localStorage.removeItem('moss_live'); } catch {}
+  try { ws && ws.close(); } catch {}
+  try { micStream && micStream.getTracks().forEach(t => t.stop()); } catch {}
+  try { actx && actx.close(); } catch {}
+  try { pctx && pctx.close(); } catch {}
+  for (const s of Object.keys(vidStreams)) stopOneVideo(s);
+  ws = null; micStream = null; actx = null; pctx = null; analyser = null;
+  keepAwakeOff();
+  document.body.classList.remove('compact');
+  exitMini(); lastResult = '';
+  btn.textContent = '开 始'; btn.classList.remove('stop'); btn.disabled = false;
+  setStatus('未连接'); tip('已挂断 · 再点开始可重新对话');
+}
+btn.onclick = () => running ? stop() : start();
+
+// 🔴 刷新不掉线：上次没挂断就刷新 → 自动重连（服务端按 tok 复用上游会话，AI 侧聊天不中断）
+if (localStorage.getItem('moss_live') === '1') {
+  tip('检测到刷新，自动重连中…');
+  setTimeout(() => { start().catch(() => tip('自动重连失败，请手动点「开 始」')); }, 600);
+}
+
+// ---------- 打字输入 ----------
+function sendText(){
+  const t = $('txt').value.trim();
+  if (!t) return;
+  if (!ws || ws.readyState !== 1){ tip('先点开始连接'); return; }
+  say('user', t + '（打字）');
+  ws.send(JSON.stringify({ action: 'client.say', text: t }));
+  $('txt').value = '';
+}
+$('txtSend').onclick = sendText;
+$('txt').addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
+
+// ---------- 摄像头 / 屏幕共享（两路可同时开，各自独立开关） ----------
+let vidStreams = {}, vidTimers = {}, vidEls = {};
+function vidEl(source){
+  if (!vidEls[source]){
+    const v = document.createElement('video');
+    v.autoplay = true; v.muted = true; v.playsInline = true;
+    v.style.cssText = 'position:fixed;left:-10px;top:-10px;width:2px;height:2px;opacity:0;pointer-events:none;';
+    document.body.appendChild(v);
+    vidEls[source] = v;
+  }
+  return vidEls[source];
+}
+function stopOneVideo(source){
+  if (vidTimers[source]){ clearInterval(vidTimers[source]); delete vidTimers[source]; }
+  if (vidStreams[source]){ vidStreams[source].getTracks().forEach(t => t.stop()); delete vidStreams[source]; }
+  if (vidEls[source]) vidEls[source].srcObject = null;
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ action: 'video.state', enabled: false, source }));
+  const btn = source === 'screen' ? $('scrBtn') : $('camBtn');
+  if (btn) btn.classList.remove('on');
+}
+async function toggleVideo(source){
+  const btn = source === 'camera' ? $('camBtn') : $('scrBtn');
+  if (vidStreams[source]){ stopOneVideo(source); return; }
+  try {
+    const stream = source === 'screen'
+      ? await navigator.mediaDevices.getDisplayMedia({ video: true })
+      : await navigator.mediaDevices.getUserMedia({ video: { width: 640 } });
+    vidStreams[source] = stream;
+    const v = vidEl(source); v.srcObject = stream; await v.play().catch(() => {});
+    $('vid').srcObject = stream; // 预览显示最新开的一路
+    stream.getVideoTracks()[0].onended = () => { if (vidStreams[source]) stopOneVideo(source); };
+    if (ws && ws.readyState === 1){
+      ws.send(JSON.stringify({ action: 'video.state', enabled: true, source }));
+      ws.send(JSON.stringify({ action: 'video.stream_focus', source })); // 告诉模型看哪路画面
+    }
+    vidTimers[source] = setInterval(() => sendVideoFrame(source), 700);
+    btn.classList.add('on');
+  } catch (e) {
+    const what = source === 'camera' ? '摄像头' : '屏幕共享';
+    tip(what + (e.name === 'NotAllowedError' ? '：已取消或权限被拒' : '打开失败：' + e.message));
+  }
+}
+function sendVideoFrame(source){
+  const v = vidEl(source);
+  if (!vidStreams[source] || !v.videoWidth || !ws || ws.readyState !== 1) return;
+  const c = document.createElement('canvas');
+  c.width = 640; c.height = Math.max(2, Math.round(640 * v.videoHeight / v.videoWidth));
+  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+  const b64 = c.toDataURL('image/jpeg', 0.5).split(',')[1];
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length + 1);
+  bytes[0] = source === 'screen' ? 2 : 1; // tagged-v1：0x01=摄像头帧 0x02=屏幕帧
+  for (let i = 0; i < bin.length; i++) bytes[i + 1] = bin.charCodeAt(i);
+  ws.send(bytes.buffer);
+}
+$('camBtn').onclick = () => toggleVideo('camera');
+$('scrBtn').onclick = () => toggleVideo('screen');
+
+// ---------- 会话/历史（悬停展开 / 点按固定；支持多会话切换）----------
+let histPinned = false, histLastLoad = 0, switching = false;
+function reconnectWithRetry(){
+  if (!running) return Promise.resolve(true);
+  stop();
+  return new Promise(res => {
+    const tryOnce = n => setTimeout(async () => {
+      await start();
+      if (running || n <= 0) res(running); else tryOnce(n - 1);
+    }, 700);
+    tryOnce(2);
+  });
+}
+async function switchConvo(id, title){
+  if (id === (localStorage.getItem('moss_convo') || 'default')) return;
+  if (switching){ tip('正在切换，稍等一下'); return; }
+  switching = true;
+  localStorage.setItem('moss_convo', id);
+  histLastLoad = 0; // 切换后强制刷新列表
+  if (matchMedia('(hover: none)').matches){ // 手机：切完顺手收起面板
+    histPinned = false;
+    $('hist').classList.remove('pinned', 'open');
+  }
+  let ok = true;
+  if (running){ tip('切换会话：重连中…'); ok = await reconnectWithRetry(); }
+  switching = false;
+  tip(ok ? ('已切换会话：' + (title || id)) : '切换失败（麦克风/网络没就绪），再点一次记录重试');
+  loadHist(true);
+}
+function loadHist(force){
+  // 🔴 秒开：先把上次渲染好的内容贴上去（0 延迟），再去后台刷新。之前是空白等 1.5 秒隧道往返=“加载中…巨慢”
+  if (!loadHist.painted){ loadHist.painted = true; try { const c = localStorage.getItem('moss_hist_html'); if (c) $('histList').innerHTML = c; } catch {} }
+  if (!force && Date.now() - histLastLoad < 1500) return; // 轻防抖；force=面板打开/切会话/新记录时必刷
+  histLastLoad = Date.now();
+  const cur = localStorage.getItem('moss_convo') || 'default';
+  const to = ms => { const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal; };
+  // 🔴 会话列表和记录并行拉（串行=两倍等待=老大说的“卡顿”）
+  Promise.all([
+    fetch('/convos', { signal: to(8000) }).then(r => r.json()).catch(() => ({ convos: [], archived: [] })),
+    fetch('/history?id=' + encodeURIComponent(cur), { signal: to(8000) }).then(r => r.json()).catch(() => ({ turns: [] }))
+  ]).then(([cj, hj]) => {
+    const cs = cj.convos || [], ar = cj.archived || [];
+    const row = (c, archived) => '<div class="hline convo ' + (c.id === cur && !archived ? 'cur' : '') + '" data-id="' + c.id + '">'
+      + '<b>' + (c.id === cur && !archived ? '▶' : '・') + '</b><span class="ct">' + c.title + '</span><span class="cnt">' + c.count + '条</span>'
+      + '<span class="acts">' + (archived
+          ? '<button class="hbtn act-restore" data-id="' + c.id + '">恢复</button><button class="hbtn act-del" data-id="' + c.id + '">删除</button>'
+          : '<button class="hbtn act-archive" data-id="' + c.id + '">归档</button>')
+      + '</span></div>';
+    const ts = (hj.turns || []).slice(-40);
+    $('histList').innerHTML =
+      `<div class="hline"><button class="hbtn" id="newConvo">＋ 新对话</button></div>` +
+      cs.map(c => row(c, false)).join('') +
+      (ar.length ? '<div class="hline" style="color:#7fd8ff;margin-top:4px">已归档（可恢复或删除）</div>' + ar.map(c => row(c, true)).join('') : '') +
+      '<div class="hline" style="margin-top:4px;color:#7fd8ff">当前会话记录</div>' +
+      (ts.length ? ts.map(t => `<div class="hline ${t.who === '用户' ? 'hu' : 'ha'}"><b>${t.who}<span class="ts">${fmtTs(t.ts)}</span></b>${t.text}</div>`).join('') : '<div class="hline">本会话还没有记录</div>');
+    try { localStorage.setItem('moss_hist_html', $('histList').innerHTML); } catch {} // 缓存：下次打开秒显示
+  }).catch(err => {
+    const msg = (err && err.name === 'AbortError') ? '超时' : String((err && (err.message || err)) || err);
+    if (!loadHist.retry) { loadHist.retry = true; setTimeout(() => { loadHist.retry = false; loadHist(true); }, 1500); return; } // 失败自动重试一次
+    $('histList').innerHTML = '<div class="hline">读取失败：' + msg + '，再点一下重试</div>';
+  });
+}
+function convoAction(id, act){
+  const opt = act === 'delete' ? { method: 'DELETE' } : { method: 'POST' };
+  const url = '/convos/' + id + (act === 'delete' ? '' : '/' + act);
+  fetch(url, opt).then(r => r.json()).then(async () => {
+    histLastLoad = 0;
+    if ((localStorage.getItem('moss_convo') || 'default') === id){ // 动的是当前会话 → 回到 default
+      localStorage.setItem('moss_convo', 'default');
+      tip('当前会话已' + (act === 'delete' ? '删除' : '归档') + '，回到默认会话');
+      await reconnectWithRetry();
+    }
+    loadHist(true);
+  }).catch(() => {});
+}
+$('histList').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (b && b.id === 'newConvo'){ fetch('/convos', { method: 'POST' }).then(r => r.json()).then(n => switchConvo(n.id, '新对话')); return; }
+  if (b && b.classList.contains('act-archive')){ convoAction(b.dataset.id, 'archive'); return; }
+  if (b && b.classList.contains('act-restore')){ convoAction(b.dataset.id, 'restore'); return; }
+  if (b && b.classList.contains('act-del')){ if (confirm('真删除这个会话的全部聊天记录？不可恢复。')) convoAction(b.dataset.id, 'delete'); return; }
+  const row = e.target.closest('.hline.convo');
+  if (row && !e.target.closest('button')) switchConvo(row.dataset.id, (row.querySelector('.ct') || {}).textContent || row.dataset.id);
+});
+$('histTab').addEventListener('pointerdown', () => {
+  histPinned = !histPinned;
+  $('hist').classList.toggle('pinned', histPinned);
+  $('hist').classList.toggle('open', histPinned); // 手机没有 hover：点一下开、再点收
+  if (histPinned) loadHist(true);
+});
+</script>
+</body>
+</html>

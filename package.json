@@ -1,0 +1,12 @@
+{
+  "name": "moss-live-web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.23.0"
+  }
+}
