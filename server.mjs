@@ -826,6 +826,7 @@ class MossSession {
       // 浏览器上行自带 tagged-v1 标签：0x00=麦克风 PCM16(16k)，0x01=JPEG 视频帧
       const tag = data.length ? data[0] : 0;
       if (tag === 0) {
+        if (!this.micSeen) { this.micSeen = 1; console.log('[mic] 收到首个麦克风帧 convo=' + this.convoId); }
         if (this.injecting) return; // 打字注入期间不收麦
         // 🔴 回声门 v3（严格半双工，2026-11-18 实测 v1/v2 都被打穿：手机外放回声音量跟真人一样大，
         // 光靠响度根本分不开 → AI 每开口 1 秒被自己掐断，用户体感“不好好回话/声音很小/听不清”）。
