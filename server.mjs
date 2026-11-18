@@ -19,7 +19,8 @@ const KEY = process.env.MOSS_API_KEY || '';
 // 主页和年会页同时开就会互相挤掉=连上就秒断。所以年会走独立账号 key（env 变量名 MOSS_MAIN_API_KEY，
 // 与 LiteLLM 的 main 组共用同一个变量，2026-11-18 老大定：一个 key 一个名，不许另造重名变量），没配就回退主 key。
 const KEY_PARTY = process.env.MOSS_MAIN_API_KEY || KEY;
-function keyFor(convo) { return convo === 'party' ? KEY_PARTY : (convo === 'games' ? (process.env.MOSS_API_KEY_GAMES || KEY_PARTY) : KEY); }
+// 🔴 key 分工（2026-11-18 老大定）：/party=客户商用线，用最早账号 KEY(MOSS_API_KEY，老大专门充值)；/games+主页=自家测试线，共用第二账号 KEY_PARTY(MOSS_MAIN_API_KEY)。
+function keyFor(convo) { return convo === 'party' ? KEY : KEY_PARTY; }
 const UPSTREAM = 'wss://api.mosi.cn/v1/realtime?model=moss-live-1.0';
 const WORKSPACE = '/opt/moss-live/workspace'; // 鱼的本机工作区（run_cmd 默认在这干活）
 try { fs.mkdirSync(WORKSPACE, { recursive: true }); } catch {}
