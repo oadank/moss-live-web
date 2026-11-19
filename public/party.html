@@ -13,7 +13,7 @@
   header { padding:26px 20px 12px; text-align:center; position:relative; z-index:5; }
   header #homeLink { display:inline-block; padding:8px 22px; border-radius:14px; cursor:pointer; }
   /* 标题是渐变字（background-clip:text + color:transparent），hover 绝不能改 background，否则字直接消失 */
-  header #homeLink:hover { outline:1px solid rgba(255,200,150,.45); outline-offset:4px; }
+  header #homeLink:hover { filter:brightness(1.12); }
   header h1 { font-size:clamp(24px,4.2vw,38px); background:linear-gradient(90deg,#ffd479,#ff9d5c,#ff6b9d); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:2px; }
   header p { color:#c9a68f; font-size:13px; margin-top:6px; }
   header .lantern { display:inline-block; animation:sway 3s ease-in-out infinite; color:#ff9d5c; -webkit-text-fill-color:initial; }
