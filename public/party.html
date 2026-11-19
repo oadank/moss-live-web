@@ -9,7 +9,7 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#0a0612; color:#fff3e6; font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif; min-height:100vh; overflow-x:hidden; }
-  #bg { position:fixed; inset:0; background:radial-gradient(1100px 560px at 50% -8%, #5a142055, transparent), radial-gradient(900px 500px at 88% 108%, #7a3a1455, transparent), radial-gradient(700px 400px at 8% 100%, #4a103055, transparent); pointer-events:none; }
+  #bg { position:fixed; inset:0; pointer-events:none; background:radial-gradient(46% 34% at 62% 8%, rgba(255,120,70,.16), transparent 70%), radial-gradient(38% 30% at 18% 72%, rgba(255,90,50,.12), transparent 72%), radial-gradient(44% 34% at 86% 78%, rgba(220,40,40,.12), transparent 72%); }
   header { padding:26px 20px 12px; text-align:center; position:relative; z-index:5; }
   header h1 { font-size:clamp(24px,4.2vw,38px); background:linear-gradient(90deg,#ffd479,#ff9d5c,#ff6b9d); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:2px; }
   header p { color:#c9a68f; font-size:13px; margin-top:6px; }
@@ -173,11 +173,11 @@
   .card .go { display:inline-block; margin-top:12px; font-size:12.5px; color:#ffcf6a; letter-spacing:.08em; }
   .card:hover .go { color:#fff; }
   /* 背景流光：两团红光缓慢游动，卡片玻璃后面能看到 */
-  #bg::before, #bg::after { content:''; position:absolute; width:58vmax; height:58vmax; border-radius:50%; opacity:.5; }
-  #bg::before { background:radial-gradient(circle,#ff6a2a,transparent 64%); left:-12vmax; top:-14vmax; animation:floatA 22s ease-in-out infinite alternate; }
-  #bg::after { background:radial-gradient(circle,#e4002b,transparent 64%); right:-16vmax; bottom:-18vmax; animation:floatB 28s ease-in-out infinite alternate; }
-  @keyframes floatA { to { transform:translate3d(7vmax,5vmax,0) scale(1.12) } }
-  @keyframes floatB { to { transform:translate3d(-8vmax,-6vmax,0) scale(1.1) } }
+  #bg::before, #bg::after { content:''; position:absolute; width:46vmax; height:46vmax; border-radius:50%; will-change:opacity,transform; }
+  #bg::before { background:radial-gradient(circle, rgba(255,120,70,.30), rgba(255,120,70,0) 62%); left:-10vmax; top:-12vmax; animation:breatheA 9s ease-in-out infinite; }
+  #bg::after { background:radial-gradient(circle, rgba(228,20,50,.26), rgba(228,20,50,0) 62%); right:-14vmax; bottom:-16vmax; animation:breatheB 13s ease-in-out infinite; }
+  @keyframes breatheA { 0%,100% { opacity:.35; transform:scale(.92) translate3d(0,0,0) } 50% { opacity:.85; transform:scale(1.06) translate3d(2vmax,1.5vmax,0) } }
+  @keyframes breatheB { 0%,100% { opacity:.3; transform:scale(1.04) translate3d(0,0,0) } 50% { opacity:.75; transform:scale(.9) translate3d(-2vmax,-1.5vmax,0) } }
   /* 飘落特效层 + 门上灯笼 */
   #fx { position:fixed; inset:0; z-index:0; pointer-events:none; }
   header, main { position:relative; z-index:2; }
@@ -187,7 +187,7 @@
   .lant.r { right:16px } .lant.r2 { right:104px; font-size:30px; animation-delay:1.1s; opacity:.85 }
   @keyframes sway { from { transform:rotate(-7deg) translateY(0) } to { transform:rotate(7deg) translateY(7px) } }
   /* 底色更红更亮，别是死板的过渡灰 */
-  body { background:radial-gradient(130% 95% at 50% -10%, #b3131c 0%, #7d0c13 42%, #3c0608 100%) fixed; }
+  body { background:radial-gradient(120% 90% at 50% -12%, #6d0a11 0%, #4a070c 46%, #230305 100%) fixed; }
   .proto { text-align:center; font-size:12px; color:#c99a86; margin:20px 0 6px; letter-spacing:.04em; }
 </style>
 </head>
@@ -1953,7 +1953,8 @@ stat();
     var sz = 12 + Math.random() * 22;
     return { x: Math.random() * W, y: init ? Math.random() * H : -40,
       vy: 46 + Math.random() * 40, sw: 10 + Math.random() * 22, ph: Math.random() * 6.28,
-      sp: 0.4 + Math.random() * 0.9, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 1.1,
+      sp: 0.4 + Math.random() * 0.9, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.7,
+      vx: (Math.random() - 0.5) * 8,
       s: sz, g: GLY[(Math.random() * GLY.length) | 0], a: 0.32 + Math.random() * 0.5 };
   }
   function seed(){ P = []; for (var i = 0; i < N; i++) P.push(mk(true)); }
@@ -1963,12 +1964,14 @@ stat();
     cx.clearRect(0, 0, W, H);
     for (var i = 0; i < P.length; i++){
       var p = P[i];
-      p.y += p.vy * dt; p.ph += p.sp * dt; p.r += p.vr * dt;
+      p.y += p.vy * dt; p.ph += p.sp * dt; p.r += p.vr * dt; p.x += (p.vx || 0) * dt;
+      if (p.x < -40) p.x = W + 30; if (p.x > W + 40) p.x = -30;
       if (p.y > H + 50){ P[i] = mk(false); continue; }
       var x = p.x + Math.sin(p.ph) * p.sw;
       cx.save();
       cx.globalAlpha = p.a;
       cx.translate(x, p.y);
+      cx.rotate(p.r);
       cx.font = p.s + 'px "PingFang SC","Microsoft YaHei",system-ui,sans-serif';
       cx.textAlign = 'center'; cx.textBaseline = 'middle';
       cx.fillText(p.g, 0, 0);
