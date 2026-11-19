@@ -59,6 +59,7 @@
   #wPanel .lines::-webkit-scrollbar-thumb:hover { background:rgba(255,170,110,.5); }
   #wPanel .lines { scrollbar-width:thin; scrollbar-color:rgba(255,170,110,.28) transparent; }
   #wPanel .u { color:#ffd479; } #wPanel .a { color:#ffb9d0; } #wPanel .e { color:#ff7a7a; }
+  #wPanel .tm { color:#8a6a72; font-size:10.5px; margin-right:6px; letter-spacing:.02em; }
   #wPanel .tin { display:flex; gap:6px; margin-top:10px; }
   #wPanel input { flex:1; background:#120a14; border:1px solid #5a2a3a; color:#fff3e6; border-radius:10px; padding:8px 10px; font-size:13px; outline:none; }
   #wPanel input:focus { border-color:#d67a4a; }
@@ -495,11 +496,23 @@ function connect(){
   });
 }
 function wst(t, cls){ $('wst').textContent = t; $('wdot').className = 'dot ' + (cls || ''); }
+// 时间戳：谁在几点用过一眼能看到（老大 2026-11-19 要求）
+function hm(iso){
+  const d = iso ? new Date(iso) : new Date();
+  if (isNaN(d.getTime())) return '';
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function mkLine(cls, pref, text, iso){
+  const d = document.createElement('div');
+  d.className = cls;
+  const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = hm(iso);
+  d.appendChild(tm); d.appendChild(document.createTextNode(pref + text));
+  return d;
+}
 function say(who, t, cls){
   if (!t) return;
-  const line = document.createElement('div');
-  line.className = cls || (who === 'u' ? 'u' : 'a');
-  line.textContent = (who === 'u' ? '🎤 ' : '🤖 ') + t;
+  const line = mkLine(cls || (who === 'u' ? 'u' : 'a'), (who === 'u' ? '🎤 ' : '🤖 '), t);
   const box = $('lines'); box.appendChild(line);
   // 🔴 挂件只留最近 200 条：DOM 无限增长=聊久了排版/滚动越来越卡（2026-11-18 "越来越卡"）
   while (box.childElementCount > 200) box.removeChild(box.firstElementChild);
@@ -835,8 +848,10 @@ if (clrBtn) clrBtn.onclick = async () => {
     fetch('/history?id=party').then(r => r.json()).then(j => {
       const ts = (j.turns || []).slice(-20);
       if (!ts.length) return;
-      const box = $('lines'); box.innerHTML = '<div class="e">· —— 以上是上次聊天记录 ——</div>';
-      for (const t of ts) { const d = document.createElement('div'); d.className = t.who === '用户' ? 'u' : 'a'; d.textContent = (t.who === '用户' ? '🎤 ' : '🤖 ') + t.text; box.appendChild(d); }
+      const box = $('lines'); box.innerHTML = '';
+      for (const t of ts) box.appendChild(mkLine(t.who === '用户' ? 'u' : 'a', (t.who === '用户' ? '🎤 ' : '🤖 '), t.text, t.ts));
+      const sep = document.createElement('div'); sep.className = 'e'; sep.textContent = '· —— 以上是上次聊天记录 ——';
+      box.appendChild(sep);
       box.scrollTop = 1e9;
     }).catch(() => {});
   } catch {}

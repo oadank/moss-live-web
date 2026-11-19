@@ -693,7 +693,9 @@ class MossSession {
     let ev; try { ev = JSON.parse(data.toString()); } catch { return; }
     const a = ev.action;
     if (a === 'input.transcript.done') { if (!this.injecting) appendConvo(this.convoId, 'user', ev.data?.text || ''); }
+    if (a === 'output.transcript.updated') { const t = ev.data?.text; if (t && !this.injecting) this.lastAiText = String(t); }
     if (a === 'output.transcript.done') {
+      this.lastAiText = '';
       appendConvo(this.convoId, 'ai', ev.data?.text || '');
       // 🔴 机器强制兜底（老大实测 AI 嘴上说"撒了"实际没调工具）：本轮说了庆祝话术但没发起 page_cmd
       // → 服务端直接替它撒。措辞要覆盖"撒了/撒花/撒完"等所有说法（11:51 实测只说"撒了"漏匹配）。
@@ -708,7 +710,7 @@ class MossSession {
       const err = ev.data?.error;
       console.log('[sess] session.updated' + (err ? ' ❌ 配置错误: ' + String(err).slice(0, 200) : ' ok'));
       if (err) this.log('会话配置错误: ' + err);
-    } else if (['input.transcript.done', 'response.audio.started', 'response.audio.done', 'response.audio.stop', 'response.interrupted', 'response.ended', 'error', 'conversation.item.created', 'response.function_call_arguments.done'].includes(a)) {
+    } else if (['input.transcript.done', 'response.audio.started', 'response.audio.done', 'response.audio.stop', 'response.interrupted', 'response.ended', 'error', 'conversation.item.created', 'response.function_call_arguments.done', 'output.transcript.done', 'output.transcript.updated'].includes(a)) {
       console.log(`[evt] ${a} ${JSON.stringify(ev.data || {}).slice(0, 220)}`);
     }
     if (a === 'session_attached') { this.upSessionId = ev.data?.session_id || null; }
@@ -726,6 +728,9 @@ class MossSession {
       this.pendingContinue = null;
       this.sendUp({ action: 'response.create', response: { call_ids: [ev.data?.item?.call_id].filter(Boolean) } });
       return;
+    }
+    if (a === 'response.ended' || a === 'response.interrupted') {
+      if (this.lastAiText){ if (!this.injecting) appendConvo(this.convoId, 'ai', this.lastAiText); this.lastAiText = ''; }
     }
     if (a === 'response.done') {
       // 官方语义：response.done.output 里也可能带 function_call，按 call_id 去重后同样派发
