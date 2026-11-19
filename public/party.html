@@ -178,11 +178,24 @@
   #bg::after { background:radial-gradient(circle,#e4002b,transparent 64%); right:-16vmax; bottom:-18vmax; animation:floatB 28s ease-in-out infinite alternate; }
   @keyframes floatA { to { transform:translate3d(7vmax,5vmax,0) scale(1.12) } }
   @keyframes floatB { to { transform:translate3d(-8vmax,-6vmax,0) scale(1.1) } }
+  /* 飘落特效层 + 门上灯笼 */
+  #fx { position:fixed; inset:0; z-index:0; pointer-events:none; }
+  header, main { position:relative; z-index:2; }
+  .lant { position:fixed; top:-4px; font-size:40px; z-index:1; pointer-events:none;
+    filter:drop-shadow(0 0 20px rgba(255,90,40,.7)); animation:sway 4.6s ease-in-out infinite alternate; }
+  .lant.l { left:16px } .lant.l2 { left:92px; font-size:26px; animation-delay:.7s; opacity:.85 }
+  .lant.r { right:16px } .lant.r2 { right:92px; font-size:26px; animation-delay:1.1s; opacity:.85 }
+  @keyframes sway { from { transform:rotate(-7deg) translateY(0) } to { transform:rotate(7deg) translateY(7px) } }
+  /* 底色更红更亮，别是死板的过渡灰 */
+  body { background:radial-gradient(130% 95% at 50% -10%, #b3131c 0%, #7d0c13 42%, #3c0608 100%) fixed; }
   .proto { text-align:center; font-size:12px; color:#c99a86; margin:20px 0 6px; letter-spacing:.04em; }
 </style>
 </head>
 <body>
 <div id="bg"></div>
+<canvas id="fx"></canvas>
+<span class="lant l">🏮</span><span class="lant l2">🏮</span>
+<span class="lant r">🏮</span><span class="lant r2">🏮</span>
 <div id="cfFlash"></div>
 <div id="bombFlash"></div>
 <div id="confetti"></div>
@@ -1920,6 +1933,54 @@ window.PARTY = {
   }
 };
 stat();
+</script>
+
+<script>
+(function(){
+  var cv = document.getElementById('fx'); if (!cv) return;
+  var cx = cv.getContext('2d');
+  var W = 0, H = 0, dpr = Math.min(2, window.devicePixelRatio || 1);
+  var GLY = ['福','喜','🧧','🎉','✨','🏮','🧨','🀄','🎊','⭐'];
+  var P = [], N = 0, last = 0;
+  function size(){
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    N = Math.round(Math.min(64, Math.max(22, W / 26)));
+  }
+  function mk(init){
+    var sz = 12 + Math.random() * 22;
+    return { x: Math.random() * W, y: init ? Math.random() * H : -40,
+      vy: 16 + Math.random() * 40, sw: 6 + Math.random() * 20, ph: Math.random() * 6.28,
+      sp: 0.4 + Math.random() * 0.9, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 1.1,
+      s: sz, g: GLY[(Math.random() * GLY.length) | 0], a: 0.32 + Math.random() * 0.5 };
+  }
+  function seed(){ P = []; for (var i = 0; i < N; i++) P.push(mk(true)); }
+  function tick(t){
+    if (!last) last = t;
+    var dt = Math.min(0.05, (t - last) / 1000); last = t;
+    cx.clearRect(0, 0, W, H);
+    for (var i = 0; i < P.length; i++){
+      var p = P[i];
+      p.y += p.vy * dt; p.ph += p.sp * dt; p.r += p.vr * dt;
+      if (p.y > H + 50){ P[i] = mk(false); continue; }
+      var x = p.x + Math.sin(p.ph) * p.sw;
+      cx.save();
+      cx.globalAlpha = p.a;
+      cx.translate(x, p.y);
+      cx.rotate(Math.sin(p.r) * 0.5);
+      cx.font = p.s + 'px "PingFang SC","Microsoft YaHei",system-ui,sans-serif';
+      cx.textAlign = 'center'; cx.textBaseline = 'middle';
+      cx.fillText(p.g, 0, 0);
+      cx.restore();
+    }
+    requestAnimationFrame(tick);
+  }
+  size(); seed();
+  addEventListener('resize', function(){ size(); });
+  requestAnimationFrame(tick);
+})();
 </script>
 </body>
 </html>
