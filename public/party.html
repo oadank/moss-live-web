@@ -9,14 +9,7 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#0a0612; color:#fff3e6; font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif; min-height:100vh; overflow-x:hidden; }
-  #bg { position:fixed; inset:0; pointer-events:none;
-    background:
-      radial-gradient(1100px 560px at 50% -8%, #b3142055, transparent),
-      radial-gradient(900px 500px at 88% 108%, #d4590f55, transparent),
-      radial-gradient(700px 400px at 8% 100%, #8a0f2755, transparent);
-    animation: bgfloat 16s ease-in-out infinite alternate; }
-  /* 红红火火的动态底：两层缓慢漂移 + 呼吸，别太闪 */
-  @keyframes bgfloat { from { transform: translate3d(0,0,0) scale(1); filter: brightness(1) } to { transform: translate3d(0,-1.5%,0) scale(1.05); filter: brightness(1.18) } }
+  #bg { position:fixed; inset:0; background:radial-gradient(1100px 560px at 50% -8%, #5a142055, transparent), radial-gradient(900px 500px at 88% 108%, #7a3a1455, transparent), radial-gradient(700px 400px at 8% 100%, #4a103055, transparent); pointer-events:none; }
   header { padding:26px 20px 12px; text-align:center; position:relative; z-index:5; }
   header h1 { font-size:clamp(24px,4.2vw,38px); background:linear-gradient(90deg,#ffd479,#ff9d5c,#ff6b9d); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:2px; }
   header p { color:#c9a68f; font-size:13px; margin-top:6px; }
@@ -160,7 +153,7 @@
 <div id="confetti"></div>
 <canvas id="cfCv"></canvas>
 <header>
-  <h1 id="homeLink" title="点击返回游戏列表首页" style="cursor:pointer" onclick="backToCards()"><span class="lantern">🏮</span> 艾利丹尼森 · 年会 AI 互动 <span class="lantern">🏮</span></h1>
+  <h1 id="homeLink" title="点击返回游戏列表首页" style="cursor:pointer" onclick="backToCards()"><span class="lantern">🏮</span> AI 语音互动 · 年会现场 <span class="lantern">🏮</span></h1>
   <p>真语音 AI 主持人（MOSS 实时全双工 · 能说会做能操作大屏）· 点游戏开玩 · 右下角唤出 AI</p>
 </header>
 <main>
