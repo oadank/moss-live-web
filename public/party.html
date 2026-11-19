@@ -24,7 +24,7 @@
   .card p { color:#c9a68f; font-size:12.5px; line-height:1.65; }
   .card .tag { position:absolute; top:12px; right:12px; font-size:10px; color:#ffd479; border:1px solid #8a4a3a; border-radius:20px; padding:2px 8px; background:#2a1218aa; }
   .card.adv { cursor:pointer; } /* 进阶玩法也能点了，别再灰着像没做完 */
-  #stage { display:none; background:linear-gradient(170deg, rgba(255,120,88,.22), rgba(150,16,30,.42) 60%, rgba(90,8,16,.5)); border:1px solid rgba(255,200,155,.4); border-radius:20px; padding:24px; margin-top:16px; backdrop-filter:blur(8px) saturate(135%); -webkit-backdrop-filter:blur(8px) saturate(135%); box-shadow:inset 0 1px 0 rgba(255,235,210,.25), 0 16px 46px rgba(50,0,6,.35); }
+  #stage { display:none; background:linear-gradient(170deg, rgba(255,255,255,.05), rgba(255,255,255,.02) 45%, rgba(0,0,0,.22) 100%); border:1px solid rgba(255,200,155,.4); border-radius:20px; padding:24px; margin-top:16px; backdrop-filter:blur(8px) saturate(135%); -webkit-backdrop-filter:blur(8px) saturate(135%); box-shadow:inset 0 1px 0 rgba(255,235,210,.25), 0 16px 46px rgba(50,0,6,.35); }
   #stage.on { display:block; }
   #stage h2 { font-size:21px; display:flex; align-items:center; gap:10px; color:#ffe9c9; text-shadow:0 1px 10px rgba(120,0,10,.4); }
   #stage h2 .back { font-size:12px; color:#ffb37a; cursor:pointer; border:1px solid #8a4a3a; border-radius:14px; padding:3px 10px; margin-left:auto; }
@@ -160,13 +160,14 @@
   @media (max-width:980px){ .cards{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media (max-width:640px){ .cards{ grid-template-columns:1fr; } header .gala{ letter-spacing:.2em; } }
   /* 玻璃卡片：半透明 + 背景模糊，让底下的红色动画透出来 */
-  .card { background:linear-gradient(160deg,rgba(255,126,94,.30),rgba(198,28,44,.36) 45%,rgba(118,10,20,.46) 100%);
-    border:1px solid rgba(255,200,155,.42);
-    backdrop-filter:blur(6px) saturate(135%);
-    -webkit-backdrop-filter:blur(6px) saturate(135%);
-    box-shadow:inset 0 1px 0 rgba(255,240,215,.30), inset 0 -22px 44px rgba(120,0,10,.16), 0 12px 34px rgba(50,0,6,.32); }
-  .card:hover { border-color:rgba(255,215,140,.95); background:linear-gradient(160deg,rgba(255,150,110,.38),rgba(214,34,50,.40) 45%,rgba(132,12,22,.48) 100%);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 18px 50px rgba(150,20,20,.45); }
+  .card { background:linear-gradient(168deg, rgba(255,255,255,.055) 0%, rgba(255,255,255,.02) 40%, rgba(0,0,0,.18) 100%);
+    border:1px solid rgba(255,205,165,.30);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:inset 0 1px 0 rgba(255,235,210,.12), 0 12px 30px rgba(20,0,3,.35); }
+  .card:hover { border-color:rgba(255,226,160,.65);
+    background:linear-gradient(168deg, rgba(255,255,255,.075) 0%, rgba(255,255,255,.03) 40%, rgba(0,0,0,.16) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,240,220,.18), 0 16px 40px rgba(20,0,3,.45); }
   .card h3 { font-size:19.5px; color:#fff; text-shadow:0 1px 8px rgba(120,0,10,.35); }
   .card p { color:rgba(255,232,220,.88); font-size:12.5px; line-height:1.7; }
   .card .tag { background:#4a1118cc; border-color:#ff9a6a; color:#ffd9a8; }
@@ -181,11 +182,24 @@
   /* 飘落特效层 + 门上灯笼 */
   #fx { position:fixed; inset:0; z-index:0; pointer-events:none; }
   header, main { position:relative; z-index:2; }
-  .lant { position:fixed; top:-6px; font-size:52px; z-index:1; pointer-events:none;
-    filter:drop-shadow(0 0 20px rgba(255,90,40,.7)); animation:sway 4.6s ease-in-out infinite alternate; }
-  .lant.l { left:16px } .lant.l2 { left:104px; font-size:30px; animation-delay:.7s; opacity:.85 }
-  .lant.r { right:16px } .lant.r2 { right:104px; font-size:30px; animation-delay:1.1s; opacity:.85 }
-  @keyframes sway { from { transform:rotate(-7deg) translateY(0) } to { transform:rotate(7deg) translateY(7px) } }
+  /* 真灯笼：挂绳 + 上下金盖 + 椭圆灯身(竖棱) + 内发光 + 流苏，整串以挂点为轴随风摆 */
+  .lant { position:fixed; top:0; z-index:1; pointer-events:none; width:62px; height:122px;
+    transform-origin:50% 0; animation:sway 5.4s ease-in-out infinite alternate; }
+  .lant.l { left:8vw } .lant.r { right:8vw; animation-duration:6.3s; animation-delay:-1.4s }
+  .lant.l2 { left:calc(8vw + 86px); zoom:.62; animation-duration:4.7s; animation-delay:-2.6s; opacity:.92 }
+  .lant.r2 { right:calc(8vw + 86px); zoom:.62; animation-duration:5.9s; animation-delay:-0.8s; opacity:.92 }
+  .lant i { display:block; position:absolute; left:50%; transform:translateX(-50%); }
+  .lant .cord { top:0; width:2px; height:24px; background:#a9762d; }
+  .lant .cap { top:23px; width:28px; height:9px; border-radius:4px; background:linear-gradient(#ffe9ae,#cf9a2e); box-shadow:0 1px 3px rgba(0,0,0,.4); }
+  .lant .bd { top:31px; width:60px; height:62px; border-radius:50%/46%;
+    background:radial-gradient(52% 46% at 42% 32%, #ff7f52 0%, #e01525 52%, #8d0710 100%);
+    box-shadow:0 0 32px rgba(255,95,45,.6), inset 0 0 22px rgba(255,205,130,.55), inset 0 -12px 18px rgba(90,0,8,.5); }
+  .lant .rib { top:31px; width:60px; height:62px; border-radius:50%/46%;
+    background:repeating-linear-gradient(90deg, rgba(120,0,10,.30) 0 1px, transparent 1px 9px); }
+  .lant .cap2 { top:92px; width:24px; height:8px; border-radius:4px; background:linear-gradient(#eab75a,#c08a24); }
+  .lant .tassel { top:99px; width:4px; height:24px; border-radius:2px;
+    background:linear-gradient(#ffd98f,#c8862a); box-shadow:0 0 8px rgba(255,190,90,.5); }
+  @keyframes sway { from { transform:rotate(-5.5deg) } to { transform:rotate(5.5deg) } }
   /* 底色更红更亮，别是死板的过渡灰 */
   body { background:radial-gradient(120% 90% at 50% -12%, #6d0a11 0%, #4a070c 46%, #230305 100%) fixed; }
   .proto { text-align:center; font-size:12px; color:#c99a86; margin:20px 0 6px; letter-spacing:.04em; }
@@ -194,8 +208,10 @@
 <body>
 <div id="bg"></div>
 <canvas id="fx"></canvas>
-<span class="lant l">🏮</span><span class="lant l2">🏮</span>
-<span class="lant r">🏮</span><span class="lant r2">🏮</span>
+<div class="lant l"><i class="cord"></i><i class="cap"></i><i class="bd"></i><i class="rib"></i><i class="cap2"></i><i class="tassel"></i></div>
+<div class="lant l2"><i class="cord"></i><i class="cap"></i><i class="bd"></i><i class="rib"></i><i class="cap2"></i><i class="tassel"></i></div>
+<div class="lant r"><i class="cord"></i><i class="cap"></i><i class="bd"></i><i class="rib"></i><i class="cap2"></i><i class="tassel"></i></div>
+<div class="lant r2"><i class="cord"></i><i class="cap"></i><i class="bd"></i><i class="rib"></i><i class="cap2"></i><i class="tassel"></i></div>
 <div id="cfFlash"></div>
 <div id="bombFlash"></div>
 <div id="confetti"></div>
@@ -1038,7 +1054,7 @@ function ctlGuess(){
   const b1 = ctlBtn('显示词语', () => { const w = $('wshow'); if (!w) return; if (w.textContent === '•••••'){ w.textContent = w.dataset.r; b1.textContent = '隐藏词语'; } else { w.dataset.r = w.textContent; w.textContent = '•••••'; b1.textContent = '显示词语'; } }, true);
   // 🔴 「线索」：人手动点 → 屏幕出一条线索、线索数 +1（不连 AI、不花钱）；AI 主持时由 AI 调 PARTY.clue() 点它
   const clueBtn = ctlBtn('线索', () => showClue(), true);
-  clueBtn.id = 'clueBtn';
+  clueBtn.id = 'clueBtn'; clueBtn.disabled = false;
   // 🔴 不再有「猜中了 +1」按钮：输入框命中就自动加分公布（老大 2026-11-19）；AI 仍可调 PARTY.hit()
   ctlBtn('换一个词', () => ctlGuess(), true);
   // 🔴 人类主持看不见答案就没法判断：给一个输入框，把大家喊的答案打进去自动对（老大 2026-11-19）
@@ -1114,6 +1130,121 @@ const CLUE_META = {
   '法森': { scene:'日化、饮料、药盒上那些精致的小标签，多半印着它', mood:'名字低调，货架上到处都是', riddle:'打两个字：艾利家的王牌标签材料' },
   '标签': { scene:'饮料瓶身、快递面单、药盒封口，全靠它说清是谁', mood:'小，但没它整批货都不合规', riddle:'打两个字：贴在商品身上的身份证' },
   '高总': { scene:'年会上最后一个发言，讲完大家才敢动筷子', mood:'怕他不来，又怕他讲太长', riddle:'打两个字：全场最该被 cue 又最不能得罪的人' },
+  '打卡': { scene:'门口那台机器，早上八点半前排着队，忘按一次扣五十', mood:'按下那声“滴”才算一天真正开始', kin:'跟考勤、工牌、签到是一伙的，但它最机械', riddle:'打两个字：一天两次，漏一次心疼钱' },
+  '需求': { scene:'产品经理发来一份文档，开头永远写“最终版 V3.2”', mood:'看完只想问一句：到底哪个是最终版', kin:'跟 PRD、排期、变更是连体婴，但它最爱变', riddle:'打两个字：昨天说的今天推翻' },
+  '上线': { scene:'周五晚上灯火通明，全员盯着屏幕等一个按钮变绿', mood:'紧张又兴奋，上了就怕出 bug', kin:'跟发布、部署、发版是一条流水线', riddle:'打两个字：今天不上，明天照常上班' },
+  '加班餐': { scene:'晚上八点群里发一句“点餐啦”，每个人熟练报菜名', mood:'这是加班唯一的甜头', kin:'跟外卖、夜宵、报销是一家人', riddle:'打三个字：不算补贴，但管饱' },
+  '电梯': { scene:'早高峰挤不上去，门一开全是同公司的脸', mood:'三秒钟的沉默，各自刷手机', kin:'跟楼梯、工卡、楼层是一伙的', riddle:'打两个字：全楼最挤的盒子' },
+  '工位': { scene:'桌面三盆绿植、两包零食、一个键盘、一颗想下班的心', mood:'一天坐九小时，比床待得还久', kin:'跟工牌、椅子、显示器是一套的', riddle:'打两个字：比家待得还久的地方' },
+  '对齐': { scene:'开会最常听见“我们对一下”，对完还是没人知道对了什么', mood:'听着很专业，实际啥都没定', kin:'跟拉通、赋能、闭环是难兄难弟', riddle:'打两个字：互联网黑话之王，对完等于没对' },
+  '赋能': { scene:'领导讲话必带，说完大家面面相觑', mood:'听着热血，落地为零', kin:'跟抓手、沉淀、颗粒度是同一门语言', riddle:'打两个字：听着很猛，其实没动作' },
+  '闭环': { scene:'方案最后一张 PPT 必画一个圈，箭头首尾相连', mood:'圈画得越圆，事越没影', kin:'跟对齐、复盘、落地是一套黑话', riddle:'打两个字：画个圈就完事了' },
+  '躺平': { scene:'方案讨论到第七轮，有人说“要不就这样吧”', mood:'不是摆烂，是省点力气', kin:'跟摸鱼、佛系、摆烂是亲戚，但它更彻底', riddle:'打两个字：全世界都在催你起来' },
+  '甩锅': { scene:'出了事故，群里第一句话是“这不是我们模块的问题”', mood:'锅飞过来那一刻， reflex 是接住还是扔出去', kin:'跟背锅、责任划分、复盘是连着的', riddle:'打两个字：扔出去的是责任，接住的是事故' },
+  '背锅': { scene:'复盘会上总有一个名字被反复念', mood:'锅不在自己身上，但总在自己肩上', kin:'跟替罪、兜底、追责是一路的', riddle:'打两个字：别人的失误，你的通报' },
+  '调薪': { scene:'每年四月，走廊里最多的表情是欲言又止', mood:'想问不敢问，问了怕失望', kin:'跟晋升、绩效、年终奖是一串的', riddle:'打两个字：一年一次的开盲盒' },
+  '裁员': { scene:'传闻比公告先到，工位上的眼神都变了', mood:'表面淡定，暗地里都在改简历', kin:'跟优化、毕业、N+1 是委婉语家族', riddle:'打两个字：公司省钱的最后一个动作' },
+  '试用期': { scene:'头三个月拼命表现，转正答辩比高考还认真', mood:'既想证明自己，又怕白忙一场', kin:'跟转正、实习、合同期是一串的', riddle:'打三个字：公司的观察期，你的考试期' },
+  '五险一金': { scene:'工资条上那一栏永远比到手工资长', mood:'看不懂，但知道丢了麻烦', kin:'跟社保、公积金、纳税是一家', riddle:'打四个字：到手前先扣掉的那笔' },
+  '年假': { scene:'离职那天才发现还剩五天没用', mood:'攒着攒着就过期了', kin:'跟病假、调休、事假是兄弟，但它最难得', riddle:'打两个字：法律给你的，公司不一定给' },
+  '病假': { scene:'发烧 38 度还要在群里说一声“今天请个假”', mood:'躺着也看工作群', kin:'跟年假、调休是一家人，但它最不想用', riddle:'打两个字：最不想解锁的假期' },
+  '调休': { scene:'放假安排出来，先算这周末要补几天班', mood:'假是假的，班是真的', kin:'跟年假、补班、黄金周是一伙的', riddle:'打两个字：借来的假，迟早要还' },
+  '出差': { scene:'行李箱常年在工位下面，说走就走', mood:'高铁上的咖啡，比办公室的好喝', kin:'跟报销、客户、高铁票是一条线', riddle:'打两个字：换个城市加班' },
+  '会议室': { scene:'预订系统永远显示已占用，占的人不知道在哪', mood:'抢会议室比抢红包还激烈', kin:'跟白板、投影仪、排期是一套的', riddle:'打三个字：全公司最容易“失联”的房间' },
+  '白板': { scene:'笔迹永远擦不干净，角落还留着上季度的目标', mood:'写得越多，事越大', kin:'跟马克笔、会议室、头脑风暴是一套', riddle:'打两个字：越乱说明讨论越激烈' },
+  '程序员': { scene:'格子衫、双屏、桌上三罐饮料，凌晨的提交记录', mood:'嘴上说需求做不了，手上已经开始改', kin:'跟产品经理、测试、bug 是永远的三角', riddle:'打三个字：靠键盘吃饭，靠咖啡续命' },
+  '产品经理': { scene:'最常说“这个需求很简单”，然后研发沉默三秒', mood:'夹在老板和研发中间，两头挨骂', kin:'跟需求、原型、排期是三角恋', riddle:'打四个字：嘴上说很简单的那个人' },
+  '设计师': { scene:'被要求“logo 放大同时缩小，颜色再五彩斑斓一点”', mood:'改到第八稿，第一稿最好', kin:'跟 UI、改稿、审美是绑定关系', riddle:'打三个字：靠“五彩斑斓的黑”出名' },
+  '运营': { scene:'节日比谁都多，每个节日都要做活动', mood:'数据涨一点，头发掉一把', kin:'跟活动、拉新、转化是一伙的', riddle:'打两个字：全年无休找节日的人' },
+  '销售': { scene:'朋友圈全是签约截图，手机永远在充电', mood:'业绩是唯一的安全感', kin:'跟客户、签单、提成是一伙的', riddle:'打两个字：公司里最会聊天的人' },
+  '财务': { scene:'报销单打回来三次，理由都是“附件不对”', mood:'对数字温柔，对单据无情', kin:'跟发票、报销、预算是一家', riddle:'打两个字：全公司最严谨的眼神' },
+  '人事': { scene:'入职那天最热情，离职谈话最温柔', mood:'见过所有人的第一面和最后一面', kin:'跟招聘、社保、离职是一套的', riddle:'打两个字：第一个认识你，也送你走' },
+  '行政': { scene:'打印机卡纸、空调太冷、零食没了，都找 ta', mood:'公司里的隐形管家', kin:'跟前台、采购、后勤是一伙的', riddle:'打两个字：什么都要管，功劳看不见' },
+  '前台': { scene:'快递最多的座位，访客登记本换了一本又一本', mood:'公司颜值担当兼门面', kin:'跟保安、行政、快递是一条线', riddle:'打两个字：所有访客第一眼看到的人' },
+  '保安': { scene:'晚上十一点还站在门口，认得每辆加班的车', mood:'全公司最早认识你、最晚送你走', kin:'跟门禁、工牌、监控是一套', riddle:'打两个字：比打卡机还准的考勤员' },
+  '咖啡机': { scene:'早上十点排队最长，下午三点杯最少', mood:'它的流量 = 大家困的程度', kin:'跟饮水机、下午茶、加班是邻居', riddle:'打三个字：全公司续命的核心设备' },
+  '饮水机': { scene:'换水那一刻全办公室都听到“咚”一声', mood:'旁边永远是八卦集散地', kin:'跟咖啡机、茶水间、摸鱼是一伙的', riddle:'打三个字：比会议室更容易听到八卦' },
+  '绿植': { scene:'每人工位一盆，活下来的不到一半', mood:'它们比员工还难养', kin:'跟多肉、浇水、工位是一套', riddle:'打两个字：工位上最容易阵亡的生物' },
+  '空调': { scene:'夏天有人开 16 度，有人裹毛毯', mood:'永远达不成共识的温度', kin:'跟暖气、风扇、窗户是四方谈判', riddle:'打两个字：全公司最大的分歧来源' },
+  '投影仪': { scene:'每次开会第一句话是“线借一下”', mood:'转接头永远在别人手里', kin:'跟会议室、PPT、HDMI 是一套', riddle:'打三个字：开会前最容易出事故的设备' },
+  '工牌': { scene:'门禁滴一声才放行，忘带就在门口等人救', mood:'挂脖子上一天，脖子酸', kin:'跟门禁、打卡、考勤是一套', riddle:'打两个字：你在这家公司的一卡通' },
+  '门禁': { scene:'忘带工牌那天，保安的眼神最温柔', mood:'它认卡不认人', kin:'跟工牌、保安、考勤是一家的', riddle:'打两个字：比老板还严格的大门' },
+  '钉钉': { scene:'“已读”两个字最有压力，头像一闪心一紧', mood:'下班后响一声，头皮一麻', kin:'跟飞书、企业微信、消息是一伙的', riddle:'打两个字：读过就必须回的软件' },
+  '飞书': { scene:'文档、日历、机器人全在一个软件里', mood:'好用，但消息也多', kin:'跟钉钉、企微、协作是竞品兄弟', riddle:'打两个字：公司里消息最多的工具' },
+  'Excel': { scene:'函数嵌套三层以上的人，全组最被崇拜', mood:'一个公式解决两小时工作量', kin:'跟表格、数据、透视表是一家人', riddle:'打五个字母：表格之神，函数地狱' },
+  'OKR': { scene:'年初定得雄心壮志，年底对照惨不忍睹', mood:'O 很宏大，KR 很难写', kin:'跟 KPI、绩效、目标是表亲', riddle:'三个字母：目标与关键结果' },
+  '绩效': { scene:'一年两次，每次都决定年终的心情', mood:'自评写得像申请书', kin:'跟考核、调薪、晋升是一串的', riddle:'打两个字：努力一年的最终换算' },
+  '双薪': { scene:'年底最让人期待的两个字', mood:'有就是过年，没有就是过冬', kin:'跟年终奖、13 薪、红包是一家', riddle:'打两个字：老板画饼列表第一名' },
+  '一等奖': { scene:'抽奖箱里最让人尖叫的那张纸条', mood:'全场只有一个人笑得出来', kin:'跟特等奖、幸运奖、抽奖是一家', riddle:'打三个字：今晚最高光的那个奖' },
+  '吉祥物': { scene:'年会海报上那只玩偶，公司门口也摆一个', mood:'可爱，但没人知道它为什么在那', kin:'跟 logo、IP、周边是一家的', riddle:'打三个字：公司养的纸片宠物' },
+  '主持人': { scene:'背台词到凌晨，上台还要现场接梗', mood:'全场目光，一半期待一半看笑话', kin:'跟串词、麦克风、彩排是一套', riddle:'打三个字：今晚最紧张的人' },
+  '麦克风': { scene:'递过来那一刻，手心冒汗', mood:'话筒一响，全场安静', kin:'跟音响、舞台、主持是一套', riddle:'打三个字：让人社死又让人发光的东西' },
+  '音响': { scene:'彩排时调试师喊“试音，1、2”，喊了二十遍', mood:'音效一炸，气氛就有了', kin:'跟麦克风、舞台、灯光是一套', riddle:'打两个字：把气氛推上去的机器' },
+  '舞台': { scene:'红毯尽头，灯一打，所有人都在看', mood:'上去三十秒，像三年', kin:'跟灯光、节目、彩排是一家的', riddle:'打两个字：年会最亮的一块地' },
+  '灯光': { scene:'彩排时师傅喊“灯再压一点”，全场暗下来', mood:'调好了是氛围，调不好是事故', kin:'跟音响、舞台、追光是一套', riddle:'打两个字：让主角发光、让领导隐形' },
+  '彩排': { scene:'正式前一天，全部节目过一遍，晚上十点还在改流程', mood:'彩排越乱，正式越稳', kin:'跟节目单、主持人、灯光是一套', riddle:'打两个字：正式之前的最后一次折腾' },
+  '节目单': { scene:'贴在门口，每个人先找自己的名字在第几个', mood:'越靠后越煎熬', kin:'跟彩排、主持、抽奖是一套', riddle:'打三个字：决定你几点吃饭的纸' },
+  '合唱': { scene:'人多力量大，跑调也听不出来', mood:'全员一起张嘴，没人知道自己在唱什么', kin:'跟舞蹈、小品、节目是一家的', riddle:'打两个字：最适合混的节目' },
+  '舞蹈': { scene:'排练一个月，上台两分钟', mood:'动作忘了就跟着前面的人挥', kin:'跟小品、合唱、彩排是一伙的', riddle:'打两个字：年会最累的节目' },
+  '小品': { scene:'排练时笑场，正式时台下笑得更大声', mood:'忘词是常态，接住就是本事', kin:'跟相声、合唱、节目单是一套', riddle:'打两个字：靠台词救场的节目' },
+  '相声': { scene:'捧哏的那位永远“嗯、啊、是”', mood:'背词最苦，抖包袱最爽', kin:'跟小品、脱口秀、主持是一家的', riddle:'打两个字：两个人的嘴皮子功夫' },
+  '魔术': { scene:'道具永远在最后一排同事手里', mood:'破绽越大，掌声越响', kin:'跟节目、彩排、舞台是一套', riddle:'打两个字：靠障眼法的节目' },
+  '奖杯': { scene:'刻字的那行小字，比它本身值钱', mood:'举起来的那三秒最飘', kin:'跟证书、奖状、颁奖是一家', riddle:'打两个字：拿完就落灰的荣誉' },
+  '证书': { scene:'塑封完压在抽屉最底层', mood:'领的时候开心，收的时候随便', kin:'跟奖杯、奖状、荣誉是一串的', riddle:'打两个字：纸做的荣誉' },
+  '合影': { scene:'喊“茄子”那一秒，闪光灯闪了八次', mood:'站位吵了十分钟，照片三秒拍完', kin:'跟年会、全家福、留念是一家的', riddle:'打两个字：年会收尾必备动作' },
+  '朋友圈': { scene:'年会照片发出来，定位就是公司名', mood:'发之前反复检查领导有没有点赞', kin:'跟点赞、评论、刷屏是一伙的', riddle:'打三个字：发完年会照就开始盯红点的软件' },
+  '创业': { scene:'工资减半，梦想翻倍', mood:'嘴上说稳定，心里想搏一把', kin:'跟融资、期权、合伙人是一伙的', riddle:'打两个字：把下班变成上班的升级版' },
+  '融资': { scene:'新闻里一句“完成 B 轮”，背后是三个月的路演', mood:'钱到账那天全公司加鸡腿', kin:'跟投资、估值、期权是一串的', riddle:'打两个字：靠讲故事拿钱' },
+  '上市': { scene:'敲钟照片挂满走廊，全员群里刷屏', mood:'熬了很多年，就等那一声锣', kin:'跟 IPO、股票、市值是一套', riddle:'打两个字：创业公司的毕业典礼' },
+  '期权': { scene:'入职时说的“未来价值”，看不懂但很心动', mood:'行权那天才知道是饼还是钱', kin:'跟股票、融资、股权是一家', riddle:'打两个字：画在四年后的饼' },
+  '股票': { scene:'茶水间聊它比聊工作热烈', mood:'绿的时候谁都装没看', kin:'跟基金、理财、涨跌是一伙的', riddle:'打两个字：全公司最爱假装修行的东西' },
+  '裁员名单': { scene:'传闻中的那张纸，谁都不敢问', mood:'名单没公布，人心先散了', kin:'跟裁员、优化、N+1 是一串', riddle:'打四个字：最不想看到的一张纸' },
+  '猎头': { scene:' LinkedIn 消息一出，工位上的心就晃一下', mood:'不理怕错过，理了怕被盯上', kin:'跟跳槽、简历、offer 是一条线', riddle:'打两个字：专挖墙角的人' },
+  '简历': { scene:'每年更新一次，更新完就会想离职', mood:'写成就比写岗位难', kin:'跟面试、跳槽、猎头是一条线', riddle:'打两个字：一张纸决定一小时面试' },
+  'Offer': { scene:'邮件标题带它，加班都香了', mood:'纠结的那三天最失眠', kin:'跟面试、跳槽、猎头是一串', riddle:'打五个字母：辞职的勇气来源' },
+  '入职': { scene:'第一天发电脑、领工牌、被拉着自我介绍三轮', mood:'记住了二十个名字，忘了十九个', kin:'跟离职、转正、试用期是一串', riddle:'打两个字：仪式感最强的一天' },
+  '离职': { scene:'最后一天工位清空，抱着一盆绿植和大家合影', mood:'嘴上说再见，心里想的是下家', kin:'跟入职、跳槽、欢送是一家的', riddle:'打两个字：所有同事的终点站之一' },
+  '转正': { scene:'答辩那天领导问“你觉得自己表现怎么样”', mood:'说低了亏，说高了尬', kin:'跟试用期、晋升、合同是一串', riddle:'打两个字：试用期真正的终点' },
+  '实习': { scene:'工牌颜色不一样，任务却一样多', mood:'又想被留下，又想再看看外面', kin:'跟转正、应届、导师是一伙的', riddle:'打两个字：还没盖章的员工' },
+  '师徒制': { scene:'入职第一天就被告知“你师父是老张”', mood:'师父带三个月，管你一辈子', kin:'跟导师、带教、新人是一套', riddle:'打三个字：公司版的传帮带' },
+  '导师': { scene:'新人问啥都答，答不上来说“我查查”', mood:'带新人像重新学一遍自己的活', kin:'跟师徒制、带教、新人是一套', riddle:'打两个字：新人问问题的唯一出口' },
+  '团建游戏': { scene:'两人三足、你比我猜、拔河，总有一个逃不掉', mood:'比赛第二，拍照第一', kin:'跟团建、拓展、聚餐是亲戚', riddle:'打四个字：必须参加的集体项目' },
+  '饺子': { scene:'一张面皮包住馅，下锅浮起来就熟了', mood:'过年最讲究“包”和“捏”的那道主食', kin:'跟馄饨、包子、汤圆是亲戚，但它有褶', riddle:'打两个字：过年必吃，包住的是团圆' },
+  '鞭炮': { scene:'一串红纸编成，点着就噼里啪啦', mood:'又怕又想点的那一串东西', kin:'跟烟花、礼花、爆竹是一伙的', riddle:'打两个字：响完只剩一地红纸' },
+  '灯笼': { scene:'门口一挂，红光透出来，底下还垂着穗子', mood:'过年的门面担当', kin:'跟春联、窗花、福字一起出场', riddle:'打两个字：挂在门上的那盏红' },
+  '压岁钱': { scene:'红纸包着，塞给小孩时还叮嘱“收好”', mood:'小时候过年的全部意义', kin:'跟红包、利是、礼物是亲戚，但它专给小孩', riddle:'打三个字：长辈给小辈的那点心意' },
+  '春运': { scene:'行李箱轮子在地上滚，站台人贴着人', mood:'一年一度最大的迁徙', kin:'跟高铁、抢票、返乡是一串的', riddle:'打两个字：全中国同时上路' },
+  '春晚': { scene:'除夕夜八点开播，一家人边吃边看', mood:'吐槽它也是过年的一部分', kin:'跟跨年、晚会、节目单是一家的', riddle:'打两个字：背景音最大的那台节目' },
+  '烟花': { scene:'黑夜里一朵朵炸开，抬头的人都“哇”', mood:'最美的一瞬间也最短', kin:'跟鞭炮、礼花、彩带是一伙的', riddle:'打两个字：天上开的花' },
+  '团圆饭': { scene:'一大桌菜，人多到要加凳子', mood:'一年里最有仪式感的一顿', kin:'跟年夜饭、聚餐、家宴是一家', riddle:'打三个字：这顿饭谁都不想缺席' },
+  '福字': { scene:'红纸黑字，还要倒着贴在门上', mood:'中国人过年最常见的一个字', kin:'跟春联、窗花、对联是一套', riddle:'打两个字：倒着贴才吉利' },
+  '下午茶': { scene:'三点钟群里一句“喝什么”，半小时后一堆奶茶袋', mood:'一天里最快乐的十五分钟', kin:'跟奶茶、外卖、零食是一伙的', riddle:'打三个字：下午最理直气壮的一次加餐' },
+  '孤勇者': { scene:'副歌一响，全场跟着吼', mood:'2022 年连小学生都会唱的那首', kin:'跟《追梦赤子心》《海阔天空》同属打气歌', riddle:'打三个字：谁说不站在光里的就不算英雄' },
+  '成都': { scene:'一首民谣，唱的是小酒馆和街头', mood:'很多人在 KTV 的必点曲', kin:'跟《南山南》《南方姑娘》是一路的', riddle:'打两个字：一首关于城市的民谣' },
+  '夜空中最亮的星': { scene:'副歌要仰头唱，唱完心里空一下', mood:'很多人用来打气的那首', kin:'跟《倔强》《海阔天空》是同类', riddle:'打七个字：抬头找的那颗星' },
+  '青花瓷': { scene:'一句“天青色等烟雨”，唱得很中国', mood:'歌词像一幅水墨画', kin:'跟《东风破》《菊花台》是同一位歌手的', riddle:'打三个字：一种瓷器，也是一首歌' },
+  '后来': { scene:'唱到副歌很多人会安静', mood:'关于错过的那首 KTV 必点', kin:'跟《很爱很爱你》《勇气》是同一挂', riddle:'打两个字：一首关于遗憾的歌' },
+  '海阔天空': { scene:'粤语，唱的是理想和不认输', mood:'毕业季和年会都会被点', kin:'跟《光辉岁月》《真的爱你》同一个乐队', riddle:'打四个字：一句关于理想的粤语歌' },
+  '平凡之路': { scene:'一句“我曾经跨过山和大海”', mood:'开车长途最爱放的一首', kin:'跟《生如夏花》《蓝莲花》是同路人', riddle:'打四个字：走着走着就唱起来的那首' },
+  '恭喜发财': { scene:'过年超市循环播放，一开口就是祝福', mood:'春节最洗脑的一句', kin:'跟《财神到》《喜洋洋》是一家人', riddle:'打四个字：过年最常听到的祝福歌' },
+  '小苹果': { scene:'广场上一起跳的那首，动作很简单', mood:'旋律一响就忘不掉', kin:'跟《最炫民族风》《江南style》同属洗脑神曲', riddle:'打三个字：一种水果，也是一支舞' },
+  '我和我的祖国': { scene:'一句“一刻也不能分割”', mood:'大型活动常一起合唱的那首', kin:'跟《歌唱祖国》《我的中国心》是同类', riddle:'打六个字：一首大合唱的爱国歌' },
+  '流浪地球': { scene:'地球装上发动机，带着家一起跑', mood:'国产科幻打开大门的那部', kin:'跟《三体》《星际穿越》是同一挂', riddle:'打四个字：带着地球去流浪' },
+  '让子弹飞': { scene:'“让子弹飞一会儿”，还有那列火车', mood:'台词被玩了很多年', kin:'跟《一步之遥》《邪不压正》同一位导演', riddle:'打四个字：一句台词火了十几年' },
+  '夏洛特烦恼': { scene:'一觉醒来回到学生时代', mood:'笑着笑着就沉默的那部', kin:'跟《西虹市首富》《羞羞的铁拳》同一个团队', riddle:'打五个字：回到过去重来一次' },
+  '你好，李焕英': { scene:'穿越回去见妈妈那部', mood:'春节档哭倒一片', kin:'跟《热辣滚烫》同一位女导演', riddle:'打六个字：笑着进去哭着出来' },
+  '人在囧途': { scene:'春运路上怎么都回不了家', mood:'一路倒霉一路笑', kin:'跟《泰囧》《港囧》是一串的', riddle:'打四个字：回家路上全是坑' },
+  '功夫': { scene:'一个包租婆、一群街坊、一招从天而降', mood:'把武侠拍成喜剧的那部', kin:'跟《少林足球》《大话西游》同一位导演', riddle:'打两个字：最会打的喜剧' },
+  '唐人街探案': { scene:'一对搭档在国外查案，笑得停不下来', mood:'春节档常客', kin:'跟《误杀》《消失的她》同属悬疑喜剧', riddle:'打五个字：国外破案的那对搭档' },
+  '满江红': { scene:'一首词，也是一部电影', mood:'全院走来走去，最后全军复诵', kin:'跟《影》《一秒钟》同一位导演', riddle:'打三个字：岳飞写的那首词' },
+  '大话西游': { scene:'戴上金箍就不能爱你', mood:'台词被念了三十年', kin:'跟《西游降魔》《大圣娶亲》是一串', riddle:'打四个字：一句台词红了三十年' },
+  '哪吒之魔童降世': { scene:'我命由我不由天', mood:'国产动画票房神话', kin:'跟《姜子牙》《深海》是同一挂', riddle:'打七个字：一个踩着风火轮的小孩' },
+  'RFID 智能标签': { scene:'一个小方块，过闸门就响，仓库不用一个个扫', mood:'让零售盘点变快的那个技术', kin:'跟条码、二维码是亲戚，但它不用对着看', riddle:'打五个字母：不靠眼睛也能数清货' },
+  '三十周年': { scene:'2024 年那场庆典，很多人拍了合影', mood:'一家外企在中国待了多久的答案', kin:'跟周年庆、里程碑是一家的', riddle:'打四个字：1994 到 2024 的这段路' },
+  '昆山创新中心': { scene:'去年刚启动，落地在这座县级市', mood:'研发和涂布线都在那儿扩建', kin:'跟研发中心、亚太中心是一串', riddle:'打六个字：公司在中国的创新大本营' },
+  '涂布线': { scene:'长长的机器，胶水均匀铺在卷材上', mood:'一条线开起来就是一整卷', kin:'跟模切、分切、复卷是一条产线', riddle:'打三个字：把胶抹匀的那条产线' },
+  '开门红': { scene:'新年第一单、第一个月，图个好彩头', mood:'销售最想听到的三个字', kin:'跟业绩、达成、目标是一家的', riddle:'打三个字：一年头一个月就要的那个彩头' },
+  '年会节目': { scene:'合唱、小品、舞蹈，总有一个逃不掉', mood:'彩排到晚上十点的那个东西', kin:'跟节目单、彩排、主持是一套', riddle:'打四个字：每年必交的那个作业' },
   'PPT': { scene:'最后一页永远是谢谢聆听，改到凌晨三点还在调字号', mood:'做的时候恨它，讲的时候靠它', kin:'跟 Excel、文档、汇报是同事', riddle:'三个字母：越花时间，越显得内容少' }
 };
 function clueLineSafe(line, w){
@@ -1336,19 +1467,19 @@ function pickFresh(list, pool){
   return v;
 }
 const OFF_QUIZ = [
-  { q:'艾利丹尼森在纽交所的股票代码是？', o:['AVY','ADN','AVG','ADY'], a:'AVY' },
-  { q:'公司 2025 年公布的全球销售额约为？', o:['89 亿美元','8.9 亿美元','890 亿美元','89 亿人民币'], a:'89 亿美元' },
-  { q:'公司在全球大约雇了多少人？', o:['约 35000 人','约 3500 人','约 35 万人','约 8000 人'], a:'约 35000 人' },
-  { q:'RFID 里那层薄薄的芯片叫？', o:['inlay','wafer','sensor','panel'], a:'inlay' },
-  { q:'公司服务不包括下面哪个行业？', o:['制药与汽车','服装与零售','电商与物流','航空发动机'], a:'航空发动机' },
-  { q:'艾利丹尼森（中国）是哪一年在昆山成立的？', o:['1994 年','1988 年','2001 年','2010 年'], a:'1994 年' },
-  { q:'公司那句品牌口号是？', o:['Making Possible','Just Do It','Think Different','Ideas for Life'], a:'Making Possible' },
-  { q:'艾利丹尼森最核心的产品是？', o:['压敏胶标签材料','手机屏幕','汽车轮胎','空调压缩机'], a:'压敏胶标签材料' },
-  { q:'集团创始人 R. Stanton Avery 起家做的是什么？', o:['不干胶标签','造纸','印刷机','胶带机'], a:'不干胶标签' },
-  { q:'公司在中国的主要涂布工厂在？', o:['昆山和广州','北京和上海','成都和西安','沈阳和武汉'], a:'昆山和广州' },
-  { q:'RFID 智能标签最典型的用途是？', o:['服装零售与仓储盘点','做菜','照明','供暖'], a:'服装零售与仓储盘点' },
-  { q:'2024 年公司迎来在华多少周年？', o:['三十周年','十周年','二十周年','四十周年'], a:'三十周年' },
-  { q:'公司培训中心培养的是哪类人才？', o:['不干胶标签加工','厨师','司机','会计'], a:'不干胶标签加工' }
+  { q:'艾利丹尼森在纽交所的股票代码是？', hint:'三个字母，第一个是 A，最后是 Y', o:['AVY','ADN','AVG','ADY'], a:'AVY' },
+  { q:'公司 2025 年公布的全球销售额约为？', hint:'两位数，单位是“亿美元”', o:['89 亿美元','8.9 亿美元','890 亿美元','89 亿人民币'], a:'89 亿美元' },
+  { q:'公司在全球大约雇了多少人？', hint:'五位数，三万往上', o:['约 35000 人','约 3500 人','约 35 万人','约 8000 人'], a:'约 35000 人' },
+  { q:'RFID 里那层薄薄的芯片叫？', hint:'五个字母，英文里指“嵌进去的那层”', o:['inlay','wafer','sensor','panel'], a:'inlay' },
+  { q:'公司服务不包括下面哪个行业？', hint:'有一个是造发动机的，跟标签没关系', o:['制药与汽车','服装与零售','电商与物流','航空发动机'], a:'航空发动机' },
+  { q:'艾利丹尼森（中国）是哪一年在昆山成立的？', hint:'跟“在华三十周年”差 30 年，2024 减一减就出来了', o:['1994 年','1988 年','2001 年','2010 年'], a:'1994 年' },
+  { q:'公司那句品牌口号是？', hint:'两个英文单词，意思是“开创无限可能”', o:['Making Possible','Just Do It','Think Different','Ideas for Life'], a:'Making Possible' },
+  { q:'艾利丹尼森最核心的产品是？', hint:'四个字，跟“胶”和“纸”有关', o:['压敏胶标签材料','手机屏幕','汽车轮胎','空调压缩机'], a:'压敏胶标签材料' },
+  { q:'集团创始人 R. Stanton Avery 起家做的是什么？', hint:'创始人的名字就印在这类产品的行业史里', o:['不干胶标签','造纸','印刷机','胶带机'], a:'不干胶标签' },
+  { q:'公司在中国的主要涂布工厂在？', hint:'都在南方，一个在江苏，一个在广东', o:['昆山和广州','北京和上海','成都和西安','沈阳和武汉'], a:'昆山和广州' },
+  { q:'RFID 智能标签最典型的用途是？', hint:'跟“盘点”“零售”有关，不用一个个扫', o:['服装零售与仓储盘点','做菜','照明','供暖'], a:'服装零售与仓储盘点' },
+  { q:'2024 年公司迎来在华多少周年？', hint:'1994 年落地，2024 年正好一个整数', o:['三十周年','十周年','二十周年','四十周年'], a:'三十周年' },
+  { q:'公司培训中心培养的是哪类人才？', hint:'全国第一所，教的是这个行业的加工手艺', o:['不干胶标签加工','厨师','司机','会计'], a:'不干胶标签加工' }
 ];
 const OFF_IDIOMS = ['一帆风顺','万事如意','心想事成','步步高升','蒸蒸日上','马到成功','五福临门','喜气洋洋','团团圆圆','年年有余','红红火火','前程似锦','大展宏图','旗开得胜','欢声笑语','国泰民安'];
 const OFF_TOPICS = ['说说你最想跟海德堡机长说的一句话','公司还在招印刷机长和质检工程师，简历可以直接投给 HR','用一句话夸夸你们部门（不许说「我们很努力」）','说说今年最想吐槽的一件事（善意版）','模仿一下高总开会最常说的一句话','今年的一个高光时刻','说个只有艾利人才懂的梗','给明年立一个 flag','表演一个 10 秒才艺','说一句最想对公司说的话','用三个词形容今年的车间','夸夸你左手边那位同事','如果你能给公司加一条福利，加什么','现场用最夸张的语气念一遍「不干胶」'];
@@ -1361,9 +1492,22 @@ function ctlQuiz(){
   ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
 }
 let quizMainBtn = null;
+// 🔴 一轮内不重复：抽过的题记进 game.used，抽完才洗牌重来（老大实测「刚问过的又出一次」）
+function pickRound(list, usedKey, poolKey){
+  if (!Array.isArray(list) || !list.length) return null;
+  if (!window._round) window._round = {};
+  let st = window._round[poolKey];
+  if (!st || st.list !== list || st.used.length >= list.length){
+    st = window._round[poolKey] = { list: list, used: [] };
+  }
+  const avail = list.filter(x => st.used.indexOf(x) < 0);
+  const v = avail[Math.floor(Math.random()*avail.length)];
+  st.used.push(v);
+  return v;
+}
 function quizNext(){
   if (!game || game.type !== 'quiz') return '';
-  const q = pickFresh(OFF_QUIZ, 'quiz');
+  const q = pickRound(OFF_QUIZ, null, 'quiz') || OFF_QUIZ[0];
   game.q = q;
   game.opts = offShuffle(q.o.slice());
   game.dead = [];       // 已被线索排除的选项序号
@@ -1408,32 +1552,75 @@ function quizHint(){
   if (!game || game.type !== 'quiz' || !game.q || !game.opts) return '';
   if (game.done) return '本题已答完，点「下一题」';
   game.playing = true; game.clues++;
-  // 🔴 线索 = 给提示，不是划掉选项（老大 2026-11-19：排除答案不算线索）
-  const a = [...game.q.a], L = a.length;
+  // 🔴 线索 = 有信息量的一句话提示（老大嫌“第几个字是啥”太 low）；没写提示的题才退回字数
+  const q0 = game.q, a = [...q0.a], L = a.length;
   let line;
-  if (game.clues === 1) line = '答案一共 ' + L + ' 个字';
-  else if (game.clues === 2) line = '第一个字是「' + a[0] + '」';
-  else if (game.clues === 3) line = '最后一个字是「' + a[L - 1] + '」';
-  else line = '答案里含这个字：「' + a[game.clues % L] + '」';
+  if (q0.hint && game.clues === 1) line = q0.hint;
+  else if (game.clues <= 1) line = '答案一共 ' + L + ' 个字，是这道题的官方说法';
+  else if (game.clues === 2) line = '提示：这个说法跟「' + a.slice(0, Math.max(1, L - 1)).join('') + '」有关，重点在后半段';
+  else line = '再提示：答案里出现的字有「' + [...new Set(a)].join('、') + '」';
   stat();
   const ql = $('qline'); if (ql) ql.textContent = '线索 ' + game.clues + '：' + line;
   return line;
 }
 function ctlIdiom(){
-  $('ctl').innerHTML = ''; $('extra').innerHTML = ''; // 防重入按钮翻倍
-  big('<div class="sub">出第一个成语，大家用尾巴字接（同音也算）</div><div class="ai">点「出词」就开始，不连 AI</div>');
-  // 🔴 出词=本地成语库直接开局，不再自动连 AI（零积分、断网也行）
-  ctlBtn('出词', () => { game.playing = true; game.clues = 0; stat(); offIdiomOne(); });
+  $('ctl').innerHTML = ''; $('extra').innerHTML = '';
+  game.done = false; game.clues = 0; IDIOM.chain = []; IDIOM.mode = 'human';
+  big('<div class="qbig">选玩法</div><div class="bighint">① 人对人：同事轮流接 ② 人机 PK：AI 一句、你一句</div>');
+  ctlBtn('人对人（多人接力）', () => { IDIOM.mode = 'human'; idiomStart(); });
+  ctlBtn('和 AI PK', () => { IDIOM.mode = 'ai'; idiomStart(); }, true);
   ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
 }
+const IDIOM = { chain: [], mode: 'human', turn: 0 };
+function idiomStart(){
+  IDIOM.chain = [];
+  game.playing = true; game.clues = 0; stat();
+  offIdiomOne();
+}
 function offIdiomOne(){
-  const w = pickFresh(OFF_IDIOMS, 'idiom');
-  big('<div class="bighint">用最后一个字「' + w.slice(-1) + '」接成语（同音也算）</div><div class="word" style="font-size:clamp(30px,6vw,66px)">' + w + '</div><div class="bighint line">接对了点「接上了」，接不上点「接不上」</div>');
+  const w = pickRound(OFF_IDIOMS, null, 'idiom') || OFF_IDIOMS[0];
+  IDIOM.chain = [w];
+  idiomRender('接对了点「接上了」，接不上点「接不上」');
+  return w;
+}
+function idiomRender(tip){
+  const w = IDIOM.chain[IDIOM.chain.length - 1] || '';
+  const tail = w.slice(-1);
+  const path = IDIOM.chain.join(' → ');
+  const mode = IDIOM.mode === 'ai' ? '🤖 和 AI PK' : '👥 人对人';
+  big('<div class="bighint">' + mode + ' · 用最后一个字「' + tail + '」接（同音也算）</div>'
+    + '<div class="word" style="font-size:clamp(28px,5.4vw,60px)">' + w + '</div>'
+    + (IDIOM.chain.length > 1 ? '<div class="bighint line" style="opacity:.7;font-size:clamp(14px,1.8vw,20px)">' + path + '</div>' : '')
+    + '<div class="bighint line">' + tip + '</div>');
   const ex = $('extra');
-  ex.innerHTML = '<div class="taplist"><button class="bt" id="idOk">接上了 +1</button><button class="bt ghost" id="idNo">接不上</button><button class="bt ghost" id="idNew">换一个</button></div>';
-  $('idOk').onclick = () => { game.score++; game.playing = true; stat(); sfx('ding'); tipW('接上了 +1 · 接着用刚接的那个词继续（下一个字往下接）'); };
-  $('idNo').onclick = () => { game.wrong++; stat(); tipW('接不上算输 · 点「换一个」重新起一头'); };
-  $('idNew').onclick = () => offIdiomOne();
+  if (!ex) return;
+  let html = '<div class="taplist"><button class="bt" id="idOk">接上了 +1</button>'
+    + '<button class="bt ghost" id="idNo">接不上</button>'
+    + '<button class="bt ghost" id="idNew">换一个头</button>';
+  if (IDIOM.mode === 'ai') html += '<button class="bt ghost" id="idAI">让 AI 接一句</button>';
+  html += '</div>';
+  ex.innerHTML = html;
+  const ok = $('idOk'), no = $('idNo'), nw = $('idNew'), ai = $('idAI');
+  if (ok) ok.onclick = () => { game.score++; IDIOM.turn++; stat(); sfx('ding'); tipW('接上了 +1 · 换下一位继续接'); if (IDIOM.mode === 'ai') idiomRender('轮到你了 · 接着用尾字往下接'); };
+  if (no) no.onclick = () => { game.wrong++; IDIOM.turn = 0; stat(); sfx('boom'); tipW('断了 · 点「换一个头」重新起'); };
+  if (nw) nw.onclick = () => { IDIOM.chain = []; offIdiomOne(); };
+  if (ai) ai.onclick = () => {
+    const next = idiomAIAnswer(IDIOM.chain[IDIOM.chain.length - 1]);
+    if (!next){ tipW('AI 接不上了 · 你赢！'); celebrate(true); return; }
+    IDIOM.chain.push(next); sfx('ding');
+    idiomRender('AI 接了「' + next + '」· 该你了');
+    if (running) type('【游戏】成语接龙人机 PK：你接了「' + IDIOM.chain[IDIOM.chain.length - 2] + '」，现在请 AI 用尾字「' + next.slice(-1) + '」再接一个成语，只说一个词，不要解释。');
+  };
+}
+// 本地 AI 接龙：从成语库里找首字=上词尾字（或同音）且没出现过的
+function idiomAIAnswer(prev){
+  if (!prev) return '';
+  const tail = prev.slice(-1);
+  const HOMO = { '上':['尚'], '事':['世','市','式'], '意':['义','艺'], '成':['城','程'], '功':['工','公'], '心':['新','辛'], '日':['入'], '天':['添'], '年':['念'], '人':['仁'], '大':['达'], '风':['丰'], '水':['谁'], '顺':['瞬'], '升':['生'], '门':['们'], '圆':['园','源'], '余':['鱼','愉'], '火':['伙'], '锦':['紧'], '胜':['盛'], '笑':['孝'], '安':['按'] };
+  const accept = [tail].concat(HOMO[tail] || []);
+  const pool = OFF_IDIOMS.filter(w => IDIOM.chain.indexOf(w) < 0 && accept.indexOf(w.slice(0, 1)) >= 0);
+  if (!pool.length) return '';
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 function ctlHot(){
   $('ctl').innerHTML = ''; // 🔴 "换一个"会重入本函数，不清空按钮会翻倍
@@ -1449,25 +1636,43 @@ function ctlHot(){
   mountGuessInput(); // 跟「描述我猜」一样：人主持可以打答案进来对
 }
 function ctlTalk(){
-  $('ctl').innerHTML = ''; $('extra').innerHTML = ''; // 防重入按钮翻倍
-  big('<div class="sub">抽一张话题卡，或直接点名请人上台</div><div class="ai">都不用连 AI；AI 在线时点名它会自己串词</div>');
+  $('ctl').innerHTML = ''; $('extra').innerHTML = '';
+  big('<div class="bighint">抽张话题卡，或请人上台</div><div class="qbig" style="font-size:clamp(20px,3vw,30px)">点下面按钮开始</div>');
   ctlBtn('抽话题卡', () => { game.playing = true; stat(); offTalkOne(); });
-  // 🔴 点名：自己输入名字（不再是从名单里乱点，也不自动连 AI）
-  ctlBtn('点名上台', () => talkPick(), true);
+  ctlBtn('自动抽人上台', () => talkAutoPick(), true);
+  ctlBtn('主持人点名', () => talkPick(), true);
 }
+// 🔴 自动抽人：从名单里随机抽一个，抽过的本场不再抽
+function talkAutoPick(){
+  if (!game || game.type !== 'talk') return '';
+  if (!ngNames.length) ngNames = ngLoad();
+  if (!ngNames.length) ngNames = NG_DEMO.slice();
+  let pool = ngNames.filter(n => TALK.drawn.indexOf(n) < 0);
+  if (!pool.length){ TALK.drawn = []; pool = ngNames.slice(); tipW('名单都抽过一轮了，重新开始'); }
+  const name = pool[Math.floor(Math.random() * pool.length)];
+  TALK.drawn.push(name);
+  game.playing = true; game.score++; stat();
+  big('<div class="qbig">🎤</div><div class="qbig" style="font-size:clamp(34px,6.5vw,80px)">请 ' + name + ' 上台</div><div class="bighint line">鼓掌 · 讲完点「下一位」接着抽</div>');
+  celebrate(true);
+  if (running) type('【游戏】现场请「' + name + '」上台，你来即兴串一段热场词，30~45 秒，善意玩梗不揭短，讲完调用 PARTY.confetti() 撒花。名字只能是「' + name + '」。');
+  return name;
+}
+const TALK = { drawn: [] };
+// 🔴 主持人点名：自己输名字，但屏幕上只显示 **（不给全场看是谁）
 async function talkPick(){
   if (!game || game.type !== 'talk') return;
-  const v = await askNum('谁上台？输入同事名字', false);
+  const v = await askNum('主持人点名：输入上台同事的名字（屏幕只显示 **）', true);
   const n = String(v == null ? '' : v).trim().replace(/[<>&]/g, '');
   if (!n) return;
   game.playing = true; game.score++; stat();
-  big('<div class="qbig">🎤</div><div class="qbig" style="font-size:clamp(34px,6.5vw,80px)">请 ' + n + ' 上台</div><div class="ai">鼓掌 · 讲完点「下一位」接着抽</div>');
+  big('<div class="qbig">🎤</div><div class="qbig" style="font-size:clamp(34px,6.5vw,80px)">请 ** 上台</div><div class="bighint line">主持人心里有数 · 讲完点「下一位」</div>');
   celebrate(true);
-  if (running) type('【游戏】现场请「' + n + '」上台，你来即兴串一段热场词，30~45 秒，善意玩梗不揭短，讲完调用 PARTY.confetti() 撒花。名字只能是「' + n + '」。');
-  else tipW('已点名：' + n + '（AI 没接通，这段由你主持）');
+  if (running) type('【游戏】现场请「' + n + '」上台（屏幕上不要念出名字，只说到位），你来即兴串一段热场词 30~45 秒，善意玩梗不揭短，讲完调用 PARTY.confetti()。');
+  else tipW('已点名（屏幕不显示）');
+  return n;
 }
 function offTalkOne(){
-  const t = pickFresh(OFF_TOPICS, 'talk');
+  const t = pickRound(OFF_TOPICS, null, 'talk') || OFF_TOPICS[0];
   big('<div class="sub">话题卡 · 请上台的同事现场来 30 秒</div><div class="word" style="font-size:clamp(24px,4.2vw,46px);line-height:1.3">' + t + '</div><div class="ai">讲完点「下一位」，撒花</div>');
   const ex = $('extra');
   ex.innerHTML = '<div class="taplist"><button class="bt" id="tpNext">下一位</button></div>';
@@ -1511,21 +1716,50 @@ let syncStep = 0, syncA = null, syncQ = null;
 function ctlSync(){
   $('ctl').innerHTML = ''; $('extra').innerHTML = '';
   game.done = false; syncStep = 0; syncA = null; syncQ = null;
+  game.p1 = ''; game.p2 = '';
   big('<div class="qbig">点「开始」出题</div><div class="bighint">两个人各选一次，选到同一个才算默契</div>');
   ctlBtn('开始', () => syncNext());
+  ctlBtn('自动选两人', () => syncAutoPair(), true);
+  ctlBtn('手动选两人', () => syncPickPair(), true);
   ctlBtn('重置比分', () => { game.score = 0; game.wrong = 0; stat(); }, true);
+}
+function syncAutoPair(){
+  if (!game || game.type !== 'sync') return;
+  if (!ngNames.length) ngNames = ngLoad();
+  if (!ngNames.length) ngNames = NG_DEMO.slice();
+  let pool = ngNames.filter(n => SYNC.drawn.indexOf(n) < 0);
+  if (pool.length < 2){ SYNC.drawn = []; pool = ngNames.slice(); }
+  const a = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+  const b = pool.length ? pool[Math.floor(Math.random()*pool.length)] : ngNames.filter(n=>n!==a)[0];
+  SYNC.drawn.push(a, b);
+  game.p1 = a; game.p2 = b;
+  big('<div class="bighint">本轮默契搭档</div><div class="qbig" style="font-size:clamp(30px,5.4vw,62px)">' + a + ' × ' + b + '</div><div class="bighint line">点「开始」出题，两人各选一次</div>');
+  tipW('自动选人：' + a + ' 和 ' + b);
+  return [a, b];
+}
+const SYNC = { drawn: [] };
+async function syncPickPair(){
+  if (!game || game.type !== 'sync') return;
+  const a = String((await askNum('第一位是谁？（屏幕会显示）', false)) || '').trim();
+  if (!a) return;
+  const b = String((await askNum('第二位是谁？', false)) || '').trim();
+  if (!b) return;
+  game.p1 = a; game.p2 = b;
+  big('<div class="bighint">本轮默契搭档</div><div class="qbig" style="font-size:clamp(30px,5.4vw,62px)">' + a + ' × ' + b + '</div><div class="bighint line">点「开始」出题，两人各选一次</div>');
+  return [a, b];
 }
 function syncNext(){
   if (!game || game.type !== 'sync') return '';
   syncStep = 0; syncA = null;
-  syncQ = pickFresh(OFF_SYNC, 'sync');
+  syncQ = pickRound(OFF_SYNC, null, 'sync') || OFF_SYNC[0];
   game.playing = true; game.done = false; stat();
   syncRender('第 1 位选，选完保密');
   return syncQ.q;
 }
 function syncRender(tip){
   const who = syncStep === 0 ? '第 1 位' : '第 2 位';
-  big('<div class="bighint">' + who + ' 来选</div><div class="qbig" style="font-size:clamp(26px,4.4vw,52px)">' + syncQ.q + '</div><div class="bighint line">' + tip + '</div><div class="qopts" id="qopts"></div>');
+  const pair = (game.p1 && game.p2) ? (game.p1 + ' × ' + game.p2 + ' · ') : '';
+  big('<div class="bighint">' + pair + who + ' 来选</div><div class="qbig" style="font-size:clamp(26px,4.4vw,52px)">' + syncQ.q + '</div><div class="bighint line">' + tip + '</div><div class="qopts" id="qopts"></div>');
   const box = $('qopts');
   if (!box) return;
   box.innerHTML = syncQ.o.map((o, i) => '<button class="bt ghost qopt" data-i="' + i + '">' + o + '</button>').join('');
@@ -1557,7 +1791,7 @@ function ctlDare(){
 }
 function dareDraw(kind){
   const pool = kind === 'd' ? OFF_DARE : OFF_TRUTH;
-  const card = pickFresh(pool, 'dare');
+  const card = pickRound(pool, null, 'dare' + (kind === 'd' ? 'd' : 't')) || pool[0];
   game.playing = true; stat();
   big('<div class="bighint">' + (kind === 'd' ? '🎯 大冒险' : '💬 真心话') + '</div><div class="qbig" style="font-size:clamp(28px,4.8vw,56px);line-height:1.32">' + card + '</div><div class="bighint line">做完/答完点另一个按钮换下一位</div>');
   return card;
@@ -1581,7 +1815,7 @@ function ctlTongue(){
   ctlBtn('卡住了', () => { game.wrong++; stat(); tipW('卡住一次，换个人再来'); }, true);
 }
 function tongueNext(){
-  const t = pickFresh(OFF_TONGUE, 'tongue');
+  const t = pickRound(OFF_TONGUE, null, 'tongue') || OFF_TONGUE[0];
   game.playing = true; game.done = false; stat();
   big('<div class="bighint">一口气念完，中间不许停</div><div class="qbig" style="font-size:clamp(26px,4.4vw,52px);line-height:1.4">' + t + '</div><div class="bighint line">念对了点「念对了 +1」</div>');
   return t;
@@ -1597,15 +1831,16 @@ function ctlEmoji(){
   game.done = false; game.clues = 0;
   big('<div class="qbig">看图猜词</div><div class="bighint">点「来一题」开始，猜出来打进下面输入框</div>');
   ctlBtn('来一题', () => emojiNext());
-  const cb = ctlBtn('线索', () => showClue(), true); cb.id = 'clueBtn';
+  const cb = ctlBtn('线索', () => showClue(), true); cb.id = 'clueBtn'; cb.disabled = false;
   ctlBtn('换一题', () => emojiNext(), true);
 }
 let emojiSeq = 0;
 function emojiNext(){
   if (!game || game.type !== 'emoji') return '';
-  const q = pickFresh(OFF_EMOJI, 'emoji');
+  const q = pickRound(OFF_EMOJI, null, 'emoji') || OFF_EMOJI[0];
   emojiSeq++;
   game.emoji = q.e; game.word = q.a; game.done = false; game.clues = 0; game.playing = true; stat();
+  const cb0 = $('clueBtn'); if (cb0) cb0.disabled = false; // 🔴 换新题必须把线索按钮恢复，否则上一题猜中后一直灰着
   big('<div class="bighint">第 ' + emojiSeq + ' 题 · ' + wordLenTitle(q.a) + '</div><div class="word" style="font-size:clamp(56px,13vw,150px);letter-spacing:10px">' + q.e + '</div><div class="bighint line" id="clueline">看图猜一个词，猜出来打进下面输入框</div>');
   mountGuessInput();
   return q.e;
@@ -1953,7 +2188,7 @@ stat();
     var sz = 12 + Math.random() * 22;
     return { x: Math.random() * W, y: init ? Math.random() * H : -40,
       vy: 46 + Math.random() * 40, sw: 10 + Math.random() * 22, ph: Math.random() * 6.28,
-      sp: 0.4 + Math.random() * 0.9, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.7,
+      sp: 0.4 + Math.random() * 0.9, r: Math.random() * 6.28, vr: (Math.random() < .5 ? -1 : 1) * (0.9 + Math.random() * 1.1),
       vx: (Math.random() - 0.5) * 8,
       s: sz, g: GLY[(Math.random() * GLY.length) | 0], a: 0.32 + Math.random() * 0.5 };
   }
