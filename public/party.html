@@ -12,7 +12,8 @@
   #bg { position:fixed; inset:0; pointer-events:none; background:radial-gradient(46% 34% at 62% 8%, rgba(255,120,70,.16), transparent 70%), radial-gradient(38% 30% at 18% 72%, rgba(255,90,50,.12), transparent 72%), radial-gradient(44% 34% at 86% 78%, rgba(220,40,40,.12), transparent 72%); }
   header { padding:26px 20px 12px; text-align:center; position:relative; z-index:5; }
   header #homeLink { display:inline-block; padding:8px 22px; border-radius:14px; cursor:pointer; }
-  header #homeLink:hover { background:rgba(255,180,120,.12); }
+  /* 标题是渐变字（background-clip:text + color:transparent），hover 绝不能改 background，否则字直接消失 */
+  header #homeLink:hover { outline:1px solid rgba(255,200,150,.45); outline-offset:4px; }
   header h1 { font-size:clamp(24px,4.2vw,38px); background:linear-gradient(90deg,#ffd479,#ff9d5c,#ff6b9d); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:2px; }
   header p { color:#c9a68f; font-size:13px; margin-top:6px; }
   header .lantern { display:inline-block; animation:sway 3s ease-in-out infinite; color:#ff9d5c; -webkit-text-fill-color:initial; }
@@ -1710,7 +1711,6 @@ function ctlTalk(){
   big('<div class="bighint">抽张话题卡，或请人上台</div><div class="qbig" style="font-size:clamp(20px,3vw,30px)">点下面按钮开始</div>');
   ctlBtn('抽话题卡', () => { game.playing = true; stat(); offTalkOne(); });
   ctlBtn('自动抽人上台', () => talkAutoPick(), true);
-  ctlBtn('主持人点名', () => talkPick(), true);
 }
 // 🔴 自动抽人：从名单里随机抽一个，抽过的本场不再抽
 function talkAutoPick(){
@@ -1728,19 +1728,6 @@ function talkAutoPick(){
   return name;
 }
 const TALK = { drawn: [] };
-// 🔴 主持人点名：自己输名字，但屏幕上只显示 **（不给全场看是谁）
-async function talkPick(){
-  if (!game || game.type !== 'talk') return;
-  const v = await askNum('主持人点名：输入上台同事的名字（屏幕只显示 **）', true);
-  const n = String(v == null ? '' : v).trim().replace(/[<>&]/g, '');
-  if (!n) return;
-  game.playing = true; game.score++; stat();
-  big('<div class="qbig">🎤</div><div class="qbig" style="font-size:clamp(34px,6.5vw,80px)">请 ** 上台</div><div class="bighint line">主持人心里有数 · 讲完点「下一位」</div>');
-  celebrate(true);
-  if (running) type('【游戏】现场请「' + n + '」上台（屏幕上不要念出名字，只说到位），你来即兴串一段热场词 30~45 秒，善意玩梗不揭短，讲完调用 PARTY.confetti()。');
-  else tipW('已点名（屏幕不显示）');
-  return n;
-}
 function offTalkOne(){
   const t = pickRound(OFF_TOPICS, null, 'talk') || OFF_TOPICS[0];
   big('<div class="sub">话题卡 · 请上台的同事现场来 30 秒</div><div class="word" style="font-size:clamp(24px,4.2vw,46px);line-height:1.3">' + t + '</div><div class="ai">讲完点「下一位」，撒花</div>');
@@ -2207,8 +2194,6 @@ window.PARTY = {
   // 🔴 脱口秀：AI 先抽一张话题卡上屏，再就着话题即兴 60~90 秒，讲完调 confetti（不给卡就别硬讲）
   // 自动抽人上台（AI 用）：屏幕显示真名
   talkAuto(){ if (!game || game.type !== 'talk') openStage('talk'); const n = talkAutoPick(); return n ? ('请「' + n + '」上台，你可以即兴串 30~45 秒热场词，讲完调 PARTY.confetti()') : '名单为空，先导入名单'; },
-  // 主持人点名（AI 用）：屏幕只显示 **，别把名字念出来
-  talkName(){ if (!game || game.type !== 'talk') openStage('talk'); big('<div class="qbig">🎤</div><div class="qbig" style="font-size:clamp(34px,6.5vw,80px)">请 ** 上台</div><div class="bighint line">主持人心里有数 · 讲完点「下一位」</div>'); celebrate(true); return '已请一位同事上台，屏幕显示 **（不要念出名字）；你可以即兴串 30~45 秒，讲完调 PARTY.confetti()'; },
   talkCard(){ if (!game || game.type !== 'talk') openStage('talk'); const t = pickFresh(OFF_TOPICS, 'talk'); big('<div class="bighint">脱口秀 · 话题卡</div><div class="qbig" style="font-size:clamp(30px,5vw,60px);line-height:1.3">' + t + '</div><div class="bighint line">即兴讲 60~90 秒，讲完撒花</div>'); game.playing = true; stat(); return '话题已上屏：' + t + '（就这个话题即兴讲 60~90 秒，中途别反问，讲完调 PARTY.confetti()）'; },
   // 🔴 成语接龙：AI 出一个成语上屏，玩家用尾字接，接上了 AI 调 addScore
   idiomCard(mode){ if (!game || game.type !== 'idiom') openStage('idiom'); IDIOM.mode = mode === 'ai' ? 'ai' : 'human'; IDIOM.chain = []; const w = offIdiomOne(); sendPageState(); return '成语接龙（' + (IDIOM.mode === 'ai' ? '人机 PK' : '人对人') + '）首词：' + w + '（请用尾字「' + String(w).slice(-1) + '」往下接；玩家接对了调 PARTY.addScore(1)，要 AI 自己接就调 PARTY.idiomAI()）'; },
