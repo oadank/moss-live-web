@@ -159,13 +159,25 @@
   .cards { grid-template-columns:repeat(3,minmax(0,1fr)); max-width:1180px; margin:0 auto; }
   @media (max-width:980px){ .cards{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media (max-width:640px){ .cards{ grid-template-columns:1fr; } header .gala{ letter-spacing:.2em; } }
-  .card { background:linear-gradient(160deg,#8d1626,#520a14 75%); border:1px solid #b8492f; box-shadow:0 10px 30px rgba(90,10,20,.35), inset 0 0 60px rgba(255,120,60,.06); }
-  .card:hover { border-color:#ffcf6a; box-shadow:0 16px 46px rgba(180,30,30,.5); }
+  /* 玻璃卡片：半透明 + 背景模糊，让底下的红色动画透出来 */
+  .card { background:linear-gradient(160deg,rgba(255,120,90,.16),rgba(110,10,18,.30) 70%);
+    border:1px solid rgba(255,180,120,.42);
+    backdrop-filter:blur(12px) saturate(150%);
+    -webkit-backdrop-filter:blur(12px) saturate(150%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 14px 40px rgba(60,0,8,.30); }
+  .card:hover { border-color:rgba(255,215,140,.95); background:linear-gradient(160deg,rgba(255,140,100,.22),rgba(130,12,20,.34) 70%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 18px 50px rgba(150,20,20,.45); }
   .card h3 { font-size:19px; color:#fff2d8; }
   .card p { color:#ffd3b8; font-size:12.5px; }
   .card .tag { background:#4a1118cc; border-color:#ff9a6a; color:#ffd9a8; }
   .card .go { display:inline-block; margin-top:12px; font-size:12.5px; color:#ffcf6a; letter-spacing:.08em; }
   .card:hover .go { color:#fff; }
+  /* 背景流光：两团红光缓慢游动，卡片玻璃后面能看到 */
+  #bg::before, #bg::after { content:''; position:absolute; width:58vmax; height:58vmax; border-radius:50%; filter:blur(70px); opacity:.4; }
+  #bg::before { background:radial-gradient(circle,#ff6a2a,transparent 64%); left:-12vmax; top:-14vmax; animation:floatA 22s ease-in-out infinite alternate; }
+  #bg::after { background:radial-gradient(circle,#e4002b,transparent 64%); right:-16vmax; bottom:-18vmax; animation:floatB 28s ease-in-out infinite alternate; }
+  @keyframes floatA { to { transform:translate3d(7vmax,5vmax,0) scale(1.12) } }
+  @keyframes floatB { to { transform:translate3d(-8vmax,-6vmax,0) scale(1.1) } }
   .proto { text-align:center; font-size:12px; color:#c99a86; margin:20px 0 6px; letter-spacing:.04em; }
 </style>
 </head>
@@ -204,7 +216,7 @@
     <div class="card" data-g="tongue"><span class="tag">全场爆笑</span><div class="ico">👅<span class="go">进入游戏 →</span></div><h3>绕口令挑战</h3><p>抽一条绕口令，请人一口气念完，卡住就换人，念对撒花。</p></div>
     <div class="card" data-g="emoji"><span class="tag">看图猜词</span><div class="ico">🔤<span class="go">进入游戏 →</span></div><h3>看图猜词</h3><p>大屏出一个图标，猜它代表什么词，打字进去自动判。</p></div>
   </div>
-  <p class="proto">演示原型 · 智能语音（多音色 / 语速 / 口令）+ 文字按钮双通道，任何电脑都能演示完整流程</p>
+  <p class="proto">演示原型 · 智能语音 + 文字按钮双通道，任何电脑都能演示完整流程</p>
   <div id="stage">
     <h2><span id="gName">游戏</span><span class="back" onclick="backToCards()">← 返回游戏列表</span></h2>
     <div id="big"><div class="sub">点下面按钮开始</div></div>
