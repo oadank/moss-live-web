@@ -144,6 +144,29 @@
   @keyframes cfstripe { 0%{ transform:translateY(-4vh) rotate(0) scaleX(1); opacity:1 } 100%{ transform:translateY(104vh) rotate(700deg); opacity:.5 } }
   @keyframes cfdot { 0%{ transform:translate(0,-4vh); opacity:1 } 100%{ transform:translate(var(--dx),104vh); opacity:.4 } }
   @keyframes cfburst { 0%{ transform:translate(-50%,-50%) scale(.6); opacity:1 } 100%{ transform:translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) rotate(var(--br)); opacity:0 } }
+
+  /* ===== 2027 年会主视觉（对齐演示原型）===== */
+  .topbar { display:flex; align-items:center; gap:12px; max-width:1180px; margin:0 auto 6px; }
+  .topbar .logo { display:flex; align-items:center; gap:8px; font-size:12.5px; color:#ffd9b8; letter-spacing:.16em; }
+  .topbar .chips { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
+  .topbar .chip { font-size:11.5px; color:#ffd0a8; border:1px solid #8a4a3a; border-radius:20px; padding:4px 11px; background:#2a0f14aa; cursor:pointer; transition:.2s; }
+  .topbar .chip:hover { border-color:#ffcf6a; color:#fff; }
+  header .gala { font-size:11.5px; letter-spacing:.42em; color:#ffb98a; opacity:.92; margin:10px 0 6px; }
+  header h1 { font-size:clamp(28px,4.6vw,54px); letter-spacing:.1em; }
+  header .sub { font-size:14.5px; color:#ffd9b8; letter-spacing:.06em; margin:8px 0 4px; }
+  header .whatif { display:inline-block; font-size:12.5px; color:#ffc9a0; border:1px solid #9a4a32; border-radius:20px; padding:5px 14px; background:#3a0f16aa; margin:6px 0 10px; }
+  header .whatif b { color:#ffcf6a; letter-spacing:.12em; margin-right:6px; }
+  .cards { grid-template-columns:repeat(3,minmax(0,1fr)); max-width:1180px; margin:0 auto; }
+  @media (max-width:980px){ .cards{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:640px){ .cards{ grid-template-columns:1fr; } header .gala{ letter-spacing:.2em; } }
+  .card { background:linear-gradient(160deg,#8d1626,#520a14 75%); border:1px solid #b8492f; box-shadow:0 10px 30px rgba(90,10,20,.35), inset 0 0 60px rgba(255,120,60,.06); }
+  .card:hover { border-color:#ffcf6a; box-shadow:0 16px 46px rgba(180,30,30,.5); }
+  .card h3 { font-size:19px; color:#fff2d8; }
+  .card p { color:#ffd3b8; font-size:12.5px; }
+  .card .tag { background:#4a1118cc; border-color:#ff9a6a; color:#ffd9a8; }
+  .card .go { display:inline-block; margin-top:12px; font-size:12.5px; color:#ffcf6a; letter-spacing:.08em; }
+  .card:hover .go { color:#fff; }
+  .proto { text-align:center; font-size:12px; color:#c99a86; margin:20px 0 6px; letter-spacing:.04em; }
 </style>
 </head>
 <body>
@@ -153,24 +176,35 @@
 <div id="confetti"></div>
 <canvas id="cfCv"></canvas>
 <header>
-  <h1 id="homeLink" title="点击返回游戏列表首页" style="cursor:pointer" onclick="backToCards()"><span class="lantern">🏮</span> AI 语音互动 · 年会现场 <span class="lantern">🏮</span></h1>
-  <p>真语音 AI 主持人（MOSS 实时全双工 · 能说会做能操作大屏）· 点游戏开玩 · 右下角唤出 AI</p>
+  <div class="topbar">
+    <div class="logo">🏮 艾利丹尼森 · 2027 年会</div>
+    <div class="chips">
+      <span class="chip" onclick="document.getElementById('widget').classList.add('open')">🎧 语音设置</span>
+      <span class="chip" onclick="backToCards()">🏛 大厅</span>
+      <span class="chip" onclick="document.getElementById('cards').scrollIntoView({behavior:'smooth'})">🎮 玩游戏</span>
+    </div>
+  </div>
+  <div class="gala">AVERY DENNISON · 2027 ANNUAL GALA</div>
+  <h1 id="homeLink" title="点击返回游戏列表首页" style="cursor:pointer" onclick="backToCards()">艾利丹尼森 · 欢聚 2027</h1>
+  <p class="sub">Making Possible™ 开创无限可能 · 智能主持人「小年」带您玩转年会互动夜</p>
+  <p class="whatif"><b>WHAT IF</b>如果…会怎样？让无限可能，从今晚的欢声笑语开始</p>
 </header>
 <main>
   <div class="cards" id="cards">
-    <div class="card" data-g="guess"><span class="tag">主推 · 语音核心</span><div class="ico">🗣️</div><h3>AI 你描述我猜</h3><p>大屏出词（可隐藏防偷看），AI 语音层层给线索、绝不说出答案；猜错换说法，猜对撒花计分。</p></div>
-    <div class="card" data-g="bomb"><span class="tag">全员轮流</span><div class="ico">💣</div><h3>数字炸弹</h3><p>AI 心里藏一个数，大家轮流报数缩范围，谁踩中谁“爆炸”，AI 全程烘气氛。</p></div>
-    <div class="card" data-g="roll"><span class="tag">暖场必备</span><div class="ico">🎯</div><h3>AI 幸运点名</h3><p>大屏滚动姓名，喊停抽取，AI 热情宣布幸运观众上台，名单随时改。</p></div>
-    <div class="card" data-g="quiz"><span class="tag">知识抢答</span><div class="ico">⚡</div><h3>AI 快问快答</h3><p>AI 出选择题（公司/行业/年度热词），语音抢答，AI 判定并计分。</p></div>
-    <div class="card" data-g="idiom"><span class="tag">全员接龙</span><div class="ico">🔗</div><h3>成语接龙</h3><p>AI 出首词，大家用最后一个字接龙（同音也算），接不上算输，AI 主持判定。</p></div>
-    <div class="card" data-g="hot"><span class="tag">年度记忆</span><div class="ico">📈</div><h3>年度热词竞猜</h3><p>AI 描述公司项目名/年度大事/热梗，大家抢猜，绝不说出答案。</p></div>
-    <div class="card adv" data-g="talk"><span class="tag">进阶</span><div class="ico">🎤</div><h3>AI 主持脱口秀</h3><p>直接对 AI 说“给张三来段脱口秀”，即兴串词把同事请上台。</p></div>
-    <div class="card adv" data-g="song"><span class="tag">进阶</span><div class="ico">🎵</div><h3>AI 猜歌 / 猜影</h3><p>对 AI 说“来一题猜歌”，它描述意境你抢答。</p></div>
-    <div class="card" data-g="sync"><span class="tag">两人对决</span><div class="ico">🤝</div><h3>默契大考验</h3><p>同一道题两个人各选一次答案，选到同一个才算默契，全场围观谁最懂谁。</p></div>
-    <div class="card" data-g="dare"><span class="tag">暖场必备</span><div class="ico">🎲</div><h3>真心话大冒险</h3><p>抽一张卡：真心话就老实答，大冒险就当场做，主持人盯着不放水。</p></div>
-    <div class="card" data-g="tongue"><span class="tag">全场爆笑</span><div class="ico">👅</div><h3>绕口令挑战</h3><p>抽一条绕口令，请人一口气念完，卡住就换人，念对撒花。</p></div>
-    <div class="card" data-g="emoji"><span class="tag">看图猜词</span><div class="ico">🔤</div><h3>看图猜词</h3><p>大屏出一个图标，猜它代表什么词，打字进去自动判。</p></div>
+    <div class="card" data-g="guess"><span class="tag">主推 · 语音核心</span><div class="ico">🗣️<span class="go">进入游戏 →</span></div><h3>AI 你描述我猜</h3><p>员工背对大屏，AI 用语音层层描述一个个词（绝不说出答案）。猜错就换说法，越猜线索越多。</p></div>
+    <div class="card" data-g="bomb"><span class="tag">全员轮流</span><div class="ico">💣<span class="go">进入游戏 →</span></div><h3>数字炸弹</h3><p>AI 心中藏一个数字，大家轮流报数缩小范围，谁踩中炸弹谁接受「惩罚」，全场尖叫不断。</p></div>
+    <div class="card" data-g="roll"><span class="tag">暖场必备</span><div class="ico">🎯<span class="go">进入游戏 →</span></div><h3>AI 幸运点名</h3><p>大屏滚动同事姓名，AI 喊「停」随机抽取幸运观众上台互动 / 领奖，公平又热闹。</p></div>
+    <div class="card" data-g="quiz"><span class="tag">知识抢答</span><div class="ico">⚡<span class="go">进入游戏 →</span></div><h3>AI 快问快答</h3><p>AI 主持人出题（公司的人、产品、车间与年度大事），四选一抢答，答对撒花计分。</p></div>
+    <div class="card" data-g="idiom"><span class="tag">全员接龙</span><div class="ico">🔗<span class="go">进入游戏 →</span></div><h3>成语接龙</h3><p>沾点喜气：AI 出四字吉祥话，大家用最后一个字接龙，同音也算，接不上就换人。</p></div>
+    <div class="card" data-g="hot"><span class="tag">年度记忆</span><div class="ico">📈<span class="go">进入游戏 →</span></div><h3>年度热词竞猜</h3><p>AI 描述今年公司里的项目、厂区大事和车间热梗，大家抢猜，绝不说出答案。</p></div>
+    <div class="card adv" data-g="talk"><span class="tag">进阶</span><div class="ico">🎤<span class="go">进入游戏 →</span></div><h3>AI 主持脱口秀</h3><p>语音点名 + AI 即兴串词，把同事请上台，还能顺手 cue 一句高总（善意版）。</p></div>
+    <div class="card adv" data-g="song"><span class="tag">进阶</span><div class="ico">🎵<span class="go">进入游戏 →</span></div><h3>AI 猜歌 / 猜影</h3><p>AI 用语音描述歌词或剧情线索，员工抢答歌名片名，猜错继续换描述。</p></div>
+    <div class="card" data-g="sync"><span class="tag">两人对决</span><div class="ico">🤝<span class="go">进入游戏 →</span></div><h3>默契大考验</h3><p>同一道题两个人各选一次答案，选到同一个才算默契，全场围观谁最懂谁。</p></div>
+    <div class="card" data-g="dare"><span class="tag">暖场必备</span><div class="ico">🎲<span class="go">进入游戏 →</span></div><h3>真心话大冒险</h3><p>抽一张卡：真心话就老实答，大冒险就当场做，主持人盯着不放水。</p></div>
+    <div class="card" data-g="tongue"><span class="tag">全场爆笑</span><div class="ico">👅<span class="go">进入游戏 →</span></div><h3>绕口令挑战</h3><p>抽一条绕口令，请人一口气念完，卡住就换人，念对撒花。</p></div>
+    <div class="card" data-g="emoji"><span class="tag">看图猜词</span><div class="ico">🔤<span class="go">进入游戏 →</span></div><h3>看图猜词</h3><p>大屏出一个图标，猜它代表什么词，打字进去自动判。</p></div>
   </div>
+  <p class="proto">演示原型 · 智能语音（多音色 / 语速 / 口令）+ 文字按钮双通道，任何电脑都能演示完整流程</p>
   <div id="stage">
     <h2><span id="gName">游戏</span><span class="back" onclick="backToCards()">← 返回游戏列表</span></h2>
     <div id="big"><div class="sub">点下面按钮开始</div></div>
@@ -701,8 +735,9 @@ requestAnimationFrame(drawOrb);
 
 // ---------- 游戏 ----------
 let game = null;
+const AD_WORDS = ['不干胶','离型纸','涂布','模切','卷筒','标签','吊牌','法森','反光膜','RFID','贴标机','柔印','烫金','条码','样品册','打样','车间','生产线','质检','客户审核','卷材','热熔胶','水胶','仓库','集装箱','出货','排产','高总'];
 const WORDS = ['年终奖','团建','加班','KPI','红包','年会','老板','食堂','打卡','周报','需求','上线','复盘','加班餐','电梯','工位',
-'摸鱼','画饼','对齐','赋能','闭环','内卷','躺平','甩锅','背锅','晋升','调薪','裁员','面试','试用期','五险一金','年假','病假','调休','报销','出差','会议室','白板','程序员','产品经理','设计师','运营','销售','财务','人事','行政','前台','保安','咖啡机','饮水机','绿植','空调','投影仪','工牌','门禁','钉钉','飞书','PPT','Excel','OKR','绩效','双薪','抽奖','一等奖','吉祥物','主持人','麦克风','音响','舞台','灯光','彩排','节目单','合唱','舞蹈','小品','相声','魔术','奖杯','证书','合影','朋友圈','自由职业','创业','融资','上市','期权','股票','裁员名单','猎头','简历','Offer','入职','离职','转正','实习','师徒制','导师','团建游戏','拔河','桌游','烧烤','火锅','奶茶','外卖','快递','下午茶','夜宵','早餐','食堂阿姨','窗口','排队','占座','摸鱼大赛','划水','搬砖','996','007','大小周','弹性工作制','远程办公','居家办公','视频会议','静音','开麦','摄像头','美颜','滤镜','表情包','梗','热搜','直播','短视频','点赞','关注','转发','评论','弹幕','一键三连'];
+'摸鱼','画饼','对齐','赋能','闭环','内卷','躺平','甩锅','背锅','晋升','调薪','裁员','面试','试用期','五险一金','年假','病假','调休','报销','出差','会议室','白板','程序员','产品经理','设计师','运营','销售','财务','人事','行政','前台','保安','咖啡机','饮水机','绿植','空调','投影仪','工牌','门禁','钉钉','飞书','PPT','Excel','OKR','绩效','双薪','抽奖','一等奖','吉祥物','主持人','麦克风','音响','舞台','灯光','彩排','节目单','合唱','舞蹈','小品','相声','魔术','奖杯','证书','合影','朋友圈','自由职业','创业','融资','上市','期权','股票','裁员名单','猎头','简历','Offer','入职','离职','转正','实习','师徒制','导师','团建游戏','拔河','桌游','烧烤','火锅','奶茶','外卖','快递','下午茶','夜宵','早餐','食堂阿姨','窗口','排队','占座','摸鱼大赛','划水','搬砖','996','007','大小周','弹性工作制','远程办公','居家办公','视频会议','静音','开麦','摄像头','美颜','滤镜','表情包','梗','热搜','直播','短视频','点赞','关注','转发','评论','弹幕','一键三连'].concat(AD_WORDS);
 let lastWord = '';
 function pickWord(){ let w; do { w = WORDS[Math.floor(Math.random()*WORDS.length)]; } while (w === lastWord && WORDS.length > 1); lastWord = w; return w; }
 function openStage(type){
@@ -1054,6 +1089,14 @@ const CLUE_META = {
   '报销': { scene:'一堆发票摊在桌上，系统提示请上传行程单', mood:'钱是自己先垫的，耐心是最后没的', kin:'跟出差、发票、审批是一条线上的', riddle:'打两个字：花出去容易，要回来很难' },
   '复盘': { scene:'事情都过去了，还要坐在一起说当时为什么那么干', mood:'嘴上说总结经验，心里在分锅', kin:'跟总结、回顾、review 是一家', riddle:'打两个字：事后诸葛亮专用会' },
   '晋升': { scene:'名单公布那天，有人发朋友圈，有人默默改简历', mood:'期待很久，结果一句话', kin:'跟调薪、评级、答辩是一串的，但它最看重名额', riddle:'打两个字：向上走一格，可能要等一年' },
+  '不干胶': { scene:'一张纸撕下来就能贴，撕的时候还带一点点响', mood:'贴歪了最难受，贴正了特别解压', kin:'跟标签、贴纸、胶带是亲戚，但它自带背胶', riddle:'打三个字：撕得开，才贴得上' },
+  '离型纸': { scene:'把背胶那层轻轻一揭，才露出真正黏人的一面', mood:'用完就扔，但没它谁也贴不上', kin:'跟保护膜、底纸是一路的', riddle:'打三个字：最不黏的那张纸，最要紧' },
+  '涂布': { scene:'一条长长的生产线，胶水均匀铺在卷材上，一卷一卷往下走', mood:'厚一点薄一点都算事故', riddle:'打两个字：把胶抹匀的手艺' },
+  '模切': { scene:'刀模一压，一张纸上同时出来几十个小形状', mood:'差半毫米就废一版', riddle:'打两个字：不用剪，一压就成型' },
+  'RFID': { scene:'衣服上那个小方块，过闸门就响，仓库不用一个个扫', mood:'看着不起眼，撑起半个智慧零售', riddle:'四个字母：不靠眼睛，靠无线也能数清货' },
+  '法森': { scene:'日化、饮料、药盒上那些精致的小标签，多半印着它', mood:'名字低调，货架上到处都是', riddle:'打两个字：艾利家的王牌标签材料' },
+  '标签': { scene:'饮料瓶身、快递面单、药盒封口，全靠它说清是谁', mood:'小，但没它整批货都不合规', riddle:'打两个字：贴在商品身上的身份证' },
+  '高总': { scene:'年会上最后一个发言，讲完大家才敢动筷子', mood:'怕他不来，又怕他讲太长', riddle:'打两个字：全场最该被 cue 又最不能得罪的人' },
   'PPT': { scene:'最后一页永远是谢谢聆听，改到凌晨三点还在调字号', mood:'做的时候恨它，讲的时候靠它', kin:'跟 Excel、文档、汇报是同事', riddle:'三个字母：越花时间，越显得内容少' }
 };
 function clueLineSafe(line, w){
@@ -1276,17 +1319,22 @@ function pickFresh(list, pool){
   return v;
 }
 const OFF_QUIZ = [
-  { q:'公司里说的「OKR」指的是？', o:['目标与关键结果','加班与调休','工资与奖金','考核与辞退'], a:'目标与关键结果' },
-  { q:'「KPI」指的是？', o:['关键绩效指标','客单价指数','开发排期表','员工打卡记录'], a:'关键绩效指标' },
-  { q:'「996」通常指？', o:['早 9 点到晚 9 点、一周 6 天','早 9 点到晚 6 点、一周 6 天','一天 9 小时、一周 6 天','9 点上班 6 点下班'], a:'早 9 点到晚 9 点、一周 6 天' },
-  { q:'一年里天数最少的月份是？', o:['2 月','4 月','6 月','9 月'], a:'2 月' },
-  { q:'中国过年最常贴的红色装饰是？', o:['春联和福字','白纸黑字','宣传海报','挂历'], a:'春联和福字' },
-  { q:'「复盘」这个词的意思是？', o:['事后回顾总结','重新排版','再拍一遍','打牌'], a:'事后回顾总结' },
-  { q:'一个季度是几个月？', o:['3 个月','2 个月','4 个月','6 个月'], a:'3 个月' },
-  { q:'员工手册里的「转正」通常指？', o:['试用期结束、成为正式员工','转岗到正职部门','调到总部','涨工资'], a:'试用期结束、成为正式员工' }
+  { q:'艾利丹尼森在纽交所的股票代码是？', o:['AVY','ADN','AVG','ADY'], a:'AVY' },
+  { q:'公司 2025 年公布的全球销售额约为？', o:['89 亿美元','8.9 亿美元','890 亿美元','89 亿人民币'], a:'89 亿美元' },
+  { q:'公司在全球大约雇了多少人？', o:['约 35000 人','约 3500 人','约 35 万人','约 8000 人'], a:'约 35000 人' },
+  { q:'RFID 里那层薄薄的芯片叫？', o:['inlay','wafer','sensor','panel'], a:'inlay' },
+  { q:'公司服务不包括下面哪个行业？', o:['制药与汽车','服装与零售','电商与物流','航空发动机'], a:'航空发动机' },
+  { q:'艾利丹尼森（中国）是哪一年在昆山成立的？', o:['1994 年','1988 年','2001 年','2010 年'], a:'1994 年' },
+  { q:'公司那句品牌口号是？', o:['Making Possible','Just Do It','Think Different','Ideas for Life'], a:'Making Possible' },
+  { q:'艾利丹尼森最核心的产品是？', o:['压敏胶标签材料','手机屏幕','汽车轮胎','空调压缩机'], a:'压敏胶标签材料' },
+  { q:'集团创始人 R. Stanton Avery 起家做的是什么？', o:['不干胶标签','造纸','印刷机','胶带机'], a:'不干胶标签' },
+  { q:'公司在中国的主要涂布工厂在？', o:['昆山和广州','北京和上海','成都和西安','沈阳和武汉'], a:'昆山和广州' },
+  { q:'RFID 智能标签最典型的用途是？', o:['服装零售与仓储盘点','做菜','照明','供暖'], a:'服装零售与仓储盘点' },
+  { q:'2024 年公司迎来在华多少周年？', o:['三十周年','十周年','二十周年','四十周年'], a:'三十周年' },
+  { q:'公司培训中心培养的是哪类人才？', o:['不干胶标签加工','厨师','司机','会计'], a:'不干胶标签加工' }
 ];
 const OFF_IDIOMS = ['一帆风顺','万事如意','心想事成','步步高升','蒸蒸日上','马到成功','五福临门','喜气洋洋','团团圆圆','年年有余','红红火火','前程似锦','大展宏图','旗开得胜','欢声笑语','国泰民安'];
-const OFF_TOPICS = ['用一句话夸夸你们部门','说说今年最想吐槽的一件事（善意版）','模仿一下你们领导开会的样子','今年的一个高光时刻','说个只有同事才懂的梗','给明年立一个 flag','表演一个才艺（10 秒）','说一句最想对公司说的话'];
+const OFF_TOPICS = ['说说你最想跟海德堡机长说的一句话','公司还在招印刷机长和质检工程师，简历可以直接投给 HR','用一句话夸夸你们部门（不许说「我们很努力」）','说说今年最想吐槽的一件事（善意版）','模仿一下高总开会最常说的一句话','今年的一个高光时刻','说个只有艾利人才懂的梗','给明年立一个 flag','表演一个 10 秒才艺','说一句最想对公司说的话','用三个词形容今年的车间','夸夸你左手边那位同事','如果你能给公司加一条福利，加什么','现场用最夸张的语气念一遍「不干胶」'];
 function ctlQuiz(){
   $('ctl').innerHTML = ''; $('extra').innerHTML = ''; // 防重入按钮翻倍
   big('<div class="qbig">点「开始出题」</div><div class="ai">出题直接上屏，不用连 AI</div>');
@@ -1372,7 +1420,7 @@ function offIdiomOne(){
 }
 function ctlHot(){
   $('ctl').innerHTML = ''; // 🔴 "换一个"会重入本函数，不清空按钮会翻倍
-  const HOT = ['年终奖','团建','KPI','需求评审','上线冲刺','年会节目','优秀员工','跨年钟声','开门红'];
+  const HOT = ['不干胶','RFID 智能标签','三十周年','昆山创新中心','涂布线','客户审核','年终奖','开门红','年会节目'];
   game.word = pickFresh(HOT, 'hot');
   game.done = false; game.clues = 0; // 换词=新一局
   big('<div class="bighint">' + wordLenTitle(game.word) + ' · 默认隐藏，点「显示词语」再给玩家看</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div><div class="bighint line" id="clueline"></div>');
