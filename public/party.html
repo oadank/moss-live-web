@@ -11,6 +11,8 @@
   body { background:#0a0612; color:#fff3e6; font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif; min-height:100vh; overflow-x:hidden; }
   #bg { position:fixed; inset:0; pointer-events:none; background:radial-gradient(46% 34% at 62% 8%, rgba(255,120,70,.16), transparent 70%), radial-gradient(38% 30% at 18% 72%, rgba(255,90,50,.12), transparent 72%), radial-gradient(44% 34% at 86% 78%, rgba(220,40,40,.12), transparent 72%); }
   header { padding:26px 20px 12px; text-align:center; position:relative; z-index:5; }
+  header #homeLink { display:inline-block; padding:8px 22px; border-radius:14px; cursor:pointer; }
+  header #homeLink:hover { background:rgba(255,180,120,.12); }
   header h1 { font-size:clamp(24px,4.2vw,38px); background:linear-gradient(90deg,#ffd479,#ff9d5c,#ff6b9d); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:2px; }
   header p { color:#c9a68f; font-size:13px; margin-top:6px; }
   header .lantern { display:inline-block; animation:sway 3s ease-in-out infinite; color:#ff9d5c; -webkit-text-fill-color:initial; }
@@ -1050,7 +1052,7 @@ function ctlGuess(){
   $('ctl').innerHTML = ''; // 🔴 "换一个词"会重入本函数，不清空按钮会翻倍
   game.word = pickWord();
   game.done = false; game.clues = 0; // 换词=新一局：线索数归零，可以重新判
-  big('<div class="bighint">' + wordLenTitle(game.word) + ' · 默认隐藏，点「显示词语」再给玩家看</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div><div class="bighint line" id="clueline"></div>');
+  big('<div class="bighint">' + wordLenTitle(game.word) + '</div><div class="word" id="wshow" data-r="' + game.word + '">•••••</div><div class="bighint line" id="clueline"></div>');
   const b1 = ctlBtn('显示词语', () => { const w = $('wshow'); if (!w) return; if (w.textContent === '•••••'){ w.textContent = w.dataset.r; b1.textContent = '隐藏词语'; } else { w.dataset.r = w.textContent; w.textContent = '•••••'; b1.textContent = '显示词语'; } }, true);
   // 🔴 「线索」：人手动点 → 屏幕出一条线索、线索数 +1（不连 AI、不花钱）；AI 主持时由 AI 调 PARTY.clue() 点它
   const clueBtn = ctlBtn('线索', () => showClue(), true);
@@ -1133,7 +1135,7 @@ const CLUE_META = {
   '打卡': { scene:'门口那台机器，早上八点半前排着队，忘按一次扣五十', mood:'按下那声“滴”才算一天真正开始', kin:'跟考勤、工牌、签到是一伙的，但它最机械', riddle:'打两个字：一天两次，漏一次心疼钱' },
   '需求': { scene:'产品经理发来一份文档，开头永远写“最终版 V3.2”', mood:'看完只想问一句：到底哪个是最终版', kin:'跟 PRD、排期、变更是连体婴，但它最爱变', riddle:'打两个字：昨天说的今天推翻' },
   '上线': { scene:'周五晚上灯火通明，全员盯着屏幕等一个按钮变绿', mood:'紧张又兴奋，上了就怕出 bug', kin:'跟发布、部署、发版是一条流水线', riddle:'打两个字：今天不上，明天照常上班' },
-  '加班餐': { scene:'晚上八点群里发一句“点餐啦”，每个人熟练报菜名', mood:'这是加班唯一的甜头', kin:'跟外卖、夜宵、报销是一家人', riddle:'打三个字：不算补贴，但管饱' },
+  '加班餐': { scene:'晚上八点群里发一句“点餐啦”，大家熟练报菜名', mood:'这是加班唯一的甜头', kin:'跟外卖、夜宵、报销是一家人', riddle:'打三个字：不算补贴，但管饱' },
   '电梯': { scene:'早高峰挤不上去，门一开全是同公司的脸', mood:'三秒钟的沉默，各自刷手机', kin:'跟楼梯、工卡、楼层是一伙的', riddle:'打两个字：全楼最挤的盒子' },
   '工位': { scene:'桌面三盆绿植、两包零食、一个键盘、一颗想下班的心', mood:'一天坐九小时，比床待得还久', kin:'跟工牌、椅子、显示器是一套的', riddle:'打两个字：比家待得还久的地方' },
   '对齐': { scene:'开会最常听见“我们对一下”，对完还是没人知道对了什么', mood:'听着很专业，实际啥都没定', kin:'跟拉通、赋能、闭环是难兄难弟', riddle:'打两个字：互联网黑话之王，对完等于没对' },
@@ -1245,6 +1247,66 @@ const CLUE_META = {
   '涂布线': { scene:'长长的机器，胶水均匀铺在卷材上', mood:'一条线开起来就是一整卷', kin:'跟模切、分切、复卷是一条产线', riddle:'打三个字：把胶抹匀的那条产线' },
   '开门红': { scene:'新年第一单、第一个月，图个好彩头', mood:'销售最想听到的三个字', kin:'跟业绩、达成、目标是一家的', riddle:'打三个字：一年头一个月就要的那个彩头' },
   '年会节目': { scene:'合唱、小品、舞蹈，总有一个逃不掉', mood:'彩排到晚上十点的那个东西', kin:'跟节目单、彩排、主持是一套', riddle:'打四个字：每年必交的那个作业' },
+  '自由职业': { scene:'没人给你发工牌，工位就是家里那张桌子', mood:'自由，但没人替你交社保', kin:'跟创业、远程、接私活是一家的', riddle:'打四个字：自己给自己打工' },
+  '拔河': { scene:'一根粗绳，两队人往后倒', mood:'赢了也要摔一屁股', kin:'跟跳绳、两人三足、运动会是一套', riddle:'打两个字：往后使劲才赢' },
+  '桌游': { scene:'一盒卡牌铺满桌子，规则讲十分钟', mood:'输的人洗牌', kin:'跟剧本杀、狼人杀、麻将是一伙的', riddle:'打两个字：桌上打牌玩到半夜' },
+  '烧烤': { scene:'碳火一烤，油滴下去“嗤”一声', mood:'夏天团建的标配', kin:'跟火锅、烧烤摊、啤酒是一桌', riddle:'打两个字：越烤越香，衣服越臭' },
+  '火锅': { scene:'一锅红汤翻滚，筷子在里头捞', mood:'人多才热闹', kin:'跟烧烤、串串、麻辣烫是一伙的', riddle:'打两个字：什么都往锅里扔' },
+  '奶茶': { scene:'下午三点人手一杯，加料加到满', mood:'甜是唯一的生产力', kin:'跟咖啡、果茶、下午茶是一家的', riddle:'打两个字：靠它撑过下午' },
+  '外卖': { scene:'骑手打电话说东西到楼下了', mood:'饭点的救命稻草', kin:'跟食堂、加班餐、夜宵是一串的', riddle:'打两个字：门口那袋热饭' },
+  '快递': { scene:'前台堆成小山，取件码一天三条', mood:'拆箱那一秒最快乐', kin:'跟外卖、取件、驿站是一家的', riddle:'打两个字：纸箱和气泡膜' },
+  '夜宵': { scene:'十一点群里一句“走不走”，五分钟集齐', mood:'加班之后唯一的奖励', kin:'跟加班餐、外卖、烧烤是一伙的', riddle:'打两个字：越晚越想吃' },
+  '早餐': { scene:'路边摊一个蛋饼，边走边吃', mood:'赶时间的人常常跳过它', kin:'跟午餐、晚餐、豆浆是一家的', riddle:'打两个字：一天最容易被省掉的那顿' },
+  '食堂阿姨': { scene:'手一抖，肉就少半勺', mood:'全公司最有权势的人之一', kin:'跟窗口、打饭、餐盘是一套', riddle:'打四个字：掌勺的那位' },
+  '窗口': { scene:'排队的人最关心哪个队动得快', mood:'打饭时踮脚看前面', kin:'跟食堂、排队、餐盘是一套', riddle:'打两个字：食堂里最挤的地方' },
+  '排队': { scene:'电梯前、食堂前、打卡机前', mood:'前面那个人永远在找卡', kin:'跟窗口、电梯、占座是一家的', riddle:'打两个字：最考验耐心的事' },
+  '占座': { scene:'水杯一放就算占住，开会前十分钟最常见', mood:'会议室和工位都适用', kin:'跟排队、工位、会议室是一套', riddle:'打两个字：放个东西就是我的' },
+  '摸鱼大赛': { scene:'看谁一整天没干正事还能装得像', mood:'年会最受欢迎的项目', kin:'跟划水、躺平、发呆是一伙的', riddle:'打四个字：比谁更会装忙' },
+  '划水': { scene:'群里回复“收到”，活一点没动', mood:'心里早下班了，人还坐着', kin:'跟摸鱼、躺平、摆烂是亲戚', riddle:'打两个字：人在心不在' },
+  '搬砖': { scene:'一整天敲键盘，说的也是这个词', mood:'自嘲专用', kin:'跟打工、干活、加班是一伙的', riddle:'打两个字：自嘲上班的俗称' },
+  '996': { scene:'早九晚九，一周六天', mood:'听着就累的那三个数字', kin:'跟大小周、007、加班是一串的', riddle:'打三个数字：最累的作息写法' },
+  '007': { scene:'从零点到零点，一周七天', mood:'比上一个还狠', kin:'跟996、大小周是一家的', riddle:'打三个数字：全年无休的代号' },
+  '大小周': { scene:'这周休两天，下周休一天', mood:'排班表上永远算不清', kin:'跟996、调休、排班是一套', riddle:'打三个字：休息时间忽多忽少' },
+  '弹性工作制': { scene:'几点来都行，但活必须干完', mood:'听着自由，实际更晚走', kin:'跟远程、打卡、加班是一串的', riddle:'打五个字：上下班时间自己定' },
+  '远程办公': { scene:'会议全程靠网络，人可能在另一个城市', mood:'睡衣是工装', kin:'跟居家、混合办公、视频是一家的', riddle:'打四个字：人不在公司也算上班' },
+  '居家办公': { scene:'床和电脑在同一个房间', mood:'开会前三十秒才起床', kin:'跟远程、弹性、视频会议是一套', riddle:'打四个字：在家也能打卡' },
+  '视频会议': { scene:'一开口先问“能听到吗”，然后全员静音', mood:'背景是书架，其实在被窝', kin:'跟静音、开麦、摄像头是一套', riddle:'打四个字：一群人对着小窗开会' },
+  '静音': { scene:'发言前忘了关，全场都听见你在喝水', mood:'最尴尬的一秒', kin:'跟开麦、麦克风、会议是一套', riddle:'打两个字：开会前必做的一步' },
+  '开麦': { scene:'一开口全场安静，就等你说', mood:'错点一下社死三分钟', kin:'跟静音、麦克风、摄像头是一家的', riddle:'打两个字：按下去就会被听见' },
+  '摄像头': { scene:'开会第一个要求是“麻烦打开”', mood:'不打开就会被点名', kin:'跟美颜、滤镜、会议是一套', riddle:'打三个字：开会最不想打开的那个' },
+  '美颜': { scene:'开会前先调一下，磨皮开到最大', mood:'怕被看到黑眼圈', kin:'跟滤镜、摄像头、自拍是一家的', riddle:'打两个字：让皮肤变好的那个开关' },
+  '滤镜': { scene:'一开就变白，关掉就原形', mood:'照片和会议通用', kin:'跟美颜、摄像头、修图是一套', riddle:'打两个字：一键换脸' },
+  '表情包': { scene:'聊天里比文字还常用', mood:'存了几百张，见面还是没话说', kin:'跟梗、斗图、群聊是一家的', riddle:'打三个字：不用打字也能回话' },
+  '梗': { scene:'一句话就能让全场笑', mood:'懂的人秒懂，不懂的人一脸问号', kin:'跟表情包、段子、热搜是一伙的', riddle:'打一个字：越用越好笑的那句话' },
+  '热搜': { scene:'每天早上第一件事是看它', mood:'上去了就火了', kin:'跟榜单、话题、爆是一家的', riddle:'打两个字：全网都在看的那条' },
+  '直播': { scene:'一个人对着镜头说两小时', mood:'评论区比内容还热闹', kin:'跟短视频、弹幕、打赏是一套', riddle:'打两个字：实时对着镜头说话' },
+  '短视频': { scene:'一刷就是两小时，十五秒一个停不下来', mood:'十五秒一个，停不下来', kin:'跟直播、弹幕、算法是一家的', riddle:'打三个字：越刷越久的那种视频' },
+  '点赞': { scene:'手指一点，作者开心一下', mood:'最便宜的支持', kin:'跟关注、转发、评论是一串的', riddle:'打两个字：一颗心的动作' },
+  '关注': { scene:'按下去就会一直刷到 ta', mood:'很多人的主要社交方式', kin:'跟点赞、转发、粉丝是一套', riddle:'打两个字：点了就一直看得到' },
+  '转发': { scene:'一键扩散，源头是谁都不知道', mood:'好东西都靠这个传开', kin:'跟点赞、评论、分享是一家的', riddle:'打两个字：让更多人看到' },
+  '评论': { scene:'看完不吐不快的那一栏', mood:'最精彩的内容常在下面', kin:'跟点赞、弹幕、转发是一套', riddle:'打两个字：看完想说两句' },
+  '弹幕': { scene:'字从右边飞过来，糊满整个屏幕', mood:'看剧的乐趣有一半在这', kin:'跟评论、直播、吐槽是一家的', riddle:'打两个字：屏幕上一排排飞的文字' },
+  '一键三连': { scene:'点赞、投币、收藏一起按', mood:'对创作者最高的礼遇', kin:'跟点赞、关注、粉丝是一套', riddle:'打四个字：手指连点三下的最高礼遇' },
+  '卷筒': { scene:'一整卷料架在机器上，越放越少', mood:'换卷是最累的活', kin:'跟卷材、分切、复卷是一条产线', riddle:'打两个字：一圈圈绕起来的料' },
+  '吊牌': { scene:'挂在衣服上，写着尺码和价格', mood:'拆下来就扔，但少了不行', kin:'跟标签、水洗标、包装是一套', riddle:'打两个字：衣服上挂的那张小卡' },
+  '反光膜': { scene:'夜里车灯一照就亮', mood:'路上那些标识全靠它', kin:'跟交通标识、夜光、贴膜是一家的', riddle:'打三个字：晚上会发亮的膜' },
+  '贴标机': { scene:'一瓶一贴，速度快到看不清', mood:'流水线上最忙的那台', kin:'跟灌装、包装、产线是一套', riddle:'打三个字：自动贴上去的那台机器' },
+  '柔印': { scene:'一块软版，转着圈印', mood:'包装印刷最常用', kin:'跟胶印、凹印、丝印是兄弟', riddle:'打两个字：用软版印的那种工艺' },
+  '烫金': { scene:'一压一烫，字上多一层金色', mood:'显贵全靠它', kin:'跟压纹、UV、覆膜是一套', riddle:'打两个字：让字发金光的工艺' },
+  '条码': { scene:'收银台“滴”一声就认出是什么', mood:'一排黑白竖条', kin:'跟二维码、扫描、RFID 是一家', riddle:'打两个字：黑白竖条，一扫就知道' },
+  '样品册': { scene:'一本本翻给客户看，纸样一张张贴着', mood:'销售包里最沉的那本', kin:'跟打样、纸样、色卡是一套', riddle:'打三个字：给客户翻的那本样册' },
+  '打样': { scene:'先做一点给客户看，对了再大批量', mood:'最磨人的一段', kin:'跟样品册、试产、签样是一串的', riddle:'打两个字：先做一点给客户确认' },
+  '车间': { scene:'机器声一直响，地上画着黄线', mood:'安全和效率都在这里', kin:'跟生产线、厂房、仓库是一家的', riddle:'打两个字：机器轰隆的那片地方' },
+  '生产线': { scene:'从一头进料，另一头出成品', mood:'中间一环停全线停', kin:'跟车间、工序、产线是一套', riddle:'打三个字：从原料到成品的一条线' },
+  '质检': { scene:'拿放大镜看、拿仪器测、拿本子记', mood:'挑出一丁点瑕疵就算不合格', kin:'跟抽检、验收、不良率是一套', riddle:'打两个字：挑毛病的那道工序' },
+  '客户审核': { scene:'一堆表格、一堆问题，走一圈车间', mood:'过不了就要整改', kin:'跟认证、验厂、体系是一套', riddle:'打四个字：客户上门来查的那一天' },
+  '卷材': { scene:'一大卷，叉车才搬得动', mood:'一切从这里开始', kin:'跟卷筒、分切、复卷是一条线', riddle:'打两个字：卷起来的大卷料' },
+  '热熔胶': { scene:'加热才黏，凉了就硬', mood:'味道有点冲', kin:'跟水胶、压敏胶是一家的', riddle:'打三个字：得加热才黏的那种胶' },
+  '水胶': { scene:'用水做溶剂，环保但干得慢', mood:'车间里味道轻', kin:'跟热熔胶、溶剂胶是一套', riddle:'打两个字：用水调的那种胶' },
+  '仓库': { scene:'货架顶到天花板，找货靠系统', mood:'发货前最后一站', kin:'跟库位、盘点、出货是一套', riddle:'打两个字：货先待着的地方' },
+  '集装箱': { scene:'一装就是几十吨，卡车拉走', mood:'出货那天最壮观', kin:'跟仓库、出货、物流是一家的', riddle:'打三个字：码头上那种大铁箱' },
+  '出货': { scene:'车一到就开始装，装完签单', mood:'月底最忙', kin:'跟仓库、物流、发货是一套', riddle:'打两个字：货离开工厂那一刻' },
+  '排产': { scene:'哪个先做、哪个插单，全靠这张表', mood:'一改就全线重排', kin:'跟排期、交期、产能是一家的', riddle:'打两个字：先做哪个后做哪个' },
   'PPT': { scene:'最后一页永远是谢谢聆听，改到凌晨三点还在调字号', mood:'做的时候恨它，讲的时候靠它', kin:'跟 Excel、文档、汇报是同事', riddle:'三个字母：越花时间，越显得内容少' }
 };
 function clueLineSafe(line, w){
@@ -1257,8 +1319,16 @@ function clueLadder(w){
   const add = (k, t) => { if (t && clueLineSafe(t, key)) out.push({ k: k, t: t }); };
   // 🔴 字数不算线索（老大 2026-11-19）：字数改成标题常驻在大屏上方
   add('画面', m.scene); add('心情', m.mood); add('同类', m.kin); add('谜面', m.riddle);
-  out.push({ k: '首字', t: '第一个字是「' + cs[0] + '」' });
-  out.push({ k: '尾字', t: '最后一个字是「' + cs[L - 1] + '」' });
+  // 🔴 没有手写线索的词，也绝不再报“第几个字”（老大三次点名嫌 low）：给通用的语义提示
+  if (!out.length){
+    out.push({ k: '场景', t: '这词常出现在办公室、会议室或年会上，跟日常上班直接相关' });
+    out.push({ k: '语气', t: '念出来时，大家大概率会笑一下或者叹一口气' });
+    out.push({ k: '同类', t: '它是公司里天天在说、但很少有人认真解释的那一类词' });
+    out.push({ k: '谜面', t: '打一日常词：一听就懂，一看就会点头' });
+  } else if (out.length < 3){
+    out.push({ k: '同类', t: '跟公司里最常见的那几个词沾亲带故' });
+    out.push({ k: '谜面', t: '打一日常词：说出来全场都会点头' });
+  }
   return out;
 }
 // 字数标题：三个字 / 两个字
@@ -1697,7 +1767,7 @@ function offSongOne(){
   const ans = pickFresh(pool, pool === OFF_SONGS ? 'song' : 'film');
   game.word = ans; game.done = false; game.clues = 0;
   game.playing = true; stat();
-  big('<div class="bighint">' + wordLenTitle(ans) + ' · 一个人偷看答案，哼两句 / 讲名场面，别说出答案里的字</div><div class="word" id="wshow" data-r="' + ans + '" style="font-size:clamp(26px,5vw,56px)">•••••</div><div class="bighint line" id="clueline"></div>');
+  big('<div class="bighint">' + wordLenTitle(ans) + '</div><div class="word" id="wshow" data-r="' + ans + '" style="font-size:clamp(26px,5vw,56px)">•••••</div><div class="bighint line" id="clueline"></div>');
   mountGuessInput(); // 谁猜就打字进去对（AI 不在也能玩）
 }
 
